@@ -1,0 +1,38 @@
+{
+  "name": "songs",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "A song Manager",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "devStart": "NODE_ENV='development' node index.js",
+    "prodStart": "NODE_ENV='production' node index.js"
+  },
+  "author": "Abel Kashoba",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/cli": "^7.17.6",
+    "@babel/core": "^7.17.5",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-react": "^7.16.7",
+    "babel-loader": "^8.2.3",
+    "body-parser": "^1.19.2",
+    "compression": "^1.7.4",
+    "express": "^4.17.3",
+    "express-react-views": "^0.11.0",
+    "minimize": "^2.2.0",
+    "morgan": "^1.10.0",
+    "mysql": "^2.18.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-redux": "^7.2.6",
+    "redux": "^4.1.2",
+    "terser-webpack-plugin": "^5.3.1",
+    "webpack-visualizer-plugin": "^0.1.11"
+  },
+  "devDependencies": {
+    "webpack-bundle-analyzer": "^4.5.0",
+    "webpack-cli": "^4.9.2"
+  }
+}

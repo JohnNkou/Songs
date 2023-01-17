@@ -1,0 +1,40 @@
+CACHE MANIFEST
+
+#Version 1
+
+CACHE:
+/
+
+#js files
+dist/bundle.js
+polyfill/Symbol.js
+js/bluebird_mod.min.js
+
+#css file
+css/app.css
+
+#img file
+
+img/ToggleLeft.png
+img/ToggleRight.png
+img/bottom.png
+img/cat.png
+img/download.png
+img/downloads.png
+img/favorite.png
+img/love.png
+img/next.png
+img/ok.png
+img/openStream.png
+img/prev.png
+img/stream.png
+img/streamStart.png
+img/streamStop.png
+img/top.png
+img/unlove.png
+
+NETWORK:
+/connect
+/store
+/stream/list
+/songAdder.js
