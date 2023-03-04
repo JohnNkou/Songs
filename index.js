@@ -7,7 +7,7 @@ import fs from 'fs';
 import https from 'https'
 import logger from 'morgan'
 import path from 'path'
-import { indexRouter, storeProvider, streamCreator, streamCollector, streamUpdater, streamSubscription, streamDeleter, noStore, songDownloader, downloadToSubscriber, streamPicker, addDefaultsCategorieAndSongs }  from './router/index.js';
+import { indexRouter, storeProvider, Stream, Waiters, Subscription, PopulateCategoriesAndSongs,  streamCreator, streamCollector, streamUpdater, streamSubscription, streamDeleter, noStore, songDownloader, downloadToSubscriber, streamPicker, addDefaultsCategorieAndSongs }  from './router/index.js';
 import { watchHelper, fConsole } from './router/dev.js';
 import { appState, killUnusedStream, inEc2 } from './utilis/BrowserDb.cjs'
 import songAdderController from './utilis/songAdderController.js'
@@ -33,32 +33,36 @@ process.on('SIGTERM',function(){
 	process.exit();
 })
 
-const app = express();
+export const app = express();
 //console = fConsole;
 
-const root = process.cwd();
+const root = process.env.ROOT;
 const options = {
 	key:fs.readFileSync(root+'/certs/key.pem'),
 	cert: fs.readFileSync(root+'/certs/cert.pem')
 }
 
-const streamWaiter = {length:0};
-const streamSubscribers = {};
+export const streamWaiter = {};
+export const streamSubscribers = {};
 const downloadWaiters = {};
 const stream = {};
 const up = {lastupdate:0};
 const textParser = bodyParser.text();
 
-setInterval(()=>{
+/*setInterval(()=>{
 	let waiters = streamWaiter;
 	let subscribers = streamSubscribers;
 	let upTime = up;
 	let fsys = fs;
 	let filename = streamFileName;
 	killUnusedStream({fs:fsys,filename,subscribers,waiters,up:upTime,lineTermination});
-},60000);
+},60000);*/
 
-addDefaultsCategorieAndSongs(appState);
+//addDefaultsCategorieAndSongs(appState);
+
+export const LoadSongs = PopulateCategoriesAndSongs(appState);
+export const StreamJest = Stream();
+export const SubscriptionJest = Subscription(streamSubscribers);
 
 
 app.set('views',`${root}/views`)
@@ -83,6 +87,10 @@ app.get('/connect',noStore(),(req,res)=>{
 })
 app.get('/store', storeProvider(appState));
 app.get('/songAdder.js',noStore(), songAdderController(appState));
+app.route('/stream').get(StreamJest, Waiters(streamWaiter)).post(StreamJest,Subscription(streamSubscribers), Waiters(streamWaiter));
+app.get('/stream/subscribe',(req,res,next)=>{ res.status(0); next();  }, SubscriptionJest);
+app.get('/stream/song', StreamJest);
+/*
 app.get('/stream/list', noStore(), streamCollector(streamWaiter,up));
 app.post('/stream/update', noStore(), textParser, streamUpdater(streamSubscribers,up, downloadWaiters,stream));
 app.get('/stream/subscribe', noStore(),streamSubscription(streamSubscribers));
@@ -91,6 +99,7 @@ app.get('/stream/downloadSong', noStore(), songDownloader(downloadWaiters,stream
 app.post('/stream/create/:stream', noStore(), textParser, streamCreator(streamWaiter,up,stream));
 app.post('/stream/uploadToSubscriber', noStore(), downloadToSubscriber(downloadWaiters));
 app.get('/stream/:name', noStore(), streamPicker())
+*/
 app.use(function(err,req,res,next){
 	console.error("OUps an error");
 	console.error(err.stack);
@@ -103,10 +112,3 @@ app.use(function(err,req,res,next){
 	res.status(500);
 	res.json({error:err});
 })
-app.listen(80);
-https.createServer(options,app).listen(443);
-
-
-/*process.on('error',(err)=>{
-	console.log(err);
-})*/

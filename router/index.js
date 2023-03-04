@@ -1,17 +1,31 @@
 import minimize  from 'minimize';
 import mysql from 'mysql'
-import { SUB, is } from '../utilis/BrowserDb.cjs'
-import process from 'child_process'
+import { SUB } from '../utilis/BrowserDb.cjs'
 import { spawn, fork } from 'child_process'
-import { createDb } from '../utilis/db.js'
 import { fConsole } from './dev.js';
+import db from '../utilis/dbClass.js';
+import { check,validator,transformer } from '../utilis/dev_utilis.js'
+import messages from '../utilis/message.cjs';
+import config from '../utilis/db.config.cjs';
 
-const db = new createDb();
-db.on('error',(err)=>{
-	console.log("Database Error",err);
-})
+const resTimeToWait = 30000,
+errorMessage = messages.error,
+constrains = config.constrains,
+{ table, filters } = config,
+{ cat,song, stream } = table,
+cF = cat.fields,
+sF = song.fields,
+stF = stream.fields,
+stq = stream.query,
+V = new validator(),
+T = new transformer(V),
+streamConstrains = constrains[stream.name](errorMessage),
+streamRelaxConstrains = constrains[stream.name](errorMessage,false),
+catConstrains = constrains[cat.name](errorMessage),
+songConstrains = constrains[song.name](errorMessage),
+streamFilterConstrains = constrains[`${stream.name}Filter`](errorMessage),
+testing = process.env.NODE_ENV == 'test';
 
-const resTimeToWait = 30000;
 
 function getAllCategorie(){
 	return new Promise((resolve,reject)=>{
@@ -45,6 +59,28 @@ export const storeProvider = (store)=>{
 			onlineSongs
 		})}`);
 	}
+}
+
+export async function PopulateCategoriesAndSongs(store){
+	await db.getAllCategorie().then(async (r)=>{
+		let cats = r.data,
+		cat,
+		catLength = cats.length,
+		i=0;
+
+		store.Categories = cats.map((x)=> x[cF.name]);
+
+		while(i < catLength){
+			cat = cats[i];
+			await db.getAllSongs({[sF.catId]: cat[cF.id]}).then((r)=>{
+				let songs = r.data;
+
+				store.onlineSongs[i] = songs.map((song)=> ({ [sF.name]: song[sF.name], [sF.verses]: song[sF.verses] }));
+				store.offlineSongs[i] = [];
+			})
+			i++;
+		}
+	})
 }
 
 export const addDefaultsCategorieAndSongs = (store)=>{
@@ -107,6 +143,321 @@ export const indexRouter =  (store)=>{
 			}
 		})
 		
+	}
+}
+
+export function Stream(){
+	function fa(req,res,next){
+		let query = req.query || {},
+		{ action } = query,
+		body = req.body || {},
+		name,
+		song,
+		songName,
+		catName,
+		verses,
+		index,
+		error,
+		r,
+		data = {};
+
+		if(action){
+			switch(action){
+				case 'add':
+					if(Object.keys(body).length){
+						song = body[stF.song];
+						songName = song && song[stF.songName];
+						verses = song && song[stF.verses];
+						index = song && song[stF.index];
+
+						if(songName != undefined){
+							body[stF.songName] = songName;
+						}
+						if(verses != undefined){
+							body[stF.verses] = verses;
+						}
+						if(index != undefined){
+							body[stF.index] = index;
+						}
+
+						r = check(body,streamConstrains,V,T);
+						error = r.errors;
+
+						if(Object.keys(error).length){
+							return res.status(400).json({error,inserted:false}).end();
+						}
+						else{
+							return db.addStream(body).then((r)=>{
+								if(r.inserted){
+									res.status(201).json(r).end();
+									next();
+								}
+								else{
+									res.status(409).json(r).end();
+								}
+							}).catch(next);
+						}
+					}
+					else{
+						return res.status(400).json({
+							error: { 
+								message:errorMessage.missData()
+							}
+						}).end();
+					}
+				case 'getAll':
+					delete query['action'];
+
+					if(Object.keys(query).length){
+						if(filters.lastTime in query){
+							query[filters.lastTime] = parseInt(query[filters.lastTime],10);
+						}
+						r = check(query,streamFilterConstrains,V,T);
+						error = r.errors;
+
+						if(Object.keys(error).length){
+							return res.status(400).json({error,data:[]}).end();
+						}
+						else{
+							return db.getAllStreams(query).then((r)=>{
+								if(r.data.length){
+									res.status(200).json({
+										action:SUB.UPDATE, streams:r.data.map((x)=> x[stF.name]), timestamp:Date.now(), 
+									}).end();
+								}
+								else{
+									res.status(0);
+									next();
+								}
+							}).catch(next);
+						}
+					}
+					else{
+						return res.status(400).json({
+							error:{
+								message:errorMessage.missData()
+							}
+						}).end();
+					}
+				case 'update':
+					if(Object.keys(body).length){
+						song = body[stF.song];
+						songName = song && song[stF.songName];
+						verses = song && song[stF.verses];
+						index = song && song[stF.index];
+						name = body[stF.name];
+						catName = body[stF.catName];
+
+						if(songName != undefined){
+							body[stF.songName] = data[stF.songName] = songName;
+						}
+						if(verses != undefined){
+							body[stF.verses] = data[stF.verses] = verses;
+						}
+						if(index != undefined){
+							body[stF.index] = data[stF.index] = index;
+						}
+						if(catName != undefined){
+							data[stF.catName] = catName;
+						}
+						if(index == undefined && stF.index in body){
+							data[stF.index] = body[stF.index];
+						}
+
+						r = check(body,streamRelaxConstrains,V,T);
+						error = r.errors;
+
+						if(!Object.keys(error).length){
+							delete body[stF.name];
+							return db.updateStream(name,body).then((r)=>{
+								body[stF.name] = name;
+								res.status((r.updated)? 201:409).json(r).end();
+
+								if(r.updated){
+									next();
+								}
+							}).catch(next);
+						}
+						else{
+							return res.status(400).json({error,updated:false}).end();
+						}
+					}
+					else{
+						return res.status(400).json({
+							error: { 
+								message:errorMessage.missData()
+							}
+						}).end();
+					}
+				case 'delete':
+					if(Object.keys(body).length){
+						r = check(body,streamRelaxConstrains,V,T);
+						error = r.errors;
+
+						if(!Object.keys(error).length){
+							return db.deleteStream(body[stF.name]).then((r)=>{
+								delete r.old;
+								res.status((r.deleted)? 201:409).json(r).end();
+								if(r.deleted){
+									next();
+								}
+							}).catch(next);
+						}
+						else{
+							return res.status(400).json({error,deleted:false}).end();
+						}
+					}
+					else{
+						return res.status(400).json({
+							error: { 
+								message:errorMessage.missData()
+							}
+						}).end();
+					}
+				case 'download':
+					delete query.action;
+
+					if(Object.keys(query).length){
+						r = check(query, streamRelaxConstrains,V,T),
+						error = r.errors;
+
+						if(!Object.keys(error).length){
+							return db.getStream(query[stF.name]).then((r)=>{
+								let data = r.data[0];
+
+								if(data){
+									song = data[stF.song];
+									songName = song[stF.songName];
+									verses = song[stF.verses];
+									catName = data[stF.catName];
+									res.status(200).json({ action:SUB.ADD, [stF.catName]: catName, [stF.songName]: songName, [stF.verses]:verses }).end();
+								}
+								else{
+									res.status(200).json({ action:SUB.NOTHING }).end();
+								}
+							}).catch(next);
+						}
+						else{
+							return res.status(400).json({error,data:[]}).end();
+						}
+					}
+					else{
+						return res.status(400).json({
+							error: { 
+								message:errorMessage.missData()
+							}
+						}).end();
+					}	
+				default:
+					res.status(400).json({
+						error:{
+							message: errorMessage.unknown('action')
+						}
+					})
+			}
+		}
+		else{
+			res.status(400).json({
+				error:{
+					message: errorMessage.invalid('action')
+				}
+			}).end();
+		}
+	}
+
+	if(process.env.NODE_ENV == 'test'){
+		return jest.fn(function(){ return fa.apply(null,arguments) })
+	}
+	else{
+		return fa;
+	}
+}
+export function streamUpdater(subscribers,up, downloadWaiters,stream){
+	return (req,res,next)=>{
+		console.log("req.body",req.body,typeof req.body);
+		let {c,s,p,n,v} = req.query, 
+		lastTime = String(Date.now()).slice(0,10),
+		sql = ["UPDATE Stream SET"], holder = [],
+		payload = stream[n] && stream[n].payload || {},
+		{ songName, catName } = payload,
+		Verses = (is.Object(req.body))? '' : JSON.parse(req.body);
+
+		p = parseInt(p),
+
+		sql.push('position=?');
+		holder.push(p);
+
+		if(!n || !stream[n])
+			return res.json(BadInput())
+
+		if(is.Number(p) && !s && !c && songName && catName){
+			console.log("updating just position");
+			console.log(sql);
+		}
+		else if(c && s && is.Number(p) && n){
+			console.log("updating Everything");
+			s = s.toUpperCase();
+			c = c.toLowerCase();
+			n = n.toLowerCase();
+			p = parseInt(p) || 0;
+
+			if(p > 15)
+				return res.json(BadInput());
+
+			sql.push(',catName=?,songName=?,lastTime=? WHERE name=?');
+			holder.push(c,s,lastTime,n);
+			console.log(sql);
+		}
+		else{
+			console.log("Bad input");
+			console.log(p,s,c,n);
+			return res.json(BadInput());
+		}
+
+		db.query(sql.join(" "),holder,(err)=>{
+				if(err){
+					if(subscribers[n]){
+						for(var subscriber in subscribers[n])
+						subscribers[n][subscriber].end();
+					}
+					return res.status(404).json({code:err.code,message:err.sqlMessage})
+				}
+				try{
+					if(subscribers[n]){
+						for(var subscriber in subscribers[n])
+							subscribers[n][subscriber].json({action:SUB.UPDATE,songName:s,catName:c,position:p}).end();
+					}
+					
+					res.status(200).json({updated:true});
+
+					if(p && !s && !c){
+						payload.position = p;
+						console.log("Just position updated");
+					}
+					else{
+						payload.songName = s;
+						payload.catName = c;
+						payload.Verses = Verses;
+						console.log("All updated");
+					}
+
+					console.log("downloadWaiters",downloadWaiters);
+					if(downloadWaiters[n]){
+						let categories = {};
+						for(let catName in downloadWaiters[n]){
+							categories[catName] = {songs:[]};
+							for(let songName in downloadWaiters[n][catName])
+								categories[catName].songs.push(songName);
+						}
+
+						if(Object.keys(categories).length)
+							res.status(200).json({waitingDownload:categories});
+					}
+				}
+				catch(e){
+					next(e);
+				}
+			})
 	}
 }
 
@@ -223,94 +574,6 @@ export function streamCollector(waiters,up){
 				//clearTimeout(count);
 			})
 		}
-	}
-}
-export function streamUpdater(subscribers,up, downloadWaiters,stream){
-	return (req,res,next)=>{
-		console.log("req.body",req.body,typeof req.body);
-		let {c,s,p,n,v} = req.query, 
-		lastTime = String(Date.now()).slice(0,10),
-		sql = ["UPDATE Stream SET"], holder = [],
-		payload = stream[n] && stream[n].payload || {},
-		{ songName, catName } = payload,
-		Verses = (is.Object(req.body))? '' : JSON.parse(req.body);
-
-		p = parseInt(p),
-
-		sql.push('position=?');
-		holder.push(p);
-
-		if(!n || !stream[n])
-			return res.json(BadInput())
-
-		if(is.Number(p) && !s && !c && songName && catName){
-			console.log("updating just position");
-			console.log(sql);
-		}
-		else if(c && s && is.Number(p) && n){
-			console.log("updating Everything");
-			s = s.toUpperCase();
-			c = c.toLowerCase();
-			n = n.toLowerCase();
-			p = parseInt(p) || 0;
-
-			if(p > 15)
-				return res.json(BadInput());
-
-			sql.push(',catName=?,songName=?,lastTime=? WHERE name=?');
-			holder.push(c,s,lastTime,n);
-			console.log(sql);
-		}
-		else{
-			console.log("Bad input");
-			console.log(p,s,c,n);
-			return res.json(BadInput());
-		}
-
-		db.query(sql.join(" "),holder,(err)=>{
-				if(err){
-					if(subscribers[n]){
-						for(var subscriber in subscribers[n])
-						subscribers[n][subscriber].end();
-					}
-					return res.status(404).json({code:err.code,message:err.sqlMessage})
-				}
-				try{
-					if(subscribers[n]){
-						for(var subscriber in subscribers[n])
-							subscribers[n][subscriber].json({action:SUB.UPDATE,songName:s,catName:c,position:p}).end();
-					}
-					
-					res.status(200).json({updated:true});
-
-					if(p && !s && !c){
-						payload.position = p;
-						console.log("Just position updated");
-					}
-					else{
-						payload.songName = s;
-						payload.catName = c;
-						payload.Verses = Verses;
-						console.log("All updated");
-					}
-
-					console.log("downloadWaiters",downloadWaiters);
-					if(downloadWaiters[n]){
-						let categories = {};
-						for(let catName in downloadWaiters[n]){
-							categories[catName] = {songs:[]};
-							for(let songName in downloadWaiters[n][catName])
-								categories[catName].songs.push(songName);
-						}
-
-						if(Object.keys(categories).length)
-							res.status(200).json({waitingDownload:categories});
-					}
-				}
-				catch(e){
-					next(e);
-				}
-			})
 	}
 }
 export function streamSubscription(subscribers){
@@ -555,6 +818,192 @@ export function downloadToSubscriber(downloadWaiters){
 
 		res.end();
 	}
+}
+
+export const Waiters = (waiters)=>{
+	return (req,res,next)=>{
+		let status = res.statusCode,
+		query = req.query || {},
+		body = req.body || {};
+
+		if(status){
+			if(status == 201){
+				if(query.action == 'add'){
+					for(let id in waiters){
+						waiters[id].status(200).json({
+							action:SUB.ADD, [stF.name]:body[stF.name], timestamp:Date.now() 
+						}).end();
+						delete waiters[id];
+					}
+					return;
+				}
+				else if(query.action == 'delete'){
+					for(let id in waiters){
+						waiters[id].status(200).json({
+							action:SUB.DELETE, [stF.name]:body[stF.name], timestamp:Date.now()
+						}).end();
+						delete waiters[id];
+					}
+					return;
+				}
+			}
+		}
+		else{
+			let socket = req.socket,
+			ip = `${socket.remoteAddress}:${socket.remotePort}`;
+
+			waiters[ip] = res;
+
+			if(testing){
+				jest.useFakeTimers();
+			}
+			setTimeout(()=>{
+				if(!res.writableEnded){
+					res.status(200).json({action:SUB.NOTHING}).end();
+				}
+				delete waiters[ip];
+			},30000)
+		}
+	}
+}
+export const Subscription = (subscribers)=>{
+	function fa(req,res,next){
+		let query = req.query || {},
+		r,
+		action = query.action,
+		body = req.body || {},
+		error,
+		updating,
+		streamName,
+		songName,
+		catName,
+		verses,
+		index,
+		payload,
+		subject,
+		song;
+
+		if(Object.keys(query).length){
+			if(!res.statusCode){
+				if(stq.updating in query && query[stq.updating] === "true" || query[stq.updating] === "false"){
+					query[stq.updating] = query[stq.updating] == 'true';
+				}
+				r = check(query,streamRelaxConstrains,V,T);
+				error = r.errors;
+
+				if(!Object.keys(error).length){
+					updating = query[stq.updating];
+					streamName = query[stF.name];
+
+					if(!updating){
+						return db.getStream(streamName).then((r)=>{
+							res.status(200);
+
+							if(r.data.length){
+								let stream = r.data[0],
+								song = stream[stF.song];
+
+								res.json({
+									action:SUB.UPDATE, [stF.songName]: song[stF.songName], [stF.catName]: stream[stF.catName], [stF.index]: song[stF.index]
+								}).end();
+							}
+							else{
+								res.json({
+									action:SUB.NOTHING
+								}).end();
+							}
+						}).catch(next);
+					}
+					else{
+						if(!(streamName in subscribers)){
+							subscribers[streamName] = {};
+						}
+
+						let socket = req.socket,
+						id = `${socket.remoteAddress}:${socket.remotePort}`; 
+						
+						subscribers[streamName][id] = res;
+
+						res.on('close',()=>{
+							if(subscribers[streamName]){
+								delete subscribers[streamName][id];
+								if(!Object.keys(subscribers[streamName]).length){
+									delete subscribers[streamName];
+								}
+							}
+						})
+					}
+				}
+				else{
+					res.status(400).json({error}).end();	
+				}
+			}
+			else{
+				if(res.statusCode == 201){
+					streamName = body[stF.name];
+					subject = subscribers[streamName];
+					if(action == 'update'){
+						payload = {};
+						song = body[stF.song];
+						catName = body[stF.catName];
+						if(song){
+							songName = song[stF.songName];
+							verses = song[stF.verses];
+							index = song[stF.index];
+
+							if(songName != undefined){
+								payload[stF.songName] = songName;
+							}
+							if(verses != undefined){
+								payload[stF.verses] = verses;
+							}
+							if(index != undefined){
+								payload[stF.index] = index;
+							}
+						}
+						else{
+							if(stF.index in body){
+								payload[stF.index] = body[stF.index];
+							}
+						}
+
+						if(catName != undefined){
+							payload[stF.catName] = catName;
+						}
+
+						if(subject != undefined){
+							for(let subscriber in subject){
+								subject[subscriber].status(200).json({
+									action:SUB.UPDATE, ...payload
+								}).end();
+							}
+						}
+					}
+					else if(action == 'delete'){
+						if(subject != undefined){
+							for(let subscriber in subject){
+								subject[subscriber].status(200).json({
+									action:SUB.UNSUBSCRIBE, message: `The stream ${streamName} has finished`
+								}).end();
+							}
+						}
+						next();
+					}
+					else{
+						next();
+					}
+				}
+			}
+		}
+		else{
+			res.status(400).json({error: errorMessage.missData()}).end();
+		}
+	}
+
+	if(testing){
+		return jest.fn(function(){ return fa.apply(null,arguments); })
+	}
+	return fa;
 }
 
 export function noStore(){

@@ -5,17 +5,19 @@
   "description": "A song Manager",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "devStart": "NODE_ENV='development' node index.js",
-    "prodStart": "NODE_ENV='production' node index.js"
+    "test": "NODE_ENV=test ROOT=`pwd` jest",
+    "testi": "NODE_ENV=test ROOT=`pwd` jest -i --watchAll",
+    "devStart": "NODE_ENV='development' ROOT=`pwd` node start.js",
+    "prodStart": "NODE_ENV='production' ROOT=`pwd` node start.js",
+    "devBundle":"NODE_ENV='development' webpack",
+    "prodBundle":"NODE_ENV='production' webpack"
   },
   "author": "Abel Kashoba",
   "license": "ISC",
   "dependencies": {
-    "@babel/cli": "^7.17.6",
-    "@babel/core": "^7.17.5",
-    "@babel/preset-env": "^7.16.11",
-    "@babel/preset-react": "^7.16.7",
+    "@aws-sdk/client-dynamodb": "^3.245.0",
+    "@aws-sdk/lib-dynamodb": "^3.245.0",
+    "babel": "^6.23.0",
     "babel-loader": "^8.2.3",
     "body-parser": "^1.19.2",
     "compression": "^1.7.4",
@@ -24,6 +26,7 @@
     "minimize": "^2.2.0",
     "morgan": "^1.10.0",
     "mysql": "^2.18.1",
+    "nanoid": "^4.0.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.6",
@@ -32,6 +35,12 @@
     "webpack-visualizer-plugin": "^0.1.11"
   },
   "devDependencies": {
+    "@babel/cli": "^7.20.7",
+    "@babel/core": "^7.20.12",
+    "@babel/preset-env": "^7.20.2",
+    "babel-jest": "^29.3.1",
+    "babel-plugin-transform-commonjs": "^1.1.6",
+    "jsdom": "^21.0.0",
     "webpack-bundle-analyzer": "^4.5.0",
     "webpack-cli": "^4.9.2"
   }

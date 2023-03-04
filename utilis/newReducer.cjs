@@ -6,14 +6,14 @@ function isUndefined(s){
 	return s == null || s == undefined;
 }
 function rSong(state,action){
-	let { type, id, name, Verses } = action;
+	let { type, id, name, verses } = action;
 	switch(action.type){
 		case C.ADD_SONG:
-			return {id,name:name.toUpperCase(), Verses};
+			return {id,name:name.toUpperCase(), verses};
 		case C.UPDATE_SONG:
 			if(state.id != action.id)
 				return state;
-			return {id,name:name.toUpperCase(),Verses};
+			return {id,name:name.toUpperCase(),verses};
 		default:
 			return state;
 	}
@@ -87,7 +87,7 @@ function rCats(states,action){
 }
 
 const SRed = (states,action,location='online')=>{
-	let { type, catId, id, name, Verses, songs } = action,
+	let { type, catId, id, name, verses, songs } = action,
 	aLocation = action.location, storedSongs = states[`${location}Songs`],
 	songsCat = (catId != undefined)? storedSongs[catId]: storedSongs[states.Categories.indexOf(name)],
 	currentCat = states.Categories[catId];
@@ -125,7 +125,7 @@ const SRed = (states,action,location='online')=>{
 				return storedSongs;
 
 			songToUpdate.name = name;
-			songToUpdate.Verses = Verses;
+			songToUpdate.verses = verses;
 
 			return { ...storedSongs };
 
@@ -207,7 +207,10 @@ function curCat(states,action){
 }
 
 function curSong(states,action){
-	let { type, name, catId, location, id } = action, storeSongs = (location == 'online')? states.onlineSongs : states.offlineSongs, catSongs = storeSongs[catId], song = catSongs && catSongs[id];
+	let { type, name, catId, location, id } = action, 
+	storeSongs = (location == 'online')? states.onlineSongs : states.offlineSongs, 
+	catSongs = storeSongs[catId], 
+	song = catSongs && catSongs[id];
 
 	if(type != C.SET_CURRENT_SONG || !catSongs || !song)
 		return states.currentSong;
@@ -328,7 +331,7 @@ function uiR(states,action){
 			return {
 				...states,
 				addSongDiv:{
-					Verses: action.number
+					verses: action.number
 				}
 			}
 

@@ -2,7 +2,7 @@ import fs from 'fs';
 import { is } from './BrowserDb.cjs';
 
 export default (store)=>{
-	return (req,res)=>{
+	return (req,res)=>{ console.log("store",store);
 		let {c,l} = req.query,
 		Categories = store.Categories,
 		onlineSongs = store.onlineSongs,

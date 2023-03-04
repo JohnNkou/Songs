@@ -1,14 +1,14 @@
 import { C }  from './constant.cjs';
 
 const rSong = (state,action)=>{
-	let {type,id,name,Verses} = action;
+	let {type,id,name,verses} = action;
 	switch(type){
 		case C.ADD_SONG:
-			return {name:name.toUpperCase(),Verses};
+			return {name:name.toUpperCase(),verses};
 		case C.UPDATE_SONG:
 			if(state.id != action.id)
 				return state;
-			return {id,name,Verses}
+			return {id,name,verses}
 		case C.SET_CURRENT_SONG:
 			return (state.name == action.name)? true:false;
 		default:
@@ -120,7 +120,7 @@ export const Reducer = (states,action)=>{
 		case C.SET_CURRENT_SONG:
 			states.ui.navigation.VerseIndex = action.index;
 			if(!action.name)
-				return {...states, currentSong:{name:"",Verses:[]}};
+				return {...states, currentSong:{name:"",verses:[]}};
 
 			states['currentSong'] = rSongs(states[(action.location == 'online')? 'Categories':'localCategories'][states.currentCat.name].songs,action);
 			return { ...states }
@@ -141,7 +141,7 @@ export const Reducer = (states,action)=>{
 			return {...states}
 		case C.ADD_TO_FAVORITE:
 			states.favorites[action.catName] = states.favorites[action.catName] || {}
-			states.favorites[action.catName][action.songName] = {Verses:action.Verses,location:action.location}
+			states.favorites[action.catName][action.songName] = {verses:action.verses,location:action.location}
 			return {...states}
 		case C.REMOVE_FROM_FAVORITE:
 			if(!states.favorites[action.catName] || !states.favorites[action.catName][action.songName]){
@@ -179,7 +179,7 @@ export const Reducer = (states,action)=>{
 			states.ui.show.addSongDiv = action.view
 			return {...states}
 		case C.CHANGE_VERSEDIV_NUMBER:
-			states.ui.addSongDiv.Verses = action.number
+			states.ui.addSongDiv.verses = action.number
 			return {...states}
 		case C.SET_CONTROLS:
 			states.keys.alt = action.control

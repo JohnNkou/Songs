@@ -208,7 +208,7 @@ function  openDb (name,version="1",size=1024*1024*10){
 								}
 								if(row){
 									
-									if(row.Verses){
+									if(row.verses){
 										
 										if(rowSealed === false){
 											
@@ -735,40 +735,29 @@ function getLocalData(dbC,store,{addSong,addCategorie,addSongs}){
 
 	return  db.getAllCategories()().then((categories)=>{
 		let catLength = categories.length -1;
-		let lastCatId = 0;
 		let onlineCat = store.getState().Categories;
-		let Categories = categories.map((c)=> c.name.toLowerCase());
 		let fastLookUp = {};
 		let index;
-		if(!Categories.length){
+		if(!categories.length){
 			return {data: store.getState(), fastLookUp };
 		}
 		else{
 			return new Promise((resolve)=>{
 				
-				Categories.forEach((catName,id)=>{
+				categories.forEach((cat,id)=>{
 					try{
-						index = onlineCat.indexOf(catName);
-						if(index != -1){
-							lastCatId = index;
-						}
-						else{
-							while(onlineCat[lastCatId]){
-								lastCatId++;
-							}
-						}
-						
-						let catId = lastCatId++;
-						store.dispatch(addCategorie(catName,catId));
-						fastLookUp[catName] = {};
+						let catId = cat.id;
 
-						db.getAllSongs(catName)().then((songs)=>{
+						store.dispatch(addCategorie(cat.name,catId));
+						fastLookUp[cat.name] = {};
+
+						db.getAllSongs({'catId':catId})().then((songs)=>{
 							songs = songs.map((song)=>{
 								delete song.cat;
-								fastLookUp[catName][song.name] = true;
+								fastLookUp[cat.name][song.name] = true;
 								do{
-									song.Verses = JSON.parse(song.Verses);
-								}while(is.String(song.Verses));
+									song.verses = JSON.parse(song.verses);
+								}while(is.String(song.verses));
 								return song;
 							});
 
@@ -814,8 +803,8 @@ function pickSongsWithVerse(songs){
 	let selectedSongs;
 	let songLength = songs.length;
 
-	for(var i=0,j=0; i < 50 && j < songLength; i += songs[i].Verses.length -1,j++){
-		if(songs[i].Verses.length -1)
+	for(var i=0,j=0; i < 50 && j < songLength; i += songs[i].verses.length -1,j++){
+		if(songs[i].verses.length -1)
 			selectedSongs.push(songs[i]);
 	}
 	return selectedSongs;
@@ -848,7 +837,7 @@ function TT(Name){
 		falsed = true;
 			});
 		
-			this.query("CREATE TABLE IF NOT EXISTS Song(id integer primary key, name varchar(100) not null, Verses Text not null, cat integer not null, unique(name,cat), FOREIGN KEY(cat) REFERENCES Categorie(id))",[]).then((s)=>{
+			this.query("CREATE TABLE IF NOT EXISTS Song(id integer primary key, name varchar(100) not null, verses Text not null, cat integer not null, unique(name,cat), FOREIGN KEY(cat) REFERENCES Categorie(id))",[]).then((s)=>{
 		console.log("Table Song Created with Success");
 		if(falsed)
 			reject();
@@ -1042,9 +1031,9 @@ function TT(Name){
 
 		return p; 
 	}
-	this.insertSong = (name,Verses,cat)=>{
+	this.insertSong = (name,verses,cat)=>{
 		var txt = "Wb insertSong";
-		Verses = JSON.stringify(Verses);
+		verses = JSON.stringify(verses);
 
 		var p = ()=> new Promise((resolve,reject)=>{
 			
@@ -1053,7 +1042,7 @@ function TT(Name){
 
 			if(typeof cat == "number"){
 					
-				this.query("INSERT INTO Song(name,Verses,cat) VALUES(?,?,?)",[safeOp(name,"toUpperCase",null),(Verses)? Verses:null,(cat)? cat: null]).then((s)=>{
+				this.query("INSERT INTO Song(name,verses,cat) VALUES(?,?,?)",[safeOp(name,"toUpperCase",null),(verses)? verses:null,(cat)? cat: null]).then((s)=>{
 					if(s.inserted){
 						Gp(`${txt} Success`,`song ${name} inserted`,s.inserted);
 						//alert(`${name} inserted`);
@@ -1078,7 +1067,7 @@ function TT(Name){
 						var cat = r.id;
 						if(cat){
 							
-							var v = this.insertSong(name,Verses,cat)();
+							var v = this.insertSong(name,verses,cat)();
 							v.then(resolve).Oups(reject);
 						}
 						else{
@@ -1098,12 +1087,12 @@ function TT(Name){
 
 		return p;
 	}
-	this.updateSong = (name,cat,newName,Verses)=>{
+	this.updateSong = (name,cat,newName,verses)=>{
 		var txt = "Wb updateSong";
 		name = safeOp(name,"toUpperCase",null);
 		newName = safeOp(newName,"toUpperCase",null);
-		var sql = "UPDATE Song SET "+((newName)? "name=?"+((Verses)? ", Verses=?":""): "Verses=?")+" WHERE name=? AND cat=?"
-		var holder = [(newName)? newName:Verses,(newName && Verses)? Verses:name,((newName && Verses))? name:cat,(newName && Verses)? cat: null].filter((s) => s);
+		var sql = "UPDATE Song SET "+((newName)? "name=?"+((verses)? ", verses=?":""): "verses=?")+" WHERE name=? AND cat=?"
+		var holder = [(newName)? newName:verses,(newName && verses)? verses:name,((newName && verses))? name:cat,(newName && verses)? cat: null].filter((s) => s);
 		console.log("Look at this sql",sql,holder);
 		//holder = holder.filter((s) => s);
 		var p = ()=> new Promise((resolve,reject)=>{
@@ -1127,7 +1116,7 @@ function TT(Name){
 					this.getCategorie(cat)().then((r)=>{
 						if(r){
 							var id = r.id;
-							this.updateSong(name,id,newName,Verses)().then(resolve).Oups(reject);
+							this.updateSong(name,id,newName,verses)().then(resolve).Oups(reject);
 						}
 						else{
 							Gp(`${txt} Error`,`no categorie ${cat} found`);
@@ -1191,7 +1180,7 @@ function TT(Name){
 					this.query("SELECT * from Song WHERE name=? AND cat=?",[safeOp(name,"toUpperCase",null),cat]).then((s)=>{
 						if(s.data.length){
 							s.data = s.data.pop();
-							s.data.Verses = JSON.parse(s.data.Verses);
+							s.data.verses = JSON.parse(s.data.verses);
 						}
 						
 						Gp(`${txt} Success`,`${txt} ${name}`,s.data)
@@ -1623,7 +1612,7 @@ function TTT(){
 
 		return p;
 	}
-	this.insertSong = (name,Verses,cat)=>{
+	this.insertSong = (name,verses,cat)=>{
 		var txt = 'insertSong';
 		var tx = this.txW;
 		var p = ()=> new Promise((resolve,reject)=>{
@@ -1632,7 +1621,7 @@ function TTT(){
 					if(r){
 						tx((tx)=>{
 							var store = tx.objectStore("Song");
-							var request = store.put({name,Verses,cat:cat});
+							var request = store.put({name,verses,cat:cat});
 							request.onsuccess = (e)=>{
 								Gp(`${txt} Success`,`song ${name} inserted`,request.result);
 								resolve(Boolean(request.result));
@@ -1656,7 +1645,7 @@ function TTT(){
 					if(r){
 						var cat = r.id;
 						if(cat){
-							var v =  this.insertSong(name,Verses,cat)();
+							var v =  this.insertSong(name,verses,cat)();
 							v.then(resolve).Oups(reject);
 						}
 						else{
@@ -1674,7 +1663,7 @@ function TTT(){
 		return p;
 
 	};
-	this.updateSong = (name,cat,newName,Verses)=>{
+	this.updateSong = (name,cat,newName,verses)=>{
 		var txt = "updateSong";
 		var tx = this.txW;
 		var p = ()=> new Promise((resolve,reject)=>{
@@ -1687,7 +1676,7 @@ function TTT(){
 							var cursor = request.result;
 							var value = cursor.value;
 							if(cursor){
-								var req = cursor.update({name:newName || value.name, Verses:Verses || value.Verses,cat});
+								var req = cursor.update({name:newName || value.name, verses:verses || value.verses,cat});
 								req.onsuccess = (e)=>{
 									Gp(`${txt} Success`,`song ${name} updated to ${newName}`,req.result);
 									resolve(Boolean(req.result));
@@ -1715,7 +1704,7 @@ function TTT(){
 					this.getCategorie(cat)().then((r)=>{
 						if(r){
 							var id = r.id;
-							this.updateSong(name,id,newName,Verses)().then(resolve).Oups(reject);
+							this.updateSong(name,id,newName,verses)().then(resolve).Oups(reject);
 						}
 						else{
 							Gp(`${txt} Error`,`no categorie ${cat} found`);
@@ -1979,10 +1968,15 @@ exports.sameCompose = sameCompose;
 exports.compose = compose;
 exports.relay = relay;
 exports.getAllReturn = getAllReturn;
-exports.streamer = function(fetcher,store){
+exports.streamer = function(fetcher,store,table){
 	let fastAccess,
 	name = "",
-	lastSongName = "";
+	lastSongName = "",
+	{ cat,song,stream } = table,
+	cF = cat.fields,
+	sF = song.fields,
+	stF = stream.fields;
+
 	this.updateFastAccess = (newFast)=>{
 		fastAccess = newFast;
 	}
@@ -2004,26 +1998,37 @@ exports.streamer = function(fetcher,store){
 			setLocalStorage("stream",JSON.stringify({name, time:Date.now()}));
 		},15)
 	}
-	this.updateStream = (catName,songName,position,Verses)=>{
-		let additionalQuery = `&p=${position}`;
+	this.updateStream = (catName,songName,position,verses)=>{
+		let additionalQuery = `&p=${position}`,
+		payload = {};
 		if(name){
 			this.updateLocalStorage();
+			payload[stF.name] = name;	
 
 			if(lastSongName == songName){
-				Verses = "";
+				verses = "";
+				payload[stF.index] = position;
 			}
 			else{
 				lastSongName = songName;
 				additionalQuery+=`&c=${catName}&s=${songName}`;
-			}
-			
+				payload[stF.song] = {
+					[stF.songName]: songName,
+					[stF.verses]: verses,
+					[stF.index]: position
+				}
+				payload[stF.catName] = catName;
+			}		
 
-			let url =  `stream/update?n=${name}${additionalQuery}`;
+			let url =  `stream?action=update`;
 			console.log("The url is",url);
 			fetcher({
 						url, 
 						method:'POST',
-						data:(Verses)? JSON.stringify(Verses):null,
+						data:JSON.stringify(payload),
+						setter:(xml)=>{
+							xml.setRequestHeader('content-type','application/json');
+						},
 						e:({status,response})=>{
 								console.log("Error trying to update the stream with url",url, status, response);
 						},
@@ -2061,7 +2066,7 @@ exports.streamer = function(fetcher,store){
 												else{
 													let songs = state[`${location}Songs`][catId],
 													songIndex = fastAccess[catName][location][songName];
-													r[catName][songName] = songs[songIndex].Verses;
+													r[catName][songName] = songs[songIndex].verses;
 												}
 											}
 										}
@@ -2096,7 +2101,7 @@ exports.streamer = function(fetcher,store){
 											debugger;
 										let r = {};
 										r[catName] = {};
-										r[catName][songName] = Verses;
+										r[catName][songName] = verses;
 										fetcher({
 											url,
 											setter:(xml)=>{
@@ -2313,7 +2318,7 @@ exports.appState = {
 	onlineSongs:{},
 	offlineSongs:{},
 	currentCat:{name:""},
-	currentSong:{name:"", Verses:[]},
+	currentSong:{name:"", verses:[]},
 	ui:{
 		show:{
 			catList:false,
@@ -2331,7 +2336,7 @@ exports.appState = {
 			to:20
 		},
 		addSongDiv:{
-			Verses:0
+			verses:0
 		},
 		direction:"Right",
 		nightMode: false

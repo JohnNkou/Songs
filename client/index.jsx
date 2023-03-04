@@ -10,9 +10,11 @@ import {appState, dbChooser, getLocalData, getRemoteData, getStoreData, fetcher,
 import { App  } from '../views/components.jsx'
 import { stepManager } from '../utilis/guider.js'
 import { System } from '../utilis/constant.cjs'
-import { saveUiInfo, checkReachability, timeAction, logAction, myThunk, ManageFastAccess } from '../middleware/index.js'
+import { saveUiInfo, checkReachability, timeAction, logAction, myThunk, ManageFastAccess } from '../middleware/index.js';
+import config from '../utilis/db.config.cjs';
 
 
+console.log('config',config);
 window.mountNotifier = {};
 window.onerror = (e)=>{
 	console.error("window error",e);
@@ -44,7 +46,7 @@ fastAccess.then(()=>{
 })
 
 let Msteps;
-let streamManager = new streamer(fetcher,store);
+let streamManager = new streamer(fetcher,store,config.table);
 
 Promise.all([localData,fastAccess]).then(()=>{
 	let state = store.getState(),

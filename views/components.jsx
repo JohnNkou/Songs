@@ -1,25 +1,31 @@
 import React  from 'react';
-import { connect } from 'react-redux'
+import { connect } from 'react-redux';
 import { storageHandler,dbChooser, compose, relay, getAllReturn, seq, fetcher, abortSubscription,SUB, indexChanger, curry, safeOp, registerWorker, validator, is, timeThis, adjustHeight } from '../utilis/BrowserDb.cjs';
 import Text from '../utilis/Text.cjs';
-import Action from '../utilis/aCreator.cjs'
+import Action from '../utilis/aCreator.cjs';
+import config from '../utilis/db.config.cjs';
 
-const Texts = React.createContext(Text);
-
-const displayTime = { fast:50, normal:1500, medium:3000, long:20000};
-const insertStatus = {
+const Texts = React.createContext(Text),
+{ table,filters } = config,
+{ cat,song,stream } = table,
+cF = cat.fields,
+sF = song.fields,
+stF = stream.fields,
+stq = stream.query,
+displayTime = { fast:50, normal:1500, medium:3000, long:20000},
+insertStatus = {
 	FAILED:0,
 	SUCCESS:1,
 	DUPLICATE:2,
 	COMPLETE:3,
 	FAIL_ALL:4
-}
-const signal={
+},
+signal={
 	system: "mSystem",
 	success:"mSuccess",
 	error:  "mError"
-}
-const Validator = new validator();
+},
+Validator = new validator();
 
 
 function scrollHandler(node,event,trackedTouchsArray){
@@ -921,7 +927,7 @@ class AddSongDiv extends React.Component{
 		this.hasOverflowed = this.hasOverflowed.bind(this);
 		this.scrollHandler = scrollHandler.bind(this);
 		this.lastUpdateOverflowed = false;
-		this.state = { VerseNumber:"",Verses: [], name:"", lang:this.props.lang,message:"",VersesText:{}, signal:signal.system };
+		this.state = { VerseNumber:"",verses: [], name:"", lang:this.props.lang,message:"",VersesText:{}, signal:signal.system };
 		this.Text = context.addSongDiv;
 		this.formError = context.formError;
 		this.songText = context.Song;
@@ -991,22 +997,22 @@ class AddSongDiv extends React.Component{
 			this.props.adjustHeight();
 
 
-			if(((prevProps.current.name != this.props.current.name) && this.state.Verses.length) || prevProps.lang != this.props.lang){
-				this.setState({...this.state,Verses:[],lang:this.props.lang});
+			if(((prevProps.current.name != this.props.current.name) && this.state.verses.length) || prevProps.lang != this.props.lang){
+				this.setState({...this.state,verses:[],lang:this.props.lang});
 			}
 
 			let {_name,_verseNumber} = this.refs;
 			if(this.props.controls){
 				let { VersesText } = this.state;
 				_name.value = this.props.current.name;
-				let Verses = (this.state.Verses.length && this.state.Verses) || (this.props.current.Verses);
+				let verses = (this.state.verses.length && this.state.verses) || (this.props.current.verses);
 				for(let i=1;;i++){
 					let input = [`_Verse${i}`]
-					let Verse = this.refs[input];
+					let verse = this.refs[input];
 					if(!Verse)
 						break;
 					else{
-						Verse.value = VersesText[input] || (Verses[i-1] && Verses[i-1].Text) || '';
+						verse.value = VersesText[input] || (verses[i-1] && verses[i-1].Text) || '';
 						if(!VersesText[input])
 							VersesText[input] = Verse.value;
 						if(!Verse.onchange){
@@ -1060,7 +1066,7 @@ class AddSongDiv extends React.Component{
 	}
 
 	kak(e){
-		let { action, Verses, _name } = this.checker(e),
+		let { action, verses, _name } = this.checker(e),
 		songName = _name &&  _name.value;
 
 		if(action)
@@ -1068,7 +1074,7 @@ class AddSongDiv extends React.Component{
 		else{
 			let { addSong, forceUpdate, currentCatName, lang, catId } = this.props;
 
-			db.insertSong(songName,Verses,currentCatName)().then((r)=>{
+			db.insertSong(songName,verses,currentCatName)().then((r)=>{
 				if(r){
 					notifier.addSpeed(this.songText.insertion.success(lang,songName),null,null,null,signal.success)
 				}
@@ -1077,9 +1083,9 @@ class AddSongDiv extends React.Component{
 			}).Oups((e)=>{
 				alert("addCatDiv kak insertSong "+e);
 			})
-			addSong(0,songName,catId,Verses);
+			addSong(0,songName,catId,verses);
 			forceUpdate({node:'songList',value:true});
-			this.setState({ name:"",message:this.Text.message.success(lang),VersesText:{},Verses:[], VerseNumber:0, signal:signal.success})
+			this.setState({ name:"",message:this.Text.message.success(lang),VersesText:{},verses:[], VerseNumber:0, signal:signal.success})
 			meticulus('songList',()=>{
 				forceUpdate({node:'songList', value:false});
 			})
@@ -1112,7 +1118,7 @@ class AddSongDiv extends React.Component{
 				return;
 			}
 			_verseNumber.value = n;
-			this.setState({ message:"",VerseNumber:n,name:nV, Verses: new Array(n), signal:signal.system});
+			this.setState({ message:"",VerseNumber:n,name:nV, verses: new Array(n), signal:signal.system});
 		}
 		else{
 			this.setState({name:nV,VerseNumber:vvv,message:this.Text.message.verseNumberNotInteger(this.props.lang), signal:signal.error})
@@ -1126,7 +1132,7 @@ class AddSongDiv extends React.Component{
 
 		let message = "",
 		{ _name } = this.refs,
-		Verses = [],
+		verses = [],
 		{ VersesText } = this.state,
 		subRefs = {...this.refs},
 		{ Text, formError } = this,
@@ -1156,7 +1162,7 @@ class AddSongDiv extends React.Component{
 				message += formError.required("Verse")(lang);
 			else{
 				VersesText[`_Verse${i}`] = Verse.value;
-				Verses.push({Text:Verse.value});
+				verses.push({Text:Verse.value});
 			}
 		}
 		if(message){
@@ -1164,18 +1170,18 @@ class AddSongDiv extends React.Component{
 				this.setState({ message,name:_name.value,VersesText, signal:signal.error}); 
 			}}
 		}
-		return {Verses,_name};
+		return {verses,_name};
 	}
 
 	updateSong(e){
-		let { action, Verses, _name } = this.checker(e);
+		let { action, verses, _name } = this.checker(e);
 
 		if(action)
 			return action();
 		else{
 			let { location, updateSong, currentCatName, setCurrentSong, current, lang, catId } = this.props;
 
-			updateSong(current.id,catId,_name.value,Verses,location,current.name)
+			updateSong(current.id,catId,_name.value,verses,location,current.name)
 			setCurrentSong(current.id,catId,location);
 			this.setState({ message:this.Text.message.updated(lang), signal:signal.success});
 		}
@@ -1183,12 +1189,12 @@ class AddSongDiv extends React.Component{
 
 	deleteVerse(id){
 		let VersesText = this.state.VersesText;
-		let Verses = (this.state.Verses.length)? this.state.Verses: new Array(this.props.current.Verses.length);
-		Verses.pop();
+		let verses = (this.state.verses.length)? this.state.verses: new Array(this.props.current.verses.length);
+		verses.pop();
 		let nextVerse;
 		let oldVerse = null;
 		let { _verseNumber } = this.refs;
-		_verseNumber.value = Verses.length;
+		_verseNumber.value = verses.length;
 
 		while(nextVerse = this.refs[`_Verse${++id}`]){
 			VersesText[`_Verse${id-1}`] = nextVerse.value;
@@ -1203,11 +1209,11 @@ class AddSongDiv extends React.Component{
 		}
 
 		let objectKeys = Object.keys(this.refs);
-		this.setState({...this.state, Verses, VerseNumber:Verses.length, VersesText});
+		this.setState({...this.state, verses, VerseNumber:verses.length, VersesText});
 	}
 
 	cleanUp(){
-		this.setState({...this.state,message:"",VersesText:{},name:"",VerseNumber:"", Verses:[]});
+		this.setState({...this.state,message:"",VersesText:{},name:"",VerseNumber:"", verses:[]});
 	}
 	handleClick(e){
 		let target = e.target, isOfInterest = target.className.indexOf("add") != -1 || target.className.indexOf("close") != -1, className = null, props = this.props;
@@ -1232,11 +1238,11 @@ class AddSongDiv extends React.Component{
 
 	render(){
 		let props = this.props;
-		let { Verses,name, signal } = this.state;
+		let { verses,name, signal } = this.state;
 		let l = props.lang;
 		let controls = props.controls;
 		let text = this.Text;
-		let verseNumber = (controls)? (Verses && Verses.length) || (props.current.Verses && props.current.Verses.length) || 0: Verses.length ; 
+		let verseNumber = (controls)? (verses && verses.length) || (props.current.verses && props.current.verses.length) || 0: verses.length ; 
 		let but1 = (controls)? text.modiButtonText: text.addButtonText;
 		let but2 = text.closeButtonText;
 		let view = (props.view)? '':'whoosh';
@@ -1276,7 +1282,7 @@ const AddSongDivC = connect((state,ownProps)=>{
 		lang: 			state.language,
 		controls: 		state.keys.alt,
 		current: 		state.currentSong,
-		VersesDiv: 		state.ui.addSongDiv.Verses,
+		VersesDiv: 		state.ui.addSongDiv.verses,
 		currentCatName: state.currentCat.name,
 		catId: 			state.currentCat.id,
 		view: 			state.ui.show.addSongDiv,
@@ -1316,7 +1322,8 @@ class CreateStream extends React.Component{
 
 	save(){
 		let { appReachable, subscribedToStream, isStreaming,lang } = this.props,
-		{ Text,formError } = this.Text;
+		{ Text,formError } = this,
+		data;
 
 		if(!appReachable)
 			return this.setState({message:Text.message.networkProblem, signal:signal.error});
@@ -1366,10 +1373,19 @@ class CreateStream extends React.Component{
 		},500);
 		
 		startStream(streamName.toLowerCase());
+		data = {
+			[stF.name]: streamName,
+			[stF.catName]: this.props.catName,
+			[stF.song]:{
+				[stF.songName]: this.props.songName,
+				[stF.verses]: this.props.verses,
+				[stF.index]: this.props.index || 0
+			}
+		};
 		fetcher({
-			url:`/stream/create/${streamName}?s=${this.props.songName}&c=${this.props.catName}&i=${this.props.index || 0}`,
+			url:"/stream?action=add",
 			method:'POST',
-			data:JSON.stringify(this.props.Verses),
+			data:JSON.stringify(data),
 			s:(s)=>{
 
 				clearInterval(c);
@@ -1387,7 +1403,7 @@ class CreateStream extends React.Component{
 				stopStream(streamName.toLowerCase());
 			},
 			setter:(xml)=>{
-				window.bb = xml;
+				xml.setRequestHeader('content-type','application/json');
 			}
 		})
 
@@ -1436,7 +1452,7 @@ const CreateStreamC = connect((state,ownProps)=>{
 		index: 	state.ui.navigation.verseIndex,
 		catName: state.currentCat.name,
 		songName: state.currentSong.name,
-		Verses: state.currentSong.Verses,
+		verses: state.currentSong.verses,
 		view: state.ui.show.createStreamDiv,
 		isStreaming: state.isStreaming,
 		...ownProps
@@ -2081,7 +2097,7 @@ class SongList extends React.Component{
 		}
 	}
 	
-	reportSuccess(name,i,Verses){
+	reportSuccess(name,i,verses){
 		let { report, addSong, removeSong, counterUpdater, currentCat, songs, lang,} = this.props;
 		let catName = currentCat.name;
 		let catId = currentCat.id;
@@ -2091,7 +2107,7 @@ class SongList extends React.Component{
 		else
 			notifier.addSpeed(this.text.insertion.success(lang,name),undefined,undefined,undefined,signal.success);
 
-		addSong(0,name,catId, Verses,'offline');
+		addSong(0,name,catId, verses,'offline');
 		removeSong(i,catId,name);
 		counterUpdater(-1);
 
@@ -2113,12 +2129,12 @@ class SongList extends React.Component{
 		let c = Promise.resolve(true);
 		let self = this;
 		songs.forEach((song,i)=>{
-			let { name, Verses } = song;
+			let { name, verses } = song;
 			c = c.then(()=>{
-				return db.insertSong(name,Verses,cat)().then((r)=>{
+				return db.insertSong(name,verses,cat)().then((r)=>{
 					try{
 						if(r){
-							self.reportSuccess(name,0,Verses);
+							self.reportSuccess(name,0,verses);
 							return true;
 						}
 						else{
@@ -2152,10 +2168,10 @@ class SongList extends React.Component{
 		return db.getSong(name,cat)();
 	}
 
-	insertSong(name,Verses,cat,index,tried=0){
-		return db.insertSong(name,JSON.stringify(Verses),cat)().then((r)=>{
+	insertSong(name,verses,cat,index,tried=0){
+		return db.insertSong(name,JSON.stringify(verses),cat)().then((r)=>{
 			if(r){
-				this.reportSuccess(name,index,Verses);
+				this.reportSuccess(name,index,verses);
 				return true;
 			}
 			else{
@@ -2163,7 +2179,7 @@ class SongList extends React.Component{
 					return false;
 				return this.insertCategorie(cat).then((id)=>{
 					if(is.Number(id))
-						return this.insertSong(name,Verses,id,index,1);
+						return this.insertSong(name,verses,id,index,1);
 					else
 						return false;
 				});
@@ -2183,11 +2199,11 @@ class SongList extends React.Component{
 		})
 	}
 
-	action2(sequence,{name,Verses,cat,index}){
+	action2(sequence,{name,verses,cat,index}){
 		return new Promise((resolve,reject)=>{
 			let self = this;
 			sequence.subscribe(sequence.add(()=>{
-				return self.insertSong(name,Verses,cat,index).then((r)=>{
+				return self.insertSong(name,verses,cat,index).then((r)=>{
 					if(!r){
 						self.reportError(name);
 						return false;
@@ -2246,7 +2262,7 @@ class SongList extends React.Component{
 		let { currentCat, setCurrentSong, subscribedToStream, subscribeToStream, location, changeDirection } = this.props;
 
 		abortSubscription(fetcher);
-		S.updateStream(currentCat.name, x.name, 0, x.Verses);
+		S.updateStream(currentCat.name, x.name, 0, x.verses);
 		setCurrentSong(id,currentCat.id,location);
 
 		if(window.innerWidth <= 425)
@@ -2381,13 +2397,13 @@ class Favorite extends React.Component{
 	}
 
 	buildFavList(favorites){
-		let catName = "", songName = "", Verses = [], location = "", catId, songId, favList = [], song = {}, songs = ""
+		let catName = "", songName = "", verses = [], location = "", catId, songId, favList = [], song = {}, songs = ""
 
 		for(catName in favorites){
 			songs = favorites[catName];
 			for(songName in songs){
 				song = songs[songName];
-				favList.push({catName, songName, location:song.location, Verses:song.Verses, songId:song.songId, catId:song.catId, name:songName});
+				favList.push({catName, songName, location:song.location, verses:song.verses, songId:song.songId, catId:song.catId, name:songName});
 			}
 
 		}
@@ -2443,6 +2459,9 @@ class StreamCreation extends React.PureComponent{
 		event.preventDefault();
 		event.stopPropagation();
 
+		if(!this.props.songName){
+			return alert("Please select a song before starting a stream");
+		}
 		if(!S.getName()) 
 			return this.props.changeStreamCreateView(true);
 		this.stopStream();
@@ -2459,9 +2478,14 @@ class StreamCreation extends React.PureComponent{
 	}
 
 	stopStream(){
-		let streamName = S.getName();
+		let streamName = S.getName(),
+		data = {
+			[stF.name]:streamName
+		};
 		fetcher({
-			url:`stream/delete?n=${streamName}`,
+			url:`stream?action=delete`,
+			method:'POST',
+			data:JSON.stringify(data),
 			s:(response)=>{
 				clearInterval(this.counter);
 				notifier2.addSpeed(this.text.Stream.stopped(this.props.lang,streamName));
@@ -2477,6 +2501,9 @@ class StreamCreation extends React.PureComponent{
 				stopStream(streamName);
 				
 				this.setState({img:`img/${this.images.start}`});
+			},
+			setter:(xml)=>{
+				xml.setRequestHeader('content-type','application/json');
 			}
 		})
 	}
@@ -2504,7 +2531,8 @@ const StreamCreationC = connect((state)=>({
 	images: state.images.streamCreate,
 	lang: state.language,
 	appReachable: state.appReachable,
-	isStreaming: state.isStreaming
+	isStreaming: state.isStreaming,
+	songName: state.currentSong.name
 
 }),{ changeStreamCreateView: Action.changeStreamCreateView})(StreamCreation);
 
@@ -2616,9 +2644,11 @@ class StreamList extends React.Component{
 
 	updateStream(t){
 		let text = this.text;
-		let { lang } = this.props;
+		let { lang } = this.props,
+		lastTime = t || 0;
+
 		fetcher({
-			url:`/stream/list${(t)? '?t='+t:''}`,
+			url:`/stream/?action=getAll&${filters.lastTime}=${lastTime}`,
 			s:({action, streams,timestamp,name})=>{
 				let myStream = S.getName();
 				if(!timestamp && t)
@@ -2685,7 +2715,7 @@ class StreamList extends React.Component{
 
 	downloadSong(catName,songName,streamName){
 		let downloadSong = this.downloadSong;
-		let url = `stream/downloadSong?c=${catName}&s=${songName}&n=${streamName}`;
+		let url = `stream/song?action=download&${stF.name}=${streamName}`;
 		if(downloadSong.inFetch[url])
 			return;
 		let props = this.props;
@@ -2703,7 +2733,7 @@ class StreamList extends React.Component{
 						notifier2.addSpeed(this.listText.songDeleted(lang,songName));
 						break;
 					case SUB.ADD:
-						let { catName, songName, Verses } = response.payload,
+						let { catName, songName, verses } = response.payload,
 						newCatId = null;
 						if(!fastAccess[catName]){
 							newCatId = this.props.newCatId
@@ -2713,7 +2743,7 @@ class StreamList extends React.Component{
 						else{
 							newCatId = fastAccess[catName].id;
 						}
-						props.addSong(0,songName, newCatId, Verses, 'online');
+						props.addSong(0,songName, newCatId, verses, 'online');
 						notifier2.addSpeed(this.listText.songInserted(lang,catName,songName));
 
 						if(this.streamCatName.toLowerCase() == catName.toLowerCase() && this.streamSongName.toLowerCase() == songName.toLowerCase()){
@@ -2752,9 +2782,9 @@ class StreamList extends React.Component{
 		}
 	}
 
-	subscribe(streamName,update){
+	subscribe(streamName,update, past={}){
 		let props = this.props;
-		let url = `stream/subscribe?n=${streamName}${(update)? "&u="+update:""}`;
+		let url = `stream/subscribe?${stF.name}=${streamName}${(update)? `&${stq.updating}=true`:""}`;
 		fetcher({
 					url,
 					setter: (xml)=>{
@@ -2766,7 +2796,9 @@ class StreamList extends React.Component{
 					s: (response)=>{
 						if(response){
 							try{
-								let { catName, songName, position } = response,
+								let catName = response[stF.catName] || past[stF.catName],
+								songName = response[stF.songName] || past[stF.songName],
+								position = response[stF.index],
 								songNameL = songName && songName.toUpperCase(),
 								subscribeMethod = this.subscribe,
 								registration = subscribeMethod.registration,
@@ -2815,7 +2847,7 @@ class StreamList extends React.Component{
 										if(!update){
 											notifier2.addSpeed(subscriptionSuccess(lang,streamName))
 										}
-										if(!response.songName || !response.catName){
+										if(!songName || !catName){
 
 										}
 										else if(!fastAccessCatName || (songNotInOnlineCat && songNotInOfflineCat)){
@@ -2830,7 +2862,7 @@ class StreamList extends React.Component{
 										this.updateCurrentStreamInfo(catName, songName, position);
 
 
-										this.subscribe(streamName,true);
+										this.subscribe(streamName,true, { [stF.songName]: songName, [stF.catName]:catName });
 										break;
 
 									case SUB.UNSUBSCRIBE:
@@ -2948,7 +2980,7 @@ class Content extends React.Component{
 		this.Text = context.Favorite;
 		this.storageHandler = storageHandler();
 		this.scrollHandler = scrollHandler.bind(this);
-		this.state = { Verses:[], currentCatName:"", index:0, currentSongName:"", initialIndex:""};
+		this.state = { verses:[], currentCatName:"", index:0, currentSongName:"", initialIndex:""};
 		this.goToVerse = this.goToVerse.bind(this);
 		this.clickHandler = this.clickHandler.bind(this);
 		this.initialVerseIndex;
@@ -2989,7 +3021,7 @@ class Content extends React.Component{
 
 		if(initialIndex !== propIndex || currentCatName != stateCurrentCatName || currentSongName != stateCurrentSongName){
 			return {
-				Verses: props.song.Verses,
+				verses: props.song.verses,
 				currentCatName,
 				index: propIndex,
 				currentSongName,
@@ -3070,7 +3102,7 @@ class Content extends React.Component{
 	}
 
 	clickHandler(event){
-		let { currentCatName, currentSongName, Verses } = this.state,
+		let { currentCatName, currentSongName, verses } = this.state,
 		props = this.props,
 		catId = props.currentCat.id,
 		{ isFavorite, lang, addToFavorite, removeFromFavorite, song } = props;
@@ -3094,9 +3126,9 @@ class Content extends React.Component{
 
 	render(){
 		this.initTime = Date.now();
-		let { Verses, currentCatName, index } = this.state;
+		let { verses, currentCatName, index } = this.state;
 		let props = this.props;
-		let currentVerse = (Verses[index] && Verses[index].Text) || "";
+		let currentVerse = (verses[index] && verses[index].Text) || "";
 		let catName = currentCatName;//props.currentCat.name;
 		let songName = props.song.name;
 		let location = props.song.location;
@@ -3108,7 +3140,7 @@ class Content extends React.Component{
 			event.preventDefault(); 
 			event.stopPropagation(); 
 			(!props.isFavorite)? 
-				self.addToFavorite(catName, songName, Verses, location, lang, props.addToFavorite, notifier2) : 
+				self.addToFavorite(catName, songName, verses, location, lang, props.addToFavorite, notifier2) : 
 				self.removeFromFavorite(catName,songName,lang, props.removeFromFavorite, notifier2) 
 		}
 
@@ -3124,8 +3156,8 @@ class Content extends React.Component{
 						<p>{currentVerse}</p>
 					</div>
 				</div><br/>
-				<ArrowNav index={index} catName={currentCatName} songName={songName} total={Math.max(0,Verses.length -1)} images={props.images.arrows} goToVerse={this.goToVerse} />
-				<NavHelper goToVerse={this.goToVerse} currentIndex={index} catName={currentCatName} songName={songName} length={Verses.length} />
+				<ArrowNav index={index} catName={currentCatName} songName={songName} total={Math.max(0,verses.length -1)} images={props.images.arrows} goToVerse={this.goToVerse} />
+				<NavHelper goToVerse={this.goToVerse} currentIndex={index} catName={currentCatName} songName={songName} length={verses.length} />
 			</>
 
 			)
@@ -3324,7 +3356,7 @@ class PopUp extends React.Component{
 
 const PopUpWrapper = connect((state)=>{
 	return {
-		VersesDiv: state.ui.addSongDiv.Verses,
+		VersesDiv: state.ui.addSongDiv.verses,
 		subscribedToStream: state.subscribedToStream,
 		addCatView: state.ui.show.addCatDiv,
 		addSongView: state.ui.show.addSongDiv,

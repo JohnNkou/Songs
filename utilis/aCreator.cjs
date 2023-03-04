@@ -9,12 +9,12 @@ exports.clearOnlineCat = (name)=>({
 	type: C.CLEAR_ONLINE_CAT,
 	name
 })
-exports.addSong = (id,name,catId,Verses,location='offline')=>({
+exports.addSong = (id,name,catId,verses,location='offline')=>({
 	type: C.ADD_SONG,
 	id,
 	name,
 	catId,
-	Verses,
+	verses,
 	location
 })
 exports.addSongs = (songs,catId,location='online')=>({
@@ -43,12 +43,12 @@ exports.startStreamFromLocal = (name,fetcher)=>{
 		})
 	})
 }
-exports.updateSong = (id,catId,name,Verses,location='offline',oldName)=>({
+exports.updateSong = (id,catId,name,verses,location='offline',oldName)=>({
 	type: C.UPDATE_SONG,
 	id,
 	catId,
 	name,
-	Verses,
+	verses,
 	location,
 	oldName
 })

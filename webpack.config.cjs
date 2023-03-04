@@ -35,6 +35,5 @@ module.exports = (env)=> ({
 	},
 	plugins:[
 		 new Failer()
-	],
-	watch:true
+	]
 })

@@ -177,7 +177,7 @@ const Content = ({images, updateForced, lang, removeFromFavorite, currentCat, ad
 })
 
 const ArrowNav = ({images,  song, currentCat, VerseIndex, changeIndex})=>({
-	 total: song.Verses.length -1,
+	 total: song.verses.length -1,
 	 catName: currentCat.name,
 	 songName: song.name,
 	 current: VerseIndex,
@@ -264,7 +264,7 @@ const Favorite = ({favListView, images, countFav, setCurrentSong, setCurrentCat,
 
 const NavHelper = ({ changeIndex, song, VerseIndex, currentCat})=>({
 	 changeIndex,
-	 Verses: (song.name && song.Verses.length) || 0,
+	 verses: (song.name && song.verses.length) || 0,
 	 current: VerseIndex,
 	 catName: currentCat.name,
 	 songName: song.name
