@@ -37,10 +37,6 @@ export const app = express();
 //console = fConsole;
 
 const root = process.env.ROOT;
-const options = {
-	key:fs.readFileSync(root+'/certs/key.pem'),
-	cert: fs.readFileSync(root+'/certs/cert.pem')
-}
 
 export const streamWaiter = {};
 export const streamSubscribers = {};
