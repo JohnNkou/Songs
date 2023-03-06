@@ -4,11 +4,6 @@ import { sequencer } from '../utilis/devHelper.js'
 import { dev } from '../utilis/constant.cjs'
 import { Console } from 'console'
 
-export const fConsole = Console({
-	stdout: fs.createWriteStream(dev.LOG_FILE),
-	stderr: fs.createWriteStream(dev.ERROR_LOG_FILE)
-})
-
 export function watchHelper(file){
 	fs.watchFile(file,(curr,prev)=>{
 		if(curr.mtime != prev.mtime){

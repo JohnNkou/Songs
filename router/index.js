@@ -2,7 +2,6 @@ import minimize  from 'minimize';
 import mysql from 'mysql'
 import { SUB } from '../utilis/BrowserDb.cjs'
 import { spawn, fork } from 'child_process'
-import { fConsole } from './dev.js';
 import db from '../utilis/dbClass.js';
 import { check,validator,transformer } from '../utilis/dev_utilis.js'
 import messages from '../utilis/message.cjs';
