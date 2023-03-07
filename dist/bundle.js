@@ -42382,7 +42382,8 @@ var config = function () {
     N = 'Number',
     Gt = 'GreaterThan',
     Ne = 'NotEmpty',
-    Ia = 'IsAlphaNumeric';
+    Ia = 'IsAlphaNumeric',
+    Hvsn = "hasValidSongName";
   return {
     table: {
       cat: cat,
@@ -42417,7 +42418,7 @@ var config = function () {
             error: errorMessage.type(sF.name, S)
           }], [Ne, {
             error: errorMessage.empty(sF.name)
-          }], [Ia, {
+          }], [Hvsn, {
             error: errorMessage.notAlphaNumeric(sF.name)
           }]]
         },
@@ -42461,7 +42462,7 @@ var config = function () {
             error: errorMessage.type(stF.songName, S)
           }], [Ne, {
             error: errorMessage.empty(stF.songName)
-          }], [Ia, {
+          }], [Hvsn, {
             error: errorMessage.notAlphaNumeric(stF.songName)
           }]]
         },

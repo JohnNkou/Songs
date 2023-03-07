@@ -577,6 +577,7 @@ input{
 	margin-bottom: 30px;
 	font-family: "Chalkboard SE";
 	font-size:1.8em;
+	text-transform: uppercase;;
 }
 #content p{
 	font-size: 1.7em;
