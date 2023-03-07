@@ -38,7 +38,8 @@ export async function addCatId(cats,songs){
 	}
 }
 export function validator(is){
-	let alfaNumPattern = /^[a-z0-9\s'"-_]+$/i,
+	let alfaNumPattern = /^[a-z0-9\sàèéôö'"-_]+$/i,
+	songNamePattern = /^[a-z0-9\s'"_èéàô!îï:ç(),\-?#.Œ–]+$/i,
 	mailPattern = /^[a-zA-Z][\d\w_]*@[\d\w_-]+(\.[^.\W]+)+$/i,
 	toString = (x)=> Object.prototype.toString.call(x);
 
@@ -102,6 +103,9 @@ export function validator(is){
 	}
 	this.ArrayOfAlphaNumeric = (data)=>{
 		return this.Array(data) && data.every((d)=> this.IsAlphaNumeric(d));
+	}
+	this.hasValidSongName = (data)=>{
+		return songNamePattern.test(data);
 	}
 	this.MatchExpression = (data,express)=>{
 		return express.test(data);

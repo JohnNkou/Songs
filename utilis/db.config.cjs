@@ -173,7 +173,8 @@ const config = (function(){
 	N = 'Number',
 	Gt = 'GreaterThan',
 	Ne = 'NotEmpty',
-	Ia = 'IsAlphaNumeric';
+	Ia = 'IsAlphaNumeric',
+	Hvsn = "hasValidSongName";
 
 	return {
 		table:{
@@ -218,7 +219,7 @@ const config = (function(){
 								[Ne,{
 									error: errorMessage.empty(sF.name)
 								}],
-								[Ia,{
+								[Hvsn,{
 									error: errorMessage.notAlphaNumeric(sF.name)
 								}]
 							]
@@ -280,7 +281,7 @@ const config = (function(){
 								[Ne,{
 									error: errorMessage.empty(stF.songName)
 								}],
-								[Ia,{
+								[Hvsn,{
 									error: errorMessage.notAlphaNumeric(stF.songName)
 								}]
 							]
