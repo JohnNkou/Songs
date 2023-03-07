@@ -13,8 +13,6 @@ import { System } from '../utilis/constant.cjs'
 import { saveUiInfo, checkReachability, timeAction, logAction, myThunk, ManageFastAccess } from '../middleware/index.js';
 import config from '../utilis/db.config.cjs';
 
-
-console.log('config',config);
 window.mountNotifier = {};
 window.onerror = (e)=>{
 	console.error("window error",e);
@@ -34,7 +32,7 @@ let storeData = serverData;
 let fAccess = {};
 let ManageFastAccessCurried = curry(ManageFastAccess)(fAccess);
 
-let store = createStore(Reducer,storeData,applyMiddleware(myThunk,ManageFastAccessCurried,timeWithFunction,checkReachability,saveUiInfoCurried,logAction));
+let store = createStore(Reducer,storeData,applyMiddleware(myThunk,ManageFastAccessCurried,checkReachability,saveUiInfoCurried,logAction));
 
 let localData = getLocalData(dbChooser,store,Action);
 
