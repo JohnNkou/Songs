@@ -39705,12 +39705,11 @@ function getLocalData(dbC, store, _ref2) {
       return new Promise(function (resolve) {
         categories.forEach(function (cat, id) {
           try {
-            var catId = cat.id;
-            store.dispatch(addCategorie(cat.name, catId));
-            fastLookUp[cat.name] = {};
-            db.getAllSongs({
-              'catId': catId
-            })().then(function (songs) {
+            var catName = cat.name,
+              catId = id;
+            store.dispatch(addCategorie(catName));
+            fastLookUp[catName] = {};
+            db.getAllSongs(catName)().then(function (songs) {
               songs = songs.map(function (song) {
                 delete song.cat;
                 fastLookUp[cat.name][song.name] = true;
@@ -42375,7 +42374,7 @@ var config = function () {
       }],
       ProvisionedThroughput: {
         ReadCapacityUnits: 1,
-        WriteCapacityUnits: 1
+        WriteCapacityUnits: 20
       }
     },
     catdef = {
@@ -43286,8 +43285,9 @@ var fastAccessAction = function () {
     var id = action.id,
       catId = action.catId,
       name = action.name,
+      location = action.location,
       catName = state.Categories[catId],
-      songName = state["".concat(location, "Songs")][catId][id].toUpperCase();
+      songName = state["".concat(location, "Songs")][catId][id].name.toUpperCase();
     delete fastAccess[catName][location][songName];
   }
   function addC(action, fastAccess, state) {
@@ -43416,7 +43416,6 @@ function logAction(_ref8) {
   return function (next) {
     return function (action) {
       next(action);
-      console.log(action);
     };
   };
 }
@@ -46630,7 +46629,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-console.log('config', (_utilis_db_config_cjs__WEBPACK_IMPORTED_MODULE_12___default()));
 window.mountNotifier = {};
 window.onerror = function (e) {
   console.error("window error", e);
@@ -46645,7 +46643,7 @@ var serverData = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_7__.getStoreD
 var storeData = serverData;
 var fAccess = {};
 var ManageFastAccessCurried = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_7__.curry)(_middleware_index_js__WEBPACK_IMPORTED_MODULE_11__.ManageFastAccess)(fAccess);
-var store = (0,redux__WEBPACK_IMPORTED_MODULE_13__.createStore)(_utilis_newReducer_cjs__WEBPACK_IMPORTED_MODULE_4__.Reducer, storeData, (0,redux__WEBPACK_IMPORTED_MODULE_13__.applyMiddleware)(_middleware_index_js__WEBPACK_IMPORTED_MODULE_11__.myThunk, ManageFastAccessCurried, timeWithFunction, _middleware_index_js__WEBPACK_IMPORTED_MODULE_11__.checkReachability, saveUiInfoCurried, _middleware_index_js__WEBPACK_IMPORTED_MODULE_11__.logAction));
+var store = (0,redux__WEBPACK_IMPORTED_MODULE_13__.createStore)(_utilis_newReducer_cjs__WEBPACK_IMPORTED_MODULE_4__.Reducer, storeData, (0,redux__WEBPACK_IMPORTED_MODULE_13__.applyMiddleware)(_middleware_index_js__WEBPACK_IMPORTED_MODULE_11__.myThunk, ManageFastAccessCurried, _middleware_index_js__WEBPACK_IMPORTED_MODULE_11__.checkReachability, saveUiInfoCurried, _middleware_index_js__WEBPACK_IMPORTED_MODULE_11__.logAction));
 var localData = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_7__.getLocalData)(_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_7__.dbChooser, store, _utilis_aCreator_cjs__WEBPACK_IMPORTED_MODULE_5__);
 var fastAccess = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_7__.getRemoteData)(store, _utilis_songLoader_js__WEBPACK_IMPORTED_MODULE_6__["default"], localData);
 fastAccess.then(function () {
