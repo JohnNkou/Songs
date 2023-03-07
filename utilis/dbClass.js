@@ -1,5 +1,5 @@
 import { client, clientD } from './db.js';
-import { CreateTableCommand, DeleteTableCommand } from '@aws-sdk/client-dynamodb';
+import { CreateTableCommand, DeleteTableCommand, DescribeTableCommand } from '@aws-sdk/client-dynamodb';
 import { nanoid } from 'nanoid';
 import { PutCommand, UpdateCommand, DeleteCommand, GetCommand, ScanCommand, TransactWriteCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import config from './db.config.cjs';
@@ -42,42 +42,91 @@ function d({client,clientD}){
 			error
 		}
 	}
+	async function tableInitializationHandler(status,TableName){
+		let c, n = 10,r;
+
+		switch(status){
+			case 'ACTIVE':
+				return true;
+			case 'CREATING':
+				return await new Promise((resolve,reject)=>{
+					c = setInterval(async ()=>{
+						r = await client.send(new DescribeTableCommand({TableName}));
+
+						if(r.Table.TableStatus == 'ACTIVE'){
+							clearInterval(c);
+							return resolve(true);
+						}
+						if(!n--){
+							clearInterval(c);
+							return reject("Maximum time waiting for "+TableName+" creation exceeded");
+						}
+						console.log("Left retrying",n);
+					},5000)
+				});
+				break;
+			default:
+				throw Error("Unwanted table status for table "+TableName+" :"+status);
+		}
+	}
 	this.initialized = Promise.resolve(false);
 	this.initAll = async ()=>{
-		await Promise.all([this.initCategorie(),this.initSong(), this.initStream()]);
+		try{
+			let response = await Promise.all([this.initCategorie(),this.initSong(), this.initStream()]);
+			console.log("Initialized",response);
+			return {
+				initialized:true,
+				response
+			}
+		}
+		catch(e){
+			return {
+				initialized:false,
+				error:e
+			}
+		}
 	}
 	this.initCategorie = async ()=>{
 		try{
-			await client.send(new CreateTableCommand(catdef));
+			let r = await client.send(new CreateTableCommand(catdef)),
+			tableStatus = r.TableDescription.TableStatus;
+
+			return tableInitializationHandler(tableStatus, cTableName);
 		}
 		catch(e){
 			if(e.name == 'ResourceInUseException'){
 				console.log(e.name,"Throwed as initCategorie");
-				return;
+				return false;
 			}
 			throw e;
 		}
 	}
 	this.initSong = async ()=>{
 		try{
-			await client.send(new CreateTableCommand(songdef));	
+			let r = await client.send(new CreateTableCommand(songdef)),
+			tableStatus = r.TableDescription.TableStatus;
+
+			return tableInitializationHandler(tableStatus,sTableName);
 		}
 		catch(e){
 			if(e.name == 'ResourceInUseException'){
 				console.log(e.name,"Throwed as initSong");
-				return;
+				return false;
 			}
 			throw e;
 		}
 	}
 	this.initStream = async ()=>{
 		try{
-			await client.send(new CreateTableCommand(streamdef));
+			let r = await client.send(new CreateTableCommand(streamdef)),
+			tableStatus = r.TableDescription.TableStatus;
+
+			return tableInitializationHandler(tableStatus,stTableName);
 		}
 		catch(e){
 			if(e.name == 'ResourceInUseException'){
 				console.log(e.name,"Throw at initStream");
-				return;
+				return false;
 			}
 			throw e;
 		}
