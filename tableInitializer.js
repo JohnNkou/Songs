@@ -13,24 +13,28 @@ song,
 catId = nanoid(),
 inserted = 0;
 
-await db.dropAll();
-await db.initAll();
+try{
+	await db.addCategorie({[cF.name]:'cantique', [cF.id]: catId});
 
-await db.addCategorie({[cF.name]:'categorie', [cF.id]:catId});
-
-while(songLength--){
-	song = songs[songLength];
-	if(song.Text){
-		try{
-			await db.addSong({ [sF.name]: song.Text, [sF.verses]: song.Verses, [sF.catId]: catId });
-			inserted++;
-		}
-		catch(e){
-			console.log(e.code, e.name);
-			console.log(e.message);
-			console.log("Couldn't insert song", song.Text);
+	while(songLength--){
+		song = songs[songLength];
+		if(song.Text){
+			console.log("Inserting",song.Text);
+			try{
+				await db.addSong({ [sF.name]: song.Text, [sF.verses]: song.Verses, [sF.catId]: catId });
+				inserted++;
+			}
+			catch(e){
+				console.log(e.code, e.name);
+				console.log(e.message);
+				console.log("Couldn't insert song", song.Text);
+			}
 		}
 	}
-}
 
-console.log(inserted,"song inserted");
+	console.log(inserted,"song inserted");
+}
+catch(e){
+	console.log("BORD");
+	console.log(e.message);
+}

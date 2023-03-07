@@ -113,7 +113,7 @@ const config = (function(){
 		],
 		ProvisionedThroughput:{
 			ReadCapacityUnits:1,
-			WriteCapacityUnits:1
+			WriteCapacityUnits:20
 		}
 	},
 	catdef = {
