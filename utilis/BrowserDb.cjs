@@ -746,12 +746,13 @@ function getLocalData(dbC,store,{addSong,addCategorie,addSongs}){
 				
 				categories.forEach((cat,id)=>{
 					try{
-						let catId = cat.id;
+						let catName = cat.name,
+						catId = id;
 
-						store.dispatch(addCategorie(cat.name,catId));
-						fastLookUp[cat.name] = {};
+						store.dispatch(addCategorie(catName));
+						fastLookUp[catName] = {};
 
-						db.getAllSongs({'catId':catId})().then((songs)=>{
+						db.getAllSongs(catName)().then((songs)=>{
 							songs = songs.map((song)=>{
 								delete song.cat;
 								fastLookUp[cat.name][song.name] = true;
@@ -761,7 +762,7 @@ function getLocalData(dbC,store,{addSong,addCategorie,addSongs}){
 								return song;
 							});
 
-							store.dispatch(addSongs(songs, catId,'offline'))
+							store.dispatch(addSongs(songs,catId,'offline'))
 
 							if(id == catLength)
 								resolve({data:store.getState(),fastLookUp});

@@ -44,9 +44,9 @@ const fastAccessAction = (
 			fastAccess[catName][location][name] = old;
 		}
 		function rmS(action,fastAccess,state){
-			let { id,catId,name } = action,
+			let { id,catId,name,location } = action,
 			catName = state.Categories[catId],
-			songName = state[`${location}Songs`][catId][id].toUpperCase();
+			songName = state[`${location}Songs`][catId][id].name.toUpperCase();
 
 			delete fastAccess[catName][location][songName];
 
@@ -177,6 +177,5 @@ export function myThunk({getState,dispatch}){
 export function logAction({getState,dispatch}){
 	return next => action =>{
 		next(action);
-		console.log(action);
 	}
 }

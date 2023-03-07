@@ -2,15 +2,13 @@ import fs from 'fs';
 import { is } from './BrowserDb.cjs';
 
 export default (store)=>{
-	return (req,res)=>{ console.log("store",store);
+	return (req,res)=>{
 		let {c,l} = req.query,
 		Categories = store.Categories,
 		onlineSongs = store.onlineSongs,
 		catId = Categories.indexOf(c),
 		songs = onlineSongs[catId],
 		songsLength = songs.length;
-
-		console.log("songs length",songs.length,l);
 
 		l = parseInt(l);
 		if(catId == -1 || !is.Number(l)){
