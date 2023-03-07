@@ -1534,13 +1534,6 @@ const CatTogglerC = connect((state)=>({
 
 
 const Head1 = (props)=>{
-
-	function clickHandler(event){
-		event.preventDefault();
-		event.stopPropagation();
-		props.changeCatListView(!props.catListView);
-	}
-
 	return (
 		<div className="head">
 			<CatTogglerC />
@@ -4012,7 +4005,7 @@ export class App extends React.Component{
 	render(){
 		let {showGuide} = this.state;
 		let { step, lang, direction, streamManager,fAccess } = this.props;
-		
+
 		return (
 			<ErrorBoundary>
 				<SetupC streamManager={streamManager} fAccess={fAccess} fastAccess={this.props.fastAccess} />
