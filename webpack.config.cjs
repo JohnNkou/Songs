@@ -1,12 +1,13 @@
-const TerserPlugin = require('terser-webpack-plugin')
-const Failer = require('./Plugins/failedCompile.cjs');
-const webpack = require('webpack');
-const { execSync } = require('child_process');
+const TerserPlugin = require('terser-webpack-plugin'),
+Failer = require('./Plugins/failedCompile.cjs'),
+webpack = require('webpack'),
+{ execSync } = require('child_process'),
+env = process.env;
 
-process.env.os = execSync('uname').toString().replace('\n','');
+env.os = execSync('uname').toString().replace('\n','');
 
-module.exports = (env)=> ({
-	mode:env.mode || 'development',
+module.exports = ()=> ({
+	mode: env.NODE_ENV || 'development',
 	devtool: 'source-map',
 	entry:{
 		filename:"./client/index.jsx"
