@@ -442,7 +442,6 @@ class OnlineSongs extends React.Component{
 	}
 
 	componentDidMount(){
-		//n('OnlineSongs',this.initTime,'Mount');
 		let c = setInterval(()=>{
 			this.node = document.querySelector("#online .papa");
 			if(this.node)
@@ -622,10 +621,6 @@ class OfflineSongs extends React.Component{
 		this.manageShowing = this.manageShowing.bind(this);
 		this.initTime = Date.now();
 
-	}
-
-	componentDidMount(){
-		//n('OfflineSong',this.initTime,'Mount');
 	}
 
 	componentDidUpdate(){
@@ -1466,10 +1461,6 @@ class Second extends React.Component{
 		this.initTime = Date.now();
 	}
 
-	componentDidMount(){
-		//n('Second',this.initTime,'Mount');
-	}
-
 	shouldComponentUpdate(){
 		return true;
 	}
@@ -1588,7 +1579,6 @@ class Input extends React.Component{
 				}
 			}
 		}
-		//n('Input',this.initTime,'Mount');
 	}
 	search(term){
 		this.props.searchSong(term);
@@ -2046,8 +2036,6 @@ class SongList extends React.Component{
 		}
 
 		this.listDiv.onscroll = this.addMoreSong;
-
-		n('SongList',this.initTime,'Mount');
 	}
 	shouldComponentUpdate(nextProps,nextState){
 		let props = this.props;
@@ -2990,7 +2978,6 @@ class Content extends React.Component{
 	componentDidMount(){
 		this.listDiv = document.getElementById("content");
 		this.papa = document.querySelector("#content .papa");
-		//n('Content',this.initTime,undefined,2);
 	}
 
 	shouldComponentUpdate(nextProps,nextState){
@@ -3055,9 +3042,6 @@ class Content extends React.Component{
 		else if(listHeight > papaHeight && listDiv.ontouchmove){
 			delete listDiv.ontouchmove;
 		}
-
-		//n('Content',this.initTime);
-		//n('Content',this.initTime,undefined,2);
 	}
 
 	addToFavorite(catName,catId,songName,songId,location,lang,fn,notify){
@@ -4012,7 +3996,6 @@ export class App extends React.Component{
 
 	componentDidMount(){
 		window.addEventListener('keydown',this.keyRecorder);
-		//n('App',this.initTime,'Mount');
 	}
 
 	keyRecorder(event){
@@ -4029,8 +4012,7 @@ export class App extends React.Component{
 	render(){
 		let {showGuide} = this.state;
 		let { step, lang, direction, streamManager,fAccess } = this.props;
-
-		console.log("direction",direction);
+		
 		return (
 			<ErrorBoundary>
 				<SetupC streamManager={streamManager} fAccess={fAccess} fastAccess={this.props.fastAccess} />
@@ -4045,25 +4027,6 @@ export class App extends React.Component{
 			)
 	}
 }
-
-class Nothing extends React.Component{
-	constructor(props){
-		super(props);
-		this.initTime = Date.now();
-	}
-
-	componentDidMount(){
-		n('Nothing',this.initTime,'Mount')
-	}
-
-	render(){
-		return <div>
-			<p>Maman</p>
-		</div>
-	}
-}
-
-
 
 class DevTool extends React.PureComponent{
 	constructor(props){

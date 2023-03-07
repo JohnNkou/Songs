@@ -554,7 +554,6 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component4) {
     key: "componentDidMount",
     value: function componentDidMount() {
       var _this6 = this;
-      //n('OnlineSongs',this.initTime,'Mount');
       var c = setInterval(function () {
         _this6.node = document.querySelector("#online .papa");
         if (_this6.node) clearInterval(c);
@@ -768,11 +767,6 @@ var OfflineSongs = /*#__PURE__*/function (_React$Component5) {
     return _this8;
   }
   _createClass(OfflineSongs, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      //n('OfflineSong',this.initTime,'Mount');
-    }
-  }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
       invoqueAfterMount('offline');
@@ -1918,11 +1912,6 @@ var Second = /*#__PURE__*/function (_React$Component9) {
     return _this20;
   }
   _createClass(Second, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      //n('Second',this.initTime,'Mount');
-    }
-  }, {
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate() {
       return true;
@@ -2053,7 +2042,6 @@ var Input = /*#__PURE__*/function (_React$Component11) {
           }
         };
       }
-      //n('Input',this.initTime,'Mount');
     }
   }, {
     key: "search",
@@ -2694,7 +2682,6 @@ var SongList = /*#__PURE__*/function (_React$Component16) {
         };
       }
       this.listDiv.onscroll = this.addMoreSong;
-      n('SongList', this.initTime, 'Mount');
     }
   }, {
     key: "shouldComponentUpdate",
@@ -3793,7 +3780,6 @@ var Content = /*#__PURE__*/function (_React$Component19) {
     value: function componentDidMount() {
       this.listDiv = document.getElementById("content");
       this.papa = document.querySelector("#content .papa");
-      //n('Content',this.initTime,undefined,2);
     }
   }, {
     key: "shouldComponentUpdate",
@@ -3835,9 +3821,6 @@ var Content = /*#__PURE__*/function (_React$Component19) {
       } else if (listHeight > papaHeight && listDiv.ontouchmove) {
         delete listDiv.ontouchmove;
       }
-
-      //n('Content',this.initTime);
-      //n('Content',this.initTime,undefined,2);
     }
   }, {
     key: "addToFavorite",
@@ -5018,7 +5001,6 @@ var App = /*#__PURE__*/function (_React$Component25) {
     key: "componentDidMount",
     value: function componentDidMount() {
       window.addEventListener('keydown', this.keyRecorder);
-      //n('App',this.initTime,'Mount');
     }
   }, {
     key: "keyRecorder",
@@ -5039,7 +5021,6 @@ var App = /*#__PURE__*/function (_React$Component25) {
         direction = _this$props44.direction,
         streamManager = _this$props44.streamManager,
         fAccess = _this$props44.fAccess;
-      console.log("direction", direction);
       return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(ErrorBoundary, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(SetupC, {
         streamManager: streamManager,
         fAccess: fAccess,
@@ -5058,46 +5039,23 @@ var App = /*#__PURE__*/function (_React$Component25) {
   }]);
   return App;
 }(react__WEBPACK_IMPORTED_MODULE_0__.Component);
-var Nothing = /*#__PURE__*/function (_React$Component26) {
-  _inherits(Nothing, _React$Component26);
-  var _super35 = _createSuper(Nothing);
-  function Nothing(props) {
-    var _this68;
-    _classCallCheck(this, Nothing);
-    _this68 = _super35.call(this, props);
-    _this68.initTime = Date.now();
-    return _this68;
-  }
-  _createClass(Nothing, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      n('Nothing', this.initTime, 'Mount');
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("p", null, "Maman"));
-    }
-  }]);
-  return Nothing;
-}(react__WEBPACK_IMPORTED_MODULE_0__.Component);
 var DevTool = /*#__PURE__*/function (_React$PureComponent10) {
   _inherits(DevTool, _React$PureComponent10);
-  var _super36 = _createSuper(DevTool);
+  var _super35 = _createSuper(DevTool);
   function DevTool(props) {
-    var _this69;
+    var _this68;
     _classCallCheck(this, DevTool);
-    _this69 = _super36.call(this, props);
-    _this69.log = _this69.log.bind(_assertThisInitialized(_this69));
-    _this69.appendText = _this69.appendText.bind(_assertThisInitialized(_this69));
-    _this69.log = _this69.log.bind(_assertThisInitialized(_this69));
-    _this69.scrollHandler = scrollHandler.bind(_assertThisInitialized(_this69));
-    return _this69;
+    _this68 = _super35.call(this, props);
+    _this68.log = _this68.log.bind(_assertThisInitialized(_this68));
+    _this68.appendText = _this68.appendText.bind(_assertThisInitialized(_this68));
+    _this68.log = _this68.log.bind(_assertThisInitialized(_this68));
+    _this68.scrollHandler = scrollHandler.bind(_assertThisInitialized(_this68));
+    return _this68;
   }
   _createClass(DevTool, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this70 = this;
+      var _this69 = this;
       this.node = document.getElementById("devTool");
       if (window.innerWidth < 450) {
         var self = this;
@@ -5111,7 +5069,7 @@ var DevTool = /*#__PURE__*/function (_React$PureComponent10) {
       var trackedTouchs = [];
       this.node.ontouchmove = function (event) {
         try {
-          _this70.scrollHandler(_this70.node, event, trackedTouchs);
+          _this69.scrollHandler(_this69.node, event, trackedTouchs);
         } catch (e) {
           console.error(e);
         }
