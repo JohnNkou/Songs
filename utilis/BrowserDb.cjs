@@ -2468,6 +2468,18 @@ exports.documentTree = {
 			{
 				name: "viewport",
 				content: "width=device-width, initial-scale=1.0"
+			},
+			{
+				name:'application-name',
+				content:'songA'
+			},
+			{
+				name:'author',
+				content:'Abel Kashoba'
+			},
+			{
+				name:'description',
+				content:'Want to share your lyrics with people, or stream your lyrics so other people can see it in real time, SongA allow you to do just that. You can create your songs, stream them and allow other user to download your lyrics. Dive right in to see'
 			}
 		],
 		links:[
