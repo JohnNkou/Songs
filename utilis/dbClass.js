@@ -636,6 +636,7 @@ function d({client,clientD}){
 	this.dropAll = async ()=>{
 		await Promise.all([this.dropCategorie(), this.dropSong(), this.dropStream()]);
 	}
+	this.end = ()=> client.destroy();
 	
 	this.initialized = this.initAll();
 }
