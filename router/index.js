@@ -227,6 +227,8 @@ export async function PopulateCategoriesAndSongs(store){
 			})
 			i++;
 		}
+	}).catch((e)=>{
+		console.error("Coudn't populate the Categories and Songs",e);
 	})
 }
 

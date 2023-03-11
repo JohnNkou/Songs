@@ -1,4 +1,4 @@
-import { client, clientD } from './db.js';
+import options from './db.js';
 import { CreateTableCommand, DeleteTableCommand, DescribeTableCommand } from '@aws-sdk/client-dynamodb';
 import { nanoid } from 'nanoid';
 import { PutCommand, UpdateCommand, DeleteCommand, GetCommand, ScanCommand, TransactWriteCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
@@ -15,7 +15,9 @@ fil = config.filters,
 testing = process.env.NODE_ENV == 'test';
 
 
-function d({client,clientD}){
+function d({getClient,getClientD}){
+	let client = getClient(),
+	clientD = getClientD(client);
 
 	function addResponse(error=null){
 		return {
@@ -68,6 +70,10 @@ function d({client,clientD}){
 			default:
 				throw Error("Unwanted table status for table "+TableName+" :"+status);
 		}
+	}
+	this.newClient = ({getClient,getClientD})=>{
+		client = getClient();
+		clientD = getClientD(client);
 	}
 	this.initialized = Promise.resolve(false);
 	this.initAll = async ()=>{
@@ -638,18 +644,9 @@ function d({client,clientD}){
 	}
 	this.end = ()=> client.destroy();
 	
-	this.initialized = this.initAll();
+	this.initialized = this.initAll()
 }
 
-const e = new d({client,clientD});
-
-//await e.dropAll();
-
-/*
-let id = nanoid();
-await e.addCategorie({ [cF.name]:'cantique', [cF.id]:id });
-await e.addSong({ [sF.name]:'A la croix', [sF.verses]:['Au pied du maitre', 'A genoux je fait mon choix'], [sF.catId]:id });
-await e.addSong({ [sF.name]:'Pour toujour', [sF.verses]:['sa semence en moi c','Et pourquoi je serai toujour en pluriel'], [sF.catId]:id })
-//*/
+const e = new d(options);
 
 export default e;

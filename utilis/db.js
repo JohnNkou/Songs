@@ -4,5 +4,11 @@ import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 const dynamoEndpoint = process.env.DYNAMODB_ENDPOINT,
 endpoint = (dynamoEndpoint)? `https://${dynamoEndpoint}`:'http://localhost:8000';
 
-export const client = new DynamoDBClient({ region:'us-east-1', endpoint });
-export const clientD = DynamoDBDocumentClient.from(client);
+const options = {
+	getClient:()=> new DynamoDBClient({ region:'us-east-1', endpoint})
+	,
+	getClientD:(client)=> DynamoDBDocumentClient.from(client)
+	
+};
+
+export default options
