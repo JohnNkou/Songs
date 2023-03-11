@@ -15,23 +15,6 @@ import { streamFileName, lineTermination } from './db/data.js'
 global.alert = ()=>{};
 global.localStorage = { getItem:()=>{}, setItem:()=>{}}
 
-process.on('exit',function(){
-	let st = "Process Exited\n\n";
-	console.log(st);
-	console.error(st);
-})
-process.on('SIGINT',function(){
-	let st = "Process Exited with SIGINT\n\n";
-	console.log(st);
-	console.log(st)
-	process.exit();
-})
-process.on('SIGTERM',function(){
-	let st = "Process Exited with SIGTERM\n\n";
-	console.log(st);
-	process.exit();
-})
-
 export const app = express();
 //console = fConsole;
 
@@ -43,17 +26,6 @@ const downloadWaiters = {};
 const stream = {};
 const up = {lastupdate:0};
 const textParser = bodyParser.text();
-
-/*setInterval(()=>{
-	let waiters = streamWaiter;
-	let subscribers = streamSubscribers;
-	let upTime = up;
-	let fsys = fs;
-	let filename = streamFileName;
-	killUnusedStream({fs:fsys,filename,subscribers,waiters,up:upTime,lineTermination});
-},60000);*/
-
-//addDefaultsCategorieAndSongs(appState);
 
 export const LoadSongs = PopulateCategoriesAndSongs(appState);
 export const StreamJest = Stream();
