@@ -81,6 +81,9 @@ app.get('/connect',noStore(),(req,res)=>{
 	res.status(200).end();
 })
 app.get('/store', storeProvider(appState));
+app.get('/health',(req,res)=>{
+	res.status(200).end();
+})
 app.get('/songAdder.js',noStore(), songAdderController(appState));
 app.route('/stream').get(StreamJest, Waiters(streamWaiter)).post(StreamJest,Subscription(streamSubscribers), Waiters(streamWaiter));
 app.get('/stream/subscribe',(req,res,next)=>{ res.status(0); next();  }, SubscriptionJest);
