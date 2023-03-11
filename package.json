@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=test ROOT=`pwd` jest",
-    "testi": "NODE_ENV=test ROOT=`pwd` jest -i --watchAll",
+    "testi": "NODE_ENV=test ROOT=`pwd` jest -i",
     "devStart": "NODE_ENV='development' ROOT=`pwd` node start.js",
     "prodStart": "NODE_ENV='production' ROOT=`pwd` node start.js",
     "devBundle":"NODE_ENV='development' webpack",
