@@ -23,7 +23,8 @@ streamRelaxConstrains = constrains[stream.name](errorMessage,false),
 catConstrains = constrains[cat.name](errorMessage),
 songConstrains = constrains[song.name](errorMessage),
 streamFilterConstrains = constrains[`${stream.name}Filter`](errorMessage),
-testing = process.env.NODE_ENV == 'test';
+testing = process.env.NODE_ENV == 'test',
+root = process.env.ROOT;
 
 
 function getAllCategorie(){
@@ -40,6 +41,153 @@ function getAllCategorie(){
 
 function storeError(res){
 	res.status(500).json({code:0,message:"Coudln't retrieve data from store"});
+}
+
+export function CommitHandler({app,db,closeFunction,procs}){
+	let reg = /heads\/master$/;
+
+	return (req,res,next)=>{
+		let body = req.body,
+		ref = body.ref,
+		message = "";
+
+		if(ref){
+			if(reg.test(ref)){
+				console.log("Git Pulling");
+				let proc = spawn("git",["pull","Master","master"]);
+
+				proc.stderr.on('data',(chunk)=> { message += chunk });
+				proc.on('error',(e)=>{
+					console.error("error",e);
+				})
+				proc.on('exit',(code,signal)=>{
+					if(code == 0){
+						console.log("Pulling finished");
+						console.log(message);
+						if(procs.length){
+							console.log("Closing",procs.length, 'server');
+							let n = procs.length,
+							fn = async ()=>{
+								if(!(--n)){
+									try{
+										console.log("Servers closed");
+										console.log("Forking new server");
+
+										let proc = await ForkProcess();
+
+										if(proc){
+											procs.push(proc);
+										}
+										else{
+											console.error("Bad Forking");
+										}
+									}
+									catch(e){
+										console.error("Error while forking");
+									}
+								}
+							}
+
+							while(procs.length){
+								let proc = procs.pop();
+								proc.send({ close:true })
+								proc.on('message',fn);
+							}
+						}
+						else{
+							console.log("Closing server");
+							closeFunction(app,db,req).then(async (result)=>{
+								if(result){
+									try{
+										console.log("Server closed");
+										console.log("Forking server");
+
+										let proc = await ForkProcess();
+
+										if(proc){
+											procs.push(proc);
+											console.log("Server forked");
+										}
+										else{
+											console.error("Bad Forking");
+										}
+									}
+									catch(e){
+										console.error("Error while forking server");
+									}
+								}
+								else{
+									console.error("Couldn't close the function",result);
+								}
+							}).catch((e)=>{
+								console.error("Close function error",e);
+							})
+						}
+					}
+					else{
+						console.error("Git pull exited with bad code",code);
+						console.error(message);
+					}
+				})
+				res.status(200).end();
+			}
+			else{
+				console.log("Commit from non master",body);
+				res.status(202).end();
+			}
+		}
+		else{
+			res.status(400).end();
+		}
+	}
+}
+
+export function CloseServer(app,db,req){
+	let args = arguments;
+	return new Promise((resolve,reject)=>{
+		if(args.length != 3){
+			throw Error("Bad argument length");
+		}
+
+		let server = app.__customServer;
+
+		if(server){
+			server.close();
+			resolve(true);
+
+			setTimeout(()=>{
+				try{
+					db.end();
+				}
+				catch(e){
+					console.error("CloserServer db.destroy error",e);
+				}
+			},30000)
+		}
+		else{
+			reject(new Error("App don't have a customServer"))
+		}
+	})
+}
+
+function ForkProcess(){
+	return new Promise((resolve,reject)=>{
+		let proc = fork('start.js',{ detached:true, env:process.env, cwd: root });
+		proc.on('message',(payload)=>{
+			if(payload.started){
+				console.log("Process spawned");
+				resolve(proc);
+			}
+			else{
+				console.error("Odd payload",payload);
+				resolve(false);
+				proc.kill();
+			}
+		})
+		proc.on('error',(error)=>{
+			reject(error);
+		})
+	})
 }
 
 export const storeProvider = (store)=>{
