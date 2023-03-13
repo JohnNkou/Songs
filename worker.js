@@ -6,16 +6,20 @@ self.oninstall = (event)=>{
 			return cache.addAll([
 				"/",
 				"/dist/bundle.js",
+				"/store",
+				"css/font.css",
 				"css/app.css",
 				"polyfill/Symbol.js",
 				"js/bluebird_mod.min.js",
+				"img/Adder.png",
+				"img/settings.png",
 				"img/ToggleRight.png",
 				"img/streamStart.png",
 				"img/stream.png",
 				"img/love.png",
 				"img/favorite.png",
 				"img/download.png",
-				"img/cat.png"
+				"img/cat.png",
 				"img/next.png",
 				"img/prev.png"
 				]).catch((e)=>{
