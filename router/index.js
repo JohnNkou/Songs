@@ -280,7 +280,10 @@ export function streamPicker(){
 }
 export const indexRouter =  (store)=>{
 	return (req,res)=>{
-		res.app.render('index.jsx',{store,nodeJs:true},(err,html)=>{
+		let query = req.query,
+		manifest = query.manifest || false;
+
+		res.app.render('index.jsx',{store,nodeJs:true, manifest},(err,html)=>{
 			if(err){
 				console.log(err)
 				res.end("Error"+html)
