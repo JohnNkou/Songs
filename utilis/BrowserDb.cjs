@@ -2514,6 +2514,13 @@ exports.documentTree = {
 				{
 					type:'text/javascript',
 					data:`
+					if(location.href.indexOf('manifest') == -1){
+						
+						if(!('serviceWorker' in navigator) && 'applicationCache' in window){
+							location.href = '?manifest=true';
+						}
+					}
+
 					(
 						function(){
 							if(!Array.isArray)
