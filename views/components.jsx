@@ -1004,14 +1004,14 @@ class AddSongDiv extends React.Component{
 				for(let i=1;;i++){
 					let input = [`_Verse${i}`]
 					let verse = this.refs[input];
-					if(!Verse)
+					if(!verse)
 						break;
 					else{
 						verse.value = VersesText[input] || (verses[i-1] && verses[i-1].Text) || '';
 						if(!VersesText[input])
 							VersesText[input] = Verse.value;
-						if(!Verse.onchange){
-							Verse.onchange = ()=>{
+						if(!verse.onchange){
+							verse.onchange = ()=>{
 								let localState = this.state;
 								VersesText[input] = Verse.value;
 							}
@@ -1024,10 +1024,10 @@ class AddSongDiv extends React.Component{
 				for(let input in this.refs){
 					if(this.refs.hasOwnProperty(input)){
 						if(input != '_name' && input != '_verseNumber' && !this.refs[input].onchange){
-							let Verse = this.refs[input];
-							Verse.onchange = ()=>{
+							let verse = this.refs[input];
+							verse.onchange = ()=>{
 								let localState = this.state;
-								state.VersesText[input] = Verse.value;
+								state.VersesText[input] = verse.value;
 								
 							}
 						}
@@ -2683,7 +2683,7 @@ class StreamList extends React.Component{
 			},
 			e:(e,xml)=>{
 				this.props.setAppUnreachable();
-				notifier2.addSpeed(this.text.listText.updateStreamError(lang));
+				notifier2.addSpeed(this.listText.updateStreamError(lang));
 				console.log("Error while retriving the stream",e);
 			}
 		})
@@ -3934,15 +3934,17 @@ const Scripts = ({lists})=>{
 		)
 }
 
-export const HTML = ({data, styles,metas,links, scripts,title,store,nodeJs})=>{
+export const HTML = ({data, styles,metas,links, scripts,title,store,nodeJs, manifest})=>{
 	function ap(t){
 		let a = document.body;
 		let c = document.createElement("p");
 		c.textContent = t;
 		a.appendChild(c);
 	}
+	let manifestFile = (manifest)? 'song.appcache':'';
+
 	return (
-		<html>
+		<html manifest={manifestFile}>
 			<head>
 				<title>{title}</title>
 				{
@@ -3989,6 +3991,8 @@ export class App extends React.Component{
 
 	componentDidMount(){
 		window.addEventListener('keydown',this.keyRecorder);
+
+		registerWorker('worker.js');
 	}
 
 	keyRecorder(event){
