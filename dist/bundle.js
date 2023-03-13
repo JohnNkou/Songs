@@ -1285,11 +1285,11 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component7) {
           var _loop = function _loop() {
             var input = ["_Verse".concat(i)];
             var verse = _this14.refs[input];
-            if (!Verse) return "break";else {
+            if (!verse) return "break";else {
               verse.value = VersesText[input] || verses[i - 1] && verses[i - 1].Text || '';
               if (!VersesText[input]) VersesText[input] = Verse.value;
-              if (!Verse.onchange) {
-                Verse.onchange = function () {
+              if (!verse.onchange) {
+                verse.onchange = function () {
                   var localState = _this14.state;
                   VersesText[input] = Verse.value;
                 };
@@ -1305,10 +1305,10 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component7) {
           var _loop2 = function _loop2(input) {
             if (_this14.refs.hasOwnProperty(input)) {
               if (input != '_name' && input != '_verseNumber' && !_this14.refs[input].onchange) {
-                var _Verse = _this14.refs[input];
-                _Verse.onchange = function () {
+                var verse = _this14.refs[input];
+                verse.onchange = function () {
                   var localState = _this14.state;
-                  state.VersesText[input] = _Verse.value;
+                  state.VersesText[input] = verse.value;
                 };
               }
               if (_this14.state.VersesText[input]) {
@@ -1481,11 +1481,11 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component7) {
         };
       }
       for (var i = 1;; i++) {
-        var _Verse2 = this.refs["_Verse".concat(i)];
-        if (!_Verse2) break;else if (!Validator.hasSomething(_Verse2.value)) message += formError.required("Verse")(lang);else {
-          VersesText["_Verse".concat(i)] = _Verse2.value;
+        var _Verse = this.refs["_Verse".concat(i)];
+        if (!_Verse) break;else if (!Validator.hasSomething(_Verse.value)) message += formError.required("Verse")(lang);else {
+          VersesText["_Verse".concat(i)] = _Verse.value;
           verses.push({
-            Text: _Verse2.value
+            Text: _Verse.value
           });
         }
       }
@@ -2003,11 +2003,6 @@ var CatTogglerC = (0,react_redux__WEBPACK_IMPORTED_MODULE_1__.connect)(function 
   changeCatListView: _utilis_aCreator_cjs__WEBPACK_IMPORTED_MODULE_4__.changeCatListView
 })(CatToggler);
 var Head1 = function Head1(props) {
-  function clickHandler(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    props.changeCatListView(!props.catListView);
-  }
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
     className: "head"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(CatTogglerC, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(InputC, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(TogglerC, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Liner, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(CatNamesC, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(ResultListC, null));
@@ -3470,7 +3465,7 @@ var StreamList = /*#__PURE__*/function (_React$Component18) {
         },
         e: function e(_e2, xml) {
           _this43.props.setAppUnreachable();
-          notifier2.addSpeed(_this43.text.listText.updateStreamError(lang));
+          notifier2.addSpeed(_this43.listText.updateStreamError(lang));
           console.log("Error while retriving the stream", _e2);
         }
       });
@@ -4947,14 +4942,18 @@ var HTML = function HTML(_ref21) {
     scripts = _ref21.scripts,
     title = _ref21.title,
     store = _ref21.store,
-    nodeJs = _ref21.nodeJs;
+    nodeJs = _ref21.nodeJs,
+    manifest = _ref21.manifest;
   function ap(t) {
     var a = document.body;
     var c = document.createElement("p");
     c.textContent = t;
     a.appendChild(c);
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("html", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("head", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("title", null, title), metas && metas.length ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Metas, {
+  var manifestFile = manifest ? 'song.appcache' : '';
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("html", {
+    manifest: manifestFile
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("head", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("title", null, title), metas && metas.length ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Metas, {
     lists: metas
   }) : '', links && links.length ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Links, {
     lists: links
@@ -5001,6 +5000,7 @@ var App = /*#__PURE__*/function (_React$Component25) {
     key: "componentDidMount",
     value: function componentDidMount() {
       window.addEventListener('keydown', this.keyRecorder);
+      (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.registerWorker)('worker.js');
     }
   }, {
     key: "keyRecorder",
@@ -41403,6 +41403,15 @@ exports.documentTree = {
   metas: [{
     name: "viewport",
     content: "width=device-width, initial-scale=1.0"
+  }, {
+    name: 'application-name',
+    content: 'songA'
+  }, {
+    name: 'author',
+    content: 'Abel Kashoba'
+  }, {
+    name: 'description',
+    content: 'Want to share your lyrics with people, or stream your lyrics so other people can see it in real time, SongA allow you to do just that. You can create your songs, stream them and allow other user to download your lyrics. Dive right in to see'
   }],
   links: [{
     rel: "icon",
@@ -41427,7 +41436,7 @@ exports.documentTree = {
       src: 'js/bluebird_mod.min.js'
     }, {
       type: 'text/javascript',
-      data: "\n\t\t\t\t\t(\n\t\t\t\t\t\tfunction(){\n\t\t\t\t\t\t\tif(!Array.isArray)\n\t\t\t\t\t\t\t\tArray.isArray = function(item){\n\t\t\t\t\t\t\t\t\treturn Object.prototype.toString.call(item) == Object.prototype.toString.call([]);\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t)();\n\t\t\t\t\t"
+      data: "\n\t\t\t\t\tif(location.href.indexOf('manifest') == -1){\n\t\t\t\t\t\t\n\t\t\t\t\t\tif(!('serviceWorker' in navigator) && 'applicationCache' in window){\n\t\t\t\t\t\t\tlocation.href = '?manifest=true';\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\n\t\t\t\t\t(\n\t\t\t\t\t\tfunction(){\n\t\t\t\t\t\t\tif(!Array.isArray)\n\t\t\t\t\t\t\t\tArray.isArray = function(item){\n\t\t\t\t\t\t\t\t\treturn Object.prototype.toString.call(item) == Object.prototype.toString.call([]);\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t)();\n\t\t\t\t\t"
     }],
     tail: [{
       type: 'text/javascript',
