@@ -16,7 +16,6 @@ global.alert = ()=>{};
 global.localStorage = { getItem:()=>{}, setItem:()=>{}}
 
 export const app = express();
-//console = fConsole;
 
 const root = process.env.ROOT;
 
@@ -40,13 +39,12 @@ app.engine("jsx",express_react.createEngine());
 		return true;
 	return false;
 }}))*/
+app.use(express.json());
 app.use(express.static(root,{setHeaders:(res,filepath)=> {
 	if(path.basename(filepath) == "worker.js"){
 		res.set('Service-Worker-Allowed','/');
 	}
-	//res.set('Cache-Control','no-store,no-cache');
 }}));
-app.use(express.json());
 
 app.get('/', indexRouter(appState));
 app.get('/connect',noStore(),(req,res)=>{
@@ -60,16 +58,6 @@ app.get('/songAdder.js',noStore(), songAdderController(appState));
 app.route('/stream').get(StreamJest, Waiters(streamWaiter)).post(StreamJest,Subscription(streamSubscribers), Waiters(streamWaiter));
 app.get('/stream/subscribe',(req,res,next)=>{ res.status(0); next();  }, SubscriptionJest);
 app.get('/stream/song', StreamJest);
-/*
-app.get('/stream/list', noStore(), streamCollector(streamWaiter,up));
-app.post('/stream/update', noStore(), textParser, streamUpdater(streamSubscribers,up, downloadWaiters,stream));
-app.get('/stream/subscribe', noStore(),streamSubscription(streamSubscribers));
-app.get('/stream/delete', noStore(),streamDeleter(streamSubscribers,streamWaiter,up,stream,downloadWaiters));
-app.get('/stream/downloadSong', noStore(), songDownloader(downloadWaiters,stream));
-app.post('/stream/create/:stream', noStore(), textParser, streamCreator(streamWaiter,up,stream));
-app.post('/stream/uploadToSubscriber', noStore(), downloadToSubscriber(downloadWaiters));
-app.get('/stream/:name', noStore(), streamPicker())
-*/
 app.use(function(err,req,res,next){
 	console.error("OUps an error");
 	console.error(err.stack);
