@@ -193,18 +193,7 @@ function ForkProcess(){
 export const storeProvider = (store)=>{
 	return (req,res,next)=>{
 		res.set('Content-type','text/javascript');
-		//res.status(200).end(`window.storeData=${JSON.stringify(store)}`);
-
-		let onlineSongs = {};
-
-		for(var id in store.onlineSongs){
-			onlineSongs[id] = [];
-		}
-
-		res.status(200).end(`window.storeData=${JSON.stringify({
-			...store,
-			onlineSongs
-		})}`);
+		res.status(200).end(`window.storeData=${JSON.stringify(store)}`);
 	}
 }
 
@@ -215,15 +204,14 @@ export async function PopulateCategoriesAndSongs(store){
 		catLength = cats.length,
 		i=0;
 
-		store.Categories = cats.map((x)=> x[cF.name]);
+		store.Categories = cats;
 
 		while(i < catLength){
 			cat = cats[i];
 			await db.getAllSongs({[sF.catId]: cat[cF.id]}).then((r)=>{
 				let songs = r.data;
 
-				store.onlineSongs[i] = songs.map((song)=> ({ [sF.name]: song[sF.name], [sF.verses]: song[sF.verses] }));
-				store.offlineSongs[i] = [];
+				store.onlineSongs[cat.id] = songs.map((song)=> ({ [sF.name]: song[sF.name], [sF.verses]: song[sF.verses] }));
 			})
 			i++;
 		}
