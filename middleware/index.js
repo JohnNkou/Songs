@@ -16,10 +16,24 @@ const fastAccessAction = (
 
 		function addS(action,fastAccess,state){
 			let { catId, location, type } = action,
-			catName = state.Categories[action.catId],
-			cat = null;
-			if(!catName)
+			catName,
+			cat,
+			categorie,
+			length = state.Categories.length;
+
+			for(let i=0; i < length; i++){
+				if(state.Categories[i].id == catId){
+					categorie = state.Categories[i];
+					break;
+				}
+			}
+
+
+			if(!categorie){
 				return null;
+			}
+
+			catName = categorie.name;
 
 			if(!fastAccess[catName])
 				fastAccess[catName] = {online:{},offline:{}, id:catId};
@@ -37,7 +51,14 @@ const fastAccessAction = (
 			let { catId,id,location,name } = action,
 			song = state[`${location}Songs`][catId][id],
 			oldName = action.oldName.toUpperCase();
-			catName = state.Categories[catId],
+			catName = state.currentCat.name,
+			old;
+
+			if(!catName){
+				console.error('no categorie name',catName,'not found');
+				return;
+			}
+
 			old = fastAccess[catName][location][oldName];
 
 			delete fastAccess[catName][location][oldName];
@@ -45,7 +66,7 @@ const fastAccessAction = (
 		}
 		function rmS(action,fastAccess,state){
 			let { id,catId,name,location } = action,
-			catName = state.Categories[catId],
+			catName = state.currentCat.name,
 			songName = state[`${location}Songs`][catId][id].name.toUpperCase();
 
 			delete fastAccess[catName][location][songName];
