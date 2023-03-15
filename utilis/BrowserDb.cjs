@@ -747,12 +747,12 @@ function getLocalData(dbC,store,{addSong,addCategorie,addSongs}){
 				categories.forEach((cat,id)=>{
 					try{
 						let catName = cat.name,
-						catId = id;
+						catId = cat.id;
 
-						store.dispatch(addCategorie(catName));
+						store.dispatch(addCategorie(catName,catId));
 						fastLookUp[catName] = {};
 
-						db.getAllSongs(catName)().then((songs)=>{
+						db.getAllSongs(catId)().then((songs)=>{
 							songs = songs.map((song)=>{
 								delete song.cat;
 								fastLookUp[cat.name][song.name] = true;
@@ -785,8 +785,8 @@ function getRemoteData(store,songLoader,localData){
 	let onlineCategories = state.Categories;
 	let fastAccess;
 
-	onlineCategories.forEach((catName,i)=>{
-		fastAccess = songLoader(catName.toLowerCase(), state.onlineSongs[i].length ,store,localData);
+	onlineCategories.forEach((cat,i)=>{
+		fastAccess = songLoader(cat, state.onlineSongs[cat.id].length ,store,localData);
 	})
 
 	return fastAccess || Promise.resolve({success:true,data:store.getState()});
@@ -831,14 +831,14 @@ function TT(Name){
 	this.initialize = ()=>{
 		return new Promise((resolve,reject)=>{
 			var falsed = false;
-			this.query('CREATE TABLE IF NOT EXISTS Categorie(id integer primary key, name varchar(50) not null unique)',[]).then((s)=>{
+			this.query('CREATE TABLE IF NOT EXISTS Categorie(id varchar(50) primary key, name varchar(50) not null unique)',[]).then((s)=>{
 		console.log("Table Categorie Created with sucess");
 			}).Oups((e)=>{
 		console.log("Table Categorie not Created",e);
 		falsed = true;
 			});
 		
-			this.query("CREATE TABLE IF NOT EXISTS Song(id integer primary key, name varchar(100) not null, verses Text not null, cat integer not null, unique(name,cat), FOREIGN KEY(cat) REFERENCES Categorie(id))",[]).then((s)=>{
+			this.query("CREATE TABLE IF NOT EXISTS Song(id integer primary key, name varchar(100) not null, verses Text not null, cat varchar(50) not null, unique(name,cat), FOREIGN KEY(cat) REFERENCES Categorie(id))",[]).then((s)=>{
 		console.log("Table Song Created with Success");
 		if(falsed)
 			reject();
@@ -876,10 +876,10 @@ function TT(Name){
 			}).Oups((e)=> console.log("clear Error",e))
 		})
 	}
-	this.insertCategorie = (name)=>{
+	this.insertCategorie = (name,id)=>{
 		 var txt = 'Wb insertCategorie'
 		var p = ()=> new Promise((resolve,reject)=>{
-			this.query('INSERT INTO Categorie(name) VALUES(?)',[safeOp(name,"toLowerCase",null)]).then((s)=>{
+			this.query('INSERT INTO Categorie(name,id) VALUES(?,?)',[safeOp(name,"toLowerCase",null),id]).then((s)=>{
 				if(s.inserted){
 					Gp(`${txt} success`,`categorie ${name} inserted Successfully`,s.inserted);
 					resolve(s.inserted);
@@ -1037,53 +1037,23 @@ function TT(Name){
 		verses = JSON.stringify(verses);
 
 		var p = ()=> new Promise((resolve,reject)=>{
-			
-			if(this.getCategorie[cat])
-				cat = this.getCategorie[cat][0].id;
 
-			if(typeof cat == "number"){
-					
-				this.query("INSERT INTO Song(name,verses,cat) VALUES(?,?,?)",[safeOp(name,"toUpperCase",null),(verses)? verses:null,(cat)? cat: null]).then((s)=>{
+			this.query("INSERT INTO Song(name,verses,cat) VALUES(?,?,?)",[safeOp(name,"toUpperCase",null),verses, cat]).then((s)=>{
 					if(s.inserted){
-						Gp(`${txt} Success`,`song ${name} inserted`,s.inserted);
-						//alert(`${name} inserted`);
-						resolve(true);
-					}
-					else{
-						//alert(`${name} Hug`);
-						Gp(`${txt} Error`,`Couldn't insert the song ${name}`);
-						resolve(false);
-					}
-					}).Oups((e)=>{
-							
-						Gp(`${txt} Error`,`Insert song ${name} Error`,e);
-						reject(e);
-					})
-			}
-			else{
-				this.getCategorie(cat)().then((r)=>{
-					r = r.pop();
-					if(r){
+					Gp(`${txt} Success`,`song ${name} inserted`,s.inserted);
+					//alert(`${name} inserted`);
+					resolve(true);
+				}
+				else{
+					//alert(`${name} Hug`);
+					Gp(`${txt} Error`,`Couldn't insert the song ${name}`);
+					resolve(false);
+				}
+			}).Oups((e)=>{
 						
-						var cat = r.id;
-						if(cat){
-							
-							var v = this.insertSong(name,verses,cat)();
-							v.then(resolve).Oups(reject);
-						}
-						else{
-							
-							Gp(`${txt} Error`,`categorie ${cat} don't exist`);
-							resolve(false);
-						}
-					}
-					else{
-						
-						Gp(`${txt} Error`,`No categorie with that id ${cat} exist`);
-						resolve(false);;
-					}
-				}).Oups(reject);
-			}
+					Gp(`${txt} Error`,`Insert song ${name} Error`,e);
+					reject(e);
+			})
 		});
 
 		return p;
@@ -1215,30 +1185,13 @@ function TT(Name){
 	this.getAllSongs = (cat)=>{
 		var txt = 'Wb getAllSongs';
 		var p = ()=> new Promise((resolve,reject)=>{
-			switch(typeof cat){
-				case "number":
-					this.query("SELECT * FROM Song WHERE cat=?",[cat]).then((s)=>{
-						Gp(`${txt} Success`,`${txt} ${cat}`,s.data);
-						resolve(s.data);
-					}).Oups((e)=>{
-						Gp(`${txt} Error`,`${txt} ${cat}`,e);
-						reject(e);
-					})
-					break;
-				case "string":
-					this.getCategorie(cat)().then((r)=>{
-						r = r.pop();
-						if(r){
-							var id = r.id;
-
-							this.getAllSongs(id)().then(resolve).Oups(reject);
-						}
-						else{
-							resolve(false);
-						}
-					}).Oups(reject);
-					break;
-				}
+			this.query("SELECT * FROM Song WHERE cat=?",[cat]).then((s)=>{
+				Gp(`${txt} Success`,`${txt} ${cat}`,s.data);
+				resolve(s.data);
+			}).Oups((e)=>{
+				Gp(`${txt} Error`,`${txt} ${cat}`,e);
+				reject(e);
+			})
 		});
 		return p;
 	}
