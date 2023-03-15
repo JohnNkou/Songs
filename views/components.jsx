@@ -4,6 +4,7 @@ import { storageHandler,dbChooser, compose, relay, getAllReturn, seq, fetcher, a
 import Text from '../utilis/Text.cjs';
 import Action from '../utilis/aCreator.cjs';
 import config from '../utilis/db.config.cjs';
+import Custom from '../utilis/context.cjs';
 
 const Texts = React.createContext(Text),
 { table,filters } = config,
@@ -185,8 +186,12 @@ class ErrorBoundary extends React.Component{
 class Setup extends React.Component{
 	constructor(props,context){
 		super(props);
-		this.cachingText = context.caching;
-		this.streamText = context.Stream;
+		let Text = context.Text,
+		store = context.store,
+		state = store.getState();
+
+		this.cachingText = Text.caching;
+		this.streamText = Text.Stream;
 		this.handleKeydown = this.handleKeydown.bind(this);
 		this.configureStream = this.configureStream.bind(this);
 		this.configureStreamManager = this.configureStreamManager.bind(this);
@@ -194,25 +199,28 @@ class Setup extends React.Component{
 		this.registerGlobalClickHandler = this.registerGlobalClickHandler.bind(this);
 		this.globalClickHandler = this.globalClickHandler.bind(this);
 		this.handleDirection = this.handleDirection.bind(this);
+		this.store = store;
+		this.state = { lang: state.language, direction: state.ui.direction, catListView: state.ui.show.catList, favListView: state.ui.show.favList, streamListView: state.ui.show.streamList, resultView: state.ui.show.resultList, settingListView: state.ui.show.settingList, control: state.keys.alt  };
+		this.images = state.images;
 	}
 
 	componentDidUpdate(prevProps,prevState){
-		let { direction } = this.props;
+		let { direction } = this.state;
 		if(!this.first)
 			this.first = document.getElementById("first");
 		if(!this.second)
 			this.second = document.getElementById("second");
 
-		if(prevProps.direction != direction){
+		if(prevState.direction != direction){
 			this.handleDirection(direction);
 		}
 	}
 
 	populateFastAccess(fAccess){
-		for(var n in fastAccess){
+		/*for(var n in fastAccess){
 			if(fastAccess.hasOwnProperty(n))
 				fAccess[n] = fAccess[n];
-		}
+		}*/
 		fastAccess = fAccess;
 	}
 
@@ -233,26 +241,34 @@ class Setup extends React.Component{
 	}
 
 	globalClickHandler(event){
-		let { changeCatListView, changeResultListView, changeStreamListView, changeFavListView, changeSettingListView, resultView, catListView, streamListView, favListView, settingListView } = this.props;
+		let { changeCatListView, changeResultListView, changeStreamListView, changeFavListView, changeSettingListView } = this.props,
+		{ resultView, catListView, streamListView, favListView, settingListView } = this.state,
+		store = this.store;
 
 		if(event.target.inlist)
 			event.stopPropagation();
 		else{
-			if(catListView)
-				changeCatListView(false);
-			if(resultView)
-				changeResultListView(false);
-			if(streamListView)
-				changeStreamListView(false);
-			if(favListView)
-				changeFavListView(false);
-			if(settingListView)
-				changeSettingListView(false);
+			if(catListView){
+				store.dispatch(changeCatListView(false));
+			}
+			if(resultView){
+				store.dispatch(changeResultListView(false));
+			}
+			if(streamListView){
+				store.dispatch(changeStreamListView(false));
+			}
+			if(favListView){
+				store.dispatch(changeFavListView(false));
+			}
+			if(settingListView){
+				store.dispatch(changeSettingListView(false));
+			}
 		}
 	}
 
 	configureStream(){
-		let { lang, images } = this.props,
+		let { lang } = this.state,
+		images = this.images,
 		streamText = this.streamText;
 
 		startStream.f = (startStream)? ()=>{
@@ -282,16 +298,20 @@ class Setup extends React.Component{
 	}
 
 	handleKeydown(event){
-		let { setControl } = this.props;
+		let { setControl } = this.props,
+		{ controls } = this.state;
 
 		if(event.target.tagName.indexOf('input') != -1 && event.altKey)
-			setControl(this.props.controls);
+			setControl(!controls);
 	}
 
 	componentDidMount(){
-		let Text = this.cachingText;
-		let streamText = this.streamText;
-		let { lang, streamManager, startStream, stopStream, setControl, images } = this.props,
+		let store = this.store,
+		Text = this.cachingText,
+		streamText = this.streamText,
+		{ streamManager, startStream, stopStream, setControl } = this.props,
+		{ lang } = this.state,
+		images = this.images,
 		fAccess = this.props.fastAccess,
 		fn = null;
 
@@ -299,6 +319,37 @@ class Setup extends React.Component{
 		this.configureStream();
 		this.configureStreamManager(fAccess,streamManager,fastAccess);
 		this.registerGlobalClickHandler(this.globalClickHandler);
+		this.unsubscribe = store.subscribe(()=>{
+			let state = this.state,
+			cState = store.getState(),
+			newState = {};
+
+			if(state.lang != cState.language){
+				newState.language = cState.language;
+			}
+			if(state.direction != cState.ui.direction){
+				newState.direction = cState.ui.direction;
+			}
+			if(cState.ui.show.catList != state.catListView){
+				newState.catListView = cState.ui.show.catList;
+			}
+			if(cState.ui.show.favList != state.favListView){
+				newState.favListView = cState.ui.show.favList;
+			}
+			if(cState.ui.show.resultList != state.resultView){
+				newState.resultView = cState.ui.show.resultList;
+			}
+			if(cState.ui.show.settingList != state.settingListView){
+				newState.settingListView = cState.ui.show.settingList;
+			}
+			if(cState.ui.show.streamList != state.streamListView){
+				newState.streamListView = cState.ui.show.streamList;
+			}
+
+			if(Object.keys(newState).length){
+				this.setState(newState);
+			}
+		})
 
 		window.db = db;
 		window.ss = S;
@@ -307,89 +358,30 @@ class Setup extends React.Component{
 
 	}
 
-	render(){
-		return null;
-	}
-}
-Setup.contextType = Texts;
-
-const SetupC = connect((state,ownProps)=>({
-	lang: 				state.language,
-	images: 			state.images,
-	controls: 			state.keys.alt,
-	resultView: 		state.ui.show.resultList,
-	catListView: 		state.ui.show.catList,
-	streamListView: 	state.ui.show.streamList,
-	favListView: 		state.ui.show.favList,
-	settingListView: 	state.ui.show.settingList,
-	direction: 			state.ui.direction,
-	...ownProps
-}),{
-	startStream: 			Action.startStream,
-	stopStream:  			Action.stopStream,
-	setControl: 			Action.setControl,
-	changeCatListView: 		Action.changeCatListView,
-	changeResultListView: 	Action.changeResultListView,
-	changeStreamListView: 	Action.changeStreamListView,
-	changeFavListView: 		Action.changeFavListView,
-	changeSettingListView: 	Action.changeSettingListView 	
-})(Setup);
-
-class FirstHelper extends React.PureComponent{
-	constructor(props){
-		super(props);
-	}
-
-	componentDidMount(){
-		let { firstDirection, direction, setDirection } = this.props;
-
-		if(firstDirection != direction)
-			setDirection(direction);
-	}
-
-	componentDidUpdate(prevProps,prevState){
-		let { direction, setDirection } = this.props;
-		if(prevProps.direction != direction)
-			setDirection(direction);
+	componentWillUnmount(){
+		this.unsubscribe();
 	}
 
 	render(){
 		return null;
 	}
 }
+Setup.contextType = Custom;
 
-const FirstHelperC = connect((state,ownProps)=>({
-	direction: 		state.ui.direction,
-	...ownProps
-}))(FirstHelper);
-
-class First extends React.Component{
-	constructor(props,context){
-		super(props);
-	}
-	componentDidMount(){
-		this.node = document.getElementById('first');	
-	}
-
-	render(){
-		let { direction } = this.props;
-
-		return (
-
+function First(props){
+	let { direction } = props;
+	return (
 		<div id="first" className={((direction && direction == "Right")? "il TRR ":"il TLL ")+"silverBack"}>
 			<DownloaderLine />
 			<Notification parent="First"/>
-			<Head1 />
+			<Head1 {...props} />
 			<div className="songList">
-				<OnlineSongsC />
-				<OfflineSongsC />
+				<OnlineSongs {...props} />
+				<OfflineSongs {...props} />
 			</div>
 		</div>
-		)
-	}
+	)
 }
-
-First.contextType = Texts;
 
 class Counter extends React.PureComponent{
 	constructor(props){
@@ -407,7 +399,6 @@ class Counter extends React.PureComponent{
 	}
 
 	updateNumber(number){
-
 		this.setState({number: this.state.number + number});
 	}
 
@@ -424,12 +415,17 @@ class Counter extends React.PureComponent{
 class OnlineSongs extends React.Component{
 	constructor(props,context){
 		super(props);
+		let state = context.store.getState(),
+		Text = context.Text,
+		currentCat = state.currentCat,
+		songs = (state.onlineSongs[currentCat.id] || []);
 
-		this.state = {show:false,report:false};
-		this.initialSongLength = props.songLength;
+		this.store = context.store;
+		this.state = {show:false,report:false, songs, to: state.ui.navigation.to, catName: currentCat.name, controls: state.keys.alt, currentCat, downloadImage: state.images.download, updateForced: state.updateForced, increment: state.songIncrement, subscribedToStream: state.subscribedToStream};
+		this.initialSongLength = songs.length;
 		this.SavedSongs = 0;
 		this.failedToSavedSongs = [];
-		this.Text = context.Song;
+		this.Text = Text.Song;
 		this.downloading = {};
 		this.manageShowing = this.manageShowing.bind(this);
 		this.Notify = curry(this.Notify.bind(this))(this.Text);
@@ -442,6 +438,45 @@ class OnlineSongs extends React.Component{
 	}
 
 	componentDidMount(){
+		let store = this.store
+
+		this.unsubscribe = store.subscribe(()=>{
+			let cState = store.getState(),
+			state = this.state,
+			currentCat = cState.currentCat,
+			songs = (cState.onlineSongs[currentCat.id] || []),
+			newState = {};
+
+			if(state.songs != songs){
+				newState.songs = songs;
+			}
+			if(state.to != cState.ui.navigation.to){
+				newState.to = cState.ui.navigation.to
+			}
+			if(state.catName != currentCat.name){
+				newState.catName = currentCat.name;
+			}
+			if(state.updateForced != cState.updateForced){
+				newState.updateForced = cState.updateForced;
+			}
+			if(state.increment != cState.songIncrement){
+				newState.increment = cState.songIncrement;
+			}
+			if(state.subscribedToStream != cState.subscribedToStream){
+				newState.subscribedToStream = cState.subscribedToStream;
+			}
+			if(state.currentCat != currentCat){
+				newState.currentCat = currentCat;
+			}
+			if(state.controls != cState.keys.alt){
+				newState.controls = cState.keys.alt;
+			}
+
+			if(Object.keys(newState).length){
+				this.setState(newState);
+			}
+		})
+
 		let c = setInterval(()=>{
 			this.node = document.querySelector("#online .papa");
 			if(this.node)
@@ -449,29 +484,20 @@ class OnlineSongs extends React.Component{
 		},15)
 	}
 
-	shouldComponentUpdate(nextProps,nextState){
-		let props = this.props;
-		let state = this.state
-
-		if(nextState.show != state.show || props.to != nextProps.to)
-			return true;
-
-		if(nextState.report && state.report && nextProps.catName == props.catName)
-			return false;
-		else if(!nextState.report && !state.report && nextProps.catName == props.catName && nextProps.songLength == props.songLength && nextProps.controls == props.controls)
-			return false;
-
-		return true;
+	componentWillUnmount(){
+		this.unsubscribe();
 	}
 
-	componentDidUpdate(prevProps){
-		let props = this.props;
-		let state = this.state;
-		if(!this.initialSongLength && props.songLength || prevProps.catName != props.catName){
-			this.initialSongLength = props.songLength;
+
+	componentDidUpdate(prevProps, prevState){
+		let { songs, report,catName } = this.state,
+		songLength = songs.length;
+
+		if(!this.initialSongLength && songLength || prevState.catName != catName){
+			this.initialSongLength = songLength;
 		}
 		
-		if(!props.songLength && state.report){
+		if(!songLength && report){
 			this.setState({report:false});
 		}
 
@@ -479,23 +505,28 @@ class OnlineSongs extends React.Component{
 	}
 
 	handleScroll(event){
-		let { songLength,to, updateSongList } = this.props,
+		let { songs, to } = this.state,
+		songLength = songs.length, 
+		{ updateSongList } = this.props,
 		node = this.node,
 		nodeHeight = node.getBoundingClientRect().height,
 		scrollTop = node.scrollTop,
 		scrollHeight = node.scrollHeight,
-		percent = (nodeHeight + scrollTop) / node.scrollHeight * 100;
+		percent = (nodeHeight + scrollTop) / node.scrollHeight * 100,
+		store = this.store;
 
 		if(songLength >= to && percent >= 70 ){
-			updateSongList(to+100);
+			store.dispatch(updateSongList(to+100));
 		}
 	}
 
 	traceReport(t){		
-		let total = this.failedToSavedSongs.length + this.SavedSongs;
+		let total = this.failedToSavedSongs.length + this.SavedSongs,
+		{ currentCat } = this.state;
+
 		if(total >= this.initialSongLength){
 			if(this.SavedSongs == this.initialSongLength){
-				this.downloading[this.props.currentCat] = true;
+				this.downloading[currentCat] = true;
 				this.setState({report:false});
 				
 				return [insertStatus.COMPLETE,null,null];
@@ -517,9 +548,33 @@ class OnlineSongs extends React.Component{
 		}	
 		
 	}
-	throwReport(full){
-		this.downloading[this.props.catName] = true;
-		this.setState({report:true});
+	throwReport(){
+		let { addCategorie } = this.props,
+		state = this.store.getState(),
+		currentCat = state.currentCat,
+		catName = currentCat.name,
+		catId = currentCat.id,
+		offlineSongs = state.offlineSongs;
+
+		if(offlineSongs[currentCat.id]){
+			this.downloading[catName] = true;
+			this.setState({report:true});
+		}
+		else{
+			db.insertCategorie(catName, catId)().then((id)=>{
+				if(id){
+					this.downloading[catName] = true;
+					store.dispatch(addCategorie(catName,catId));
+					this.setState({report:true});
+				}
+				else{
+					console.error("categorie not inserted",id);
+				}
+			}).Oups((e)=>{
+				console.error("Error while trying to inserted categorie");
+				console.error(e);
+			})
+		}
 	} 
 
 	getPercentage(){
@@ -565,12 +620,11 @@ class OnlineSongs extends React.Component{
 	}
 
 	render(){
-		let { show } = this.state;
-		let props = this.props;
-		let lang = props.lang;
-		let mustReport = this.state.report;
-		let report;	
-		let additionalClass = (show)? 'heightHelper' : 'online'
+		let { show, report, songs, downloadImage } = this.state,
+		{ lang } = this.props,
+		mustReport = report,
+		additionalClass = (show)? 'heightHelper' : 'online',
+		pop =  { ...this.props, ...this.state };
 
 		// Report expect to have status, name, parameter
 		if(mustReport){
@@ -585,39 +639,27 @@ class OnlineSongs extends React.Component{
 			<div id="online" className={`il ${additionalClass}`}>
 				<div className="onlineHead il blueBack">
 					<a className="vmid tagName" id="onLink" href="#" onClick={this.manageShowing}>Online</a>
-					<Counter i={props.songLength} setUpdater={this.setUpdater} />{(show && props.songLength)? <Download additionalClass="vmid" src={props.downloadImage} download={()=> Promise.resolve((db.isBogus)? [null]:[])} action={[()=> { return new Promise((resolve)=> { resolve(false); this.throwReport();})}]} additionalClass="vmid" />:''}
+					<Counter i={songs.length} setUpdater={this.setUpdater} />{(show && songs.length)? <Download additionalClass="vmid" src={downloadImage} download={()=> Promise.resolve((db.isBogus)? [null]:[])} action={[()=> { return new Promise((resolve)=> { resolve(false); this.throwReport();})}]} additionalClass="vmid" />:''}
 					<Liner additionalClass="vmid" />
 				</div>
-				{(show)? <div onScroll={this.handleScroll} className="papa"><SongList location="online" counterUpdater={this.counterUpdater} report={report} includeAdder={false} {...props} /></div>:''
+				{(show)? <div onScroll={this.handleScroll} className="papa"><SongList location="online" counterUpdater={this.counterUpdater} includeAdder={false} {...pop} store={this.store} report={report} /></div>:''
 			}
 			</div>
 			)
 	}
 }
-
-OnlineSongs.contextType = Texts;
-
-const OnlineSongsC = connect((state,ownProps)=>({
-	songLength: (state.currentCat.name)? state.onlineSongs[state.currentCat.id].length: ([]).length,
-	songs: (state.currentCat.name)? state.onlineSongs[state.currentCat.id]: [],
-	to: state.ui.navigation.to,
-	catName: state.currentCat.name,
-	controls: state.keys.alt,
-	currentCat: state.currentCat,
-	lang: state.language,
-	downloadImage: state.images.download,
-	songs: (state.currentCat.name)? state.onlineSongs[state.currentCat.id]:[],
-	updateForced: state.updateForced,
-	increment: state.songIncrement,
-	direction: state.ui.direction,
-	subscribedToStream: state.subscribedToStream,
-	...ownProps
-}),{ updateSongList: Action.updateSongList, addSong: Action.addSong, removeSong: Action.removeSong, changeIndex: Action.changeIndex, setCurrentSong: Action.setCurrentSong, changeAddSongView: Action.changeAddSongView, subscribeToStream: Action.subscribeToStream, changeDirection: Action.changeDirection })(OnlineSongs)
+OnlineSongs.contextType = Custom;
 
 class OfflineSongs extends React.Component{
-	constructor(props){
+	constructor(props,context){
 		super(props);
-		this.state = {show:false};
+		let state = context.store.getState(),
+		currentCat = state.currentCat,
+		songs = (state.offlineSongs[currentCat.id] || []),
+		songLength = songs.length; 
+
+		this.store = context.store;
+		this.state = {show:false, songs, songLength, updateForced: state.updateForced, controls: state.keys.alt, to: state.ui.navigation.to, increment: state.songIncrement, currentCat, subscribedToStream: state.subscribedToStream};
 		this.manageShowing = this.manageShowing.bind(this);
 		this.initTime = Date.now();
 
@@ -625,6 +667,51 @@ class OfflineSongs extends React.Component{
 
 	componentDidUpdate(){
 		invoqueAfterMount('offline')
+	}
+
+	componentDidMount(){
+		let store = this.store
+
+		this.unsubscribe = store.subscribe(()=>{
+			let cState = store.getState(),
+			state = this.state,
+			currentCat = cState.currentCat,
+			songs = (cState.offlineSongs[currentCat.id] || []),
+			songLength = songs.length,
+			newState = {};
+
+			if(state.songLength != songLength){
+				newState.songLength = songLength;
+			}
+			if(state.songs != songs){
+				newState.songs = songs;
+			}
+			if(state.to != cState.ui.navigation.to){
+				newState.to = cState.ui.navigation.to
+			}
+			if(state.catName != currentCat.name){
+				newState.catName = currentCat.name;
+			}
+			if(state.updateForced != cState.updateForced){
+				newState.updateForced = cState.updateForced;
+			}
+			if(state.increment != cState.songIncrement){
+				newState.increment = cState.songIncrement;
+			}
+			if(state.subscribedToStream != cState.subscribedToStream){
+				newState.subscribedToStream = cState.subscribedToStream;
+			}
+			if(state.controls != cState.keys.alt){
+				newState.controls = cState.keys.alt
+			}
+			if(state.currentCat != currentCat){
+				newState.currentCat = currentCat;
+			}
+
+			if(Object.keys(newState).length){
+				this.setState(newState);
+			}
+		})
 	}
 
 	manageShowing(event){
@@ -635,39 +722,24 @@ class OfflineSongs extends React.Component{
 	}
 	
 	render(){
-		let { show } = this.state;
-		let props = this.props;
-		let additionalClass = (show)? 'heightHelper':'offline'
+		let { show, songs } = this.state,
+		additionalClass = (show)? 'heightHelper':'offline',
+		pop = { ...this.props, ...this.state };
+
+
 		return (
 			<div id="offline" className={`il ${additionalClass}`}>
 				<div className="offlineHead il open blueBack">
-					<a className="vmid tagName" id="offLink" onClick={this.manageShowing} href="#">Offline</a>
-					<Counter i={props.songs.length} />
+					<a className="vmid tagName" id="offLink" onClick={this.manageShowing} href="#">Downloaded</a>
+					<Counter i={songs.length} />
 					<Liner additionalClass="vmid" />
 				</div>
-				{(show)? <div className="papa"><SongList location="offline" includeModify={true} includeAdder={true} {...props}/></div>:''}
+				{(show)? <div className="papa"><SongList location="offline" includeModify={true} includeAdder={true} {...pop} store={this.store} /></div>:''}
 			</div>
 			)
 	}
 }
-
-const OfflineSongsC = connect((state, ownProps)=>{
-	let songs = (state.currentCat.name)? state.offlineSongs[state.currentCat.id]:[];
-
-	return {
-		songs,
-		songLength: songs.length,
-		updateForced: state.updateForced,
-		lang: state.language,
-		controls: state.keys.alt,
-		to: state.ui.navigation.to,
-		increment: state.songIncrement,
-		currentCat: state.currentCat,
-		direction: state.ui.direction,
-		subscribedToStream: state.subscribedToStream,
-		...ownProps
-	}
-},{ setCurrentSong: Action.setCurrentSong, updateSongList: Action.updateSongList, removeSong: Action.removeSong, addSong: Action.addSong, changeIndex: Action.changeIndex, changeAddSongView: Action.changeAddSongView, subscribeToStream: Action.subscribeToStream, changeDirection: Action.changeDirection })(OfflineSongs)
+OfflineSongs.contextType = Custom;
 
 class DownloaderLine extends React.PureComponent{
 	render(){
@@ -706,12 +778,17 @@ class Notification extends React.PureComponent{
 class AddCatDiv extends React.Component{
 	constructor(props,context){
 		super(props);
+		let state = context.store.getState(),
+		Text = context.Text,
+		current = state.currentCat;
+
+		this.store = context.store;
 		this.submit = this.submit.bind(this);
 		this.updateCat = this.updateCat.bind(this);
-		this.Text = context.addCatDiv;
-		this.formError = context.formError;
-		this.formText = context.formError;
-		this.state = {message:()=> "",name:"", signal:signal.system};
+		this.Text = Text.addCatDiv;
+		this.formError = Text.formError;
+		this.formText = Text.formError;
+		this.state = {message:()=> "",name:"", signal:signal.system, controls: state.keys.alt, current, catNames: state.Categories, view: state.ui.show.addCatDiv, lastCatId: state.Categories.length, catNamesString: state.Categories.join(' ') };
 		this.cleanUp = this.cleanUp.bind(this);
 		this.handleClick = this.handleClick.bind(this);
 		this.checker = this.checker.bind(this);
@@ -724,27 +801,60 @@ class AddCatDiv extends React.Component{
 		_catName.onchange = ()=>{
 			let state = this.state;
 			this.setState({...state,name:_catName.value});
-		}
+		},
+		store = this.store;
+
+		this.unsubscribe = store.subscribe(()=>{
+			let cState = store.getState(),
+			state = this.state,
+			newState = {};
+
+			if(state.controls != cState.keys.alt){
+				newState.controls = cState.keys.alt;
+			}
+			if(state.current != cState.currentCat){
+				newState.current = cState.currentCat;
+			}
+			if(state.catNames != cState.Categories){
+				newState.catNames = cState.Categories; 
+			}
+			if(state.view != cState.ui.show.addCatDiv){
+				newState.view = cState.ui.show.addCatDiv
+			}
+			if(state.lastCatId != cState.Categories.length){
+				newState.lastCatId = cState.Categories.length
+			}
+			if(state.catNamesString != cState.Categories.length){
+				newState.catNamesString = cState.Categories.join(' ')
+			}
+
+			if(Object.keys(newState).length){
+				this.setState(newState);
+			}
+		})
 		this.node = document.getElementById("addCat");
 		this.popUp = document.querySelector(".popUp");
 		this.box = 	document.querySelector(".popUp .Box");
 		invoqueAfterMount('addCatDiv');
 	}
 
-	componentDidUpdate(prevProps){
-		let {_catName} = this.refs;
-		let { name } = this.state;
-		let state = this.state;
-		let { lang,current } = this.props;
-		let Text = this.Text;
+	componentWillUmount(){
+		this.unsubscribe();
+	}
 
-		if(this.props.controls){
-			if(this.props.current.name){
-				_catName.value = (!prevProps.controls || prevProps.current.name != current.name)? current.name : name || current.name;
+	componentDidUpdate(prevProps,prevState){
+		let {_catName} = this.refs,
+		{ name, controls, current } = this.state,
+		{ lang } = this.props,
+		Text = this.Text;
+
+		if(controls){
+			if(current.name){
+				_catName.value = (!prevState.controls || prevState.current.name != current.name)? current.name : name || current.name;
 				this.refs._add.textContent = Text.modiButtonText(lang);
 			}
 		}
-		else if(!this.props.controls){
+		else{
 			_catName.value = name;
 			this.refs._add.textContent = Text.addButtonText(lang);
 		}
@@ -778,7 +888,7 @@ class AddCatDiv extends React.Component{
 		e.preventDefault();
 
 		let { lang } = this.props,
-		catNames = this.props.catNames.map((catName)=> catName.toLowerCase()),
+		catNames = this.state.catNames.map((cat)=> cat.name.toLowerCase()),
 		catName = this.refs._catName,
 		catNameValue = catName.value,
 		action = null, message = "",
@@ -809,19 +919,22 @@ class AddCatDiv extends React.Component{
 		return { action };
 	}
 	submit(e){
-		let { current, lastCatId, lang } = this.props,
+		let { current } = this.state,
+		{ lang, addCategorie } = this.props,
 		catName = this.refs._catName.value,
-		{ action, message } = this.checker(e); 
+		{ action, message } = this.checker(e),
+		store = this.store,
+		id = Date.now().toString();
 
 		if(action){
 			return action();
 		}
 		else{
-			this.props.addCategorie(catName, lastCatId);
 			this.setState({ message:this.Text.message.success, signal:signal.success});
 
-			db.insertCategorie(catName)().then((r)=>{
+			db.insertCategorie(catName,id)().then((r)=>{
 				if(r){
+					store.dispatch(addCategorie(catName, id));
 					console.log("categorie",catName,"was inserted");
 				}
 				else
@@ -832,20 +945,23 @@ class AddCatDiv extends React.Component{
 		}
 	}
 	updateCat(e){
-		let {_catName} = this.refs;
-		let props = this.props;
-		let oldName = props.current.name;
-		let newName = _catName.value;
-		let { action } = this.checker(e);
-		let current = props.current;
+		let {_catName} = this.refs,
+		{ current } = this.state,
+		{ updateCategorie, setForceUpdate:forceUpdate } = this.props,
+		oldName = current.name,
+		newName = _catName.value,
+		{ action } = this.checker(e),
+		store = this.store;
+
 		if(action){
 			return action();
 		}
 		else{
 			this.setState({message:this.Text.message.updated, name:_catName.value, signal:signal.success});
-			props.updateCategorie(oldName,newName,current.id);
-			props.forceUpdate({node:'catNames', value:true});
-			meticulus('catNames',()=> props.forceUpdate({node:'catNames', value:false}))
+
+			store.dispatch(updateCategorie(oldName,newName,current.id));
+			store.dispatch(forceUpdate({node:'catNames', value:true}));
+			meticulus('catNames',()=> store.dispatch(forceUpdate({node:'catNames', value:false})))
 		}
 	}
 	cleanUp(){
@@ -853,7 +969,11 @@ class AddCatDiv extends React.Component{
 	}
 	handleClick(event){
 		let target = event.target, 
-		isOfInterest = target.className.indexOf('add') != -1 || target.className.indexOf('close') != -1, className=null, props = this.props;
+		isOfInterest = target.className.indexOf('add') != -1 || target.className.indexOf('close') != -1, 
+		className=null, 
+		{ controls, current } = this.state,
+		{ changeCatView } = this.props,
+		store = this.store;
 
 		if(isOfInterest){
 			event.preventDefault();
@@ -862,27 +982,27 @@ class AddCatDiv extends React.Component{
 			className = target.className;
 
 			if(className.indexOf('add') != -1){
-				if(props.controls && props.current.name)
+				if(controls && current.name)
 					this.updateCat(event);
 				else
 					this.submit(event);
 			}
 			else if(className.indexOf('close') != -1){
-				props.changeCatView(false);
+				store.dispatch(changeCatView(false));
 				this.cleanUp();
 			}
 		}
 	}
 	render(){
-		let {lang,controls,view} = this.props;
-		let text = this.Text;
-		let { message, signal } = this.state;
-		let but1 = (controls)? text.modiButtonText: text.addButtonText;
-		let but2 = text.closeButtonText;
-		view = (view)? '':'whoosh'; 
+		let { controls,view,message, signal } = this.state,
+		{ lang } = this.props,
+		text = this.Text,
+		but1 = (controls)? text.modiButtonText: text.addButtonText,
+		but2 = text.closeButtonText,
+		viewClass = (view)? '':'whoosh'; 
 
 		return (
-			<div id="addCat" className={view}>
+			<div id="addCat" className={viewClass}>
 				<p className={`message ${signal}`}><span className="status">{message(lang)}</span></p>
 				<div className="catName">
 					<p><span className="signal error"></span></p>
@@ -896,25 +1016,17 @@ class AddCatDiv extends React.Component{
 		)
 	}
 }
-AddCatDiv.contextType = Texts; 
-
-const AddCatDivC = connect((state,ownProps)=>{
-	let Categories = state.Categories;
-	return {
-		lang: 		state.language,
-		controls: 	state.keys.alt,
-		current: 	state.currentCat,
-		catNames: 	Categories,
-		view: 		state.ui.show.addCatDiv,
-		lastCatId:  state.Categories.length,
-		catNamesString: Categories.join(' '),
-		...ownProps
-	}
-},{ forceUpdate: Action.setForceUpdate, updateCategorie: Action.updateCategorie, updateSongList: Action.updateSongList, addCategorie: Action.addCategorie, changeCatView: Action.changeCatView })(AddCatDiv);
+AddCatDiv.contextType = Custom; 
 
 class AddSongDiv extends React.Component{
 	constructor(props,context){
 		super(props);
+		let state = context.store.getState(),
+		current = state.currentSong,
+		currentCat = state.currentCat,
+		Text = context.Text;
+
+		this.store = context.store;
 		this.kak = this.kak.bind(this);
 		this.changeVerseNumber = this.changeVerseNumber.bind(this);
 		this.updateSong = this.updateSong.bind(this);
@@ -922,15 +1034,50 @@ class AddSongDiv extends React.Component{
 		this.hasOverflowed = this.hasOverflowed.bind(this);
 		this.scrollHandler = scrollHandler.bind(this);
 		this.lastUpdateOverflowed = false;
-		this.state = { VerseNumber:"",verses: [], name:"", lang:this.props.lang,message:"",VersesText:{}, signal:signal.system };
-		this.Text = context.addSongDiv;
-		this.formError = context.formError;
-		this.songText = context.Song;
+		this.state = { VerseNumber:"",verses: [], name:"",message:"",VersesText:{}, signal:signal.system, location: current.location, controls: state.keys.alt, current, VersesDiv: state.ui.addSongDiv.verses, currentCatName: currentCat.name, catId: currentCat.id, view: state.ui.show.addSongDiv };
+		this.Text = Text.addSongDiv;
+		this.formError = Text.formError;
+		this.songText = Text.Song;
 		this.handleClick = this.handleClick.bind(this);
 		this.focusSignal = this.focusSignal.bind(this);
 	}
 
 	componentDidMount(){
+		let store = this.store;
+
+		this.unsubscribe = store.subscribe(()=>{
+			let cState = store.getState(),
+			state = this.state,
+			newState = {},
+			current = cState.currentSong,
+			currentCat = cState.currentCat;
+
+			if(state.location != current.location){
+				newState.location = current.location
+			}
+			if(state.controls != cState.keys.alt){
+				newState.controls = cState.keys.alt;
+			}
+			if(state.current != current){
+				newState.current = current;
+			}
+			if(state.VersesDiv != cState.ui.addSongDiv.verses){
+				newState.VersesDiv = cState.ui.addSongDiv.verses;
+			}
+			if(state.currentCatName != currentCat.name){
+				newState.currentCatName = currentCat.name
+			}
+			if(state.catId != currentCat.id){
+				newState.catId = currentCat.id;
+			}
+			if(state.view != cState.ui.show.addSongDiv){
+				newState.view = cState.ui.show.addSongDiv;
+			}
+
+			if(Object.keys(newState).length){
+				this.setState(newState);
+			}
+		})
 		invoqueAfterMount('AddSongDiv');
 		this.node = document.getElementById("addSong");
 		this.listDiv = document.querySelector(".popUp .wrap");
@@ -940,7 +1087,7 @@ class AddSongDiv extends React.Component{
 		}
 	}
 	componentWillUnmount(){
-
+		this.unsubscribe();
 		this.listDiv.ontouchmove = "";
 		this.listDiv.ontouchend = "";
 
@@ -956,7 +1103,7 @@ class AddSongDiv extends React.Component{
 			return nodeHeight > listDivHeight
 		}
 		catch(e){
-			alert(e);
+			console.log(e);
 		}
 	}
 
@@ -992,15 +1139,15 @@ class AddSongDiv extends React.Component{
 			this.props.adjustHeight();
 
 
-			if(((prevProps.current.name != this.props.current.name) && this.state.verses.length) || prevProps.lang != this.props.lang){
-				this.setState({...this.state,verses:[],lang:this.props.lang});
+			if(((prevState.current.name != this.state.current.name) && this.state.verses.length) || prevProps.lang != this.props.lang){
+				this.setState({...this.state,verses:[]});
 			}
 
 			let {_name,_verseNumber} = this.refs;
-			if(this.props.controls){
+			if(this.state.controls){
 				let { VersesText } = this.state;
-				_name.value = this.props.current.name;
-				let verses = (this.state.verses.length && this.state.verses) || (this.props.current.verses);
+				_name.value = this.state.current.name;
+				let verses = (this.state.verses.length && this.state.verses) || (this.state.current.verses);
 				for(let i=1;;i++){
 					let input = [`_Verse${i}`]
 					let verse = this.refs[input];
@@ -1009,7 +1156,7 @@ class AddSongDiv extends React.Component{
 					else{
 						verse.value = VersesText[input] || (verses[i-1] && verses[i-1].Text) || '';
 						if(!VersesText[input])
-							VersesText[input] = Verse.value;
+							VersesText[input] = verse.value;
 						if(!verse.onchange){
 							verse.onchange = ()=>{
 								let localState = this.state;
@@ -1048,7 +1195,7 @@ class AddSongDiv extends React.Component{
 			}
 		}
 		catch(e){
-			alert(e);
+			console.log(e);
 		}
 
 		this.props.adjustHeight();
@@ -1067,22 +1214,24 @@ class AddSongDiv extends React.Component{
 		if(action)
 			return action();
 		else{
-			let { addSong, forceUpdate, currentCatName, lang, catId } = this.props;
+			let { currentCatName, catId } = this.state,
+			{ addSong, setForceUpdate:forceUpdate, lang } = this.props,
+			store = this.store;
 
-			db.insertSong(songName,verses,currentCatName)().then((r)=>{
+			db.insertSong(songName,verses,catId)().then((r)=>{
 				if(r){
+					store.dispatch(addSong(0,songName,catId,verses));
+					store.dispatch(forceUpdate({node:'songList',value:true}));
+					this.setState({ name:"",message:this.Text.message.success(lang),VersesText:{},verses:[], VerseNumber:0, signal:signal.success})
+					meticulus('songList',()=>{
+						store.dispatch(forceUpdate({node:'songList', value:false}));
+					})
 					notifier.addSpeed(this.songText.insertion.success(lang,songName),null,null,null,signal.success)
 				}
 				else
 					notifier.addSpeed(this.songText.insertion.failed(lang,songName),null,null,null,signal.error);
 			}).Oups((e)=>{
 				alert("addCatDiv kak insertSong "+e);
-			})
-			addSong(0,songName,catId,verses);
-			forceUpdate({node:'songList',value:true});
-			this.setState({ name:"",message:this.Text.message.success(lang),VersesText:{},verses:[], VerseNumber:0, signal:signal.success})
-			meticulus('songList',()=>{
-				forceUpdate({node:'songList', value:false});
 			})
 		}
 	}
@@ -1174,10 +1323,12 @@ class AddSongDiv extends React.Component{
 		if(action)
 			return action();
 		else{
-			let { location, updateSong, currentCatName, setCurrentSong, current, lang, catId } = this.props;
+			let { location, currentCatName, current, catId } = this.state,
+			{ updateSong, setCurrentSong, lang } = this.props,
+			store = this.store;
 
-			updateSong(current.id,catId,_name.value,verses,location,current.name)
-			setCurrentSong(current.id,catId,location);
+			store.dispatch(updateSong(current.id,catId,_name.value,verses,location,current.name));
+			store.dispatch(setCurrentSong(current.id,catId,location));
 			this.setState({ message:this.Text.message.updated(lang), signal:signal.success});
 		}
 	}
@@ -1211,44 +1362,47 @@ class AddSongDiv extends React.Component{
 		this.setState({...this.state,message:"",VersesText:{},name:"",VerseNumber:"", verses:[]});
 	}
 	handleClick(e){
-		let target = e.target, isOfInterest = target.className.indexOf("add") != -1 || target.className.indexOf("close") != -1, className = null, props = this.props;
+		let target = e.target, isOfInterest = target.className.indexOf("add") != -1 || target.className.indexOf("close") != -1, 
+		className = null,
+		{ controls } = this.state, 
+		{ changeAddSongView, changeVerseDivNumber:changeVerseDiv } = this.props,
+		store = this.store;
 
 		if(isOfInterest){
 			e.preventDefault();
 			className = target.className;
 
 			if(className.indexOf('add') != -1){
-				if(props.controls)
+				if(controls)
 					this.updateSong(e);
 				else
 					this.kak(e);
 			}
 			else{
-				props.changeAddSongView(false);
-				props.changeVerseDiv(0);
+				store.dispatch(changeAddSongView(false));
+				store.dispatch(changeVerseDiv(0));
 				this.cleanUp();
 			}
 		}
 	}
 
 	render(){
-		let props = this.props;
-		let { verses,name, signal } = this.state;
-		let l = props.lang;
-		let controls = props.controls;
-		let text = this.Text;
-		let verseNumber = (controls)? (verses && verses.length) || (props.current.verses && props.current.verses.length) || 0: verses.length ; 
-		let but1 = (controls)? text.modiButtonText: text.addButtonText;
-		let but2 = text.closeButtonText;
-		let view = (props.view)? '':'whoosh';
+		let { lang } = this.props,
+		{ verses,signal, controls, current, view } = this.state,
+		text = this.Text,
+		verseNumber = (controls)? (verses && verses.length) || (current.verses && current.verses.length) || 0: verses.length ,
+		but1 = (controls)? text.modiButtonText: text.addButtonText,
+		but2 = text.closeButtonText,
+		viewClass = (view)? '':'whoosh';
+
 		return (
-			<div id="addSong" className={`addSong ${view}`}>
+			<div id="addSong" className={`addSong ${viewClass}`}>
 				<p><span className={`status ${signal}`}>{this.state.message}</span></p>
 				<div className="songName">
 					<input ref="_name" type="text" placeholder="Nom de la chanson"/>
 				</div>
 				<div className="verseChanger">
-					<p><span className="signal">{text.verseNumberHolder(l)}</span></p>
+					<p><span className="signal">{text.verseNumberHolder(lang)}</span></p>
 					<input className="verseNumber" ref="_verseNumber" type="number" placeholder={verseNumber} />
 				</div>
 				<div>
@@ -1262,63 +1416,93 @@ class AddSongDiv extends React.Component{
 					</div>
 				)}
 				<div onClick = {this.handleClick} className="actions il">
-					<input className="add blueBack" type="submit" name="" value={but1(l)} />
-					<input className="close blueBack" type="submit" value={but2(l)} />
+					<input className="add blueBack" type="submit" name="" value={but1(lang)} />
+					<input className="close blueBack" type="submit" value={but2(lang)} />
 				</div>
 			</div>
 			)
 	}
 }
-AddSongDiv.contextType = Texts;
-
-const AddSongDivC = connect((state,ownProps)=>{
-	return {
-		location: 		state.currentSong.location,
-		lang: 			state.language,
-		controls: 		state.keys.alt,
-		current: 		state.currentSong,
-		VersesDiv: 		state.ui.addSongDiv.verses,
-		currentCatName: state.currentCat.name,
-		catId: 			state.currentCat.id,
-		view: 			state.ui.show.addSongDiv,
-		...ownProps
-	}
-},{ forceUpdate: Action.setForceUpdate, setCurrentSong: Action.setCurrentSong, updateSong: Action.updateSong, changeVerseDiv: Action.changeVerseDivNumber, changeAddSongView: Action.changeAddSongView, addSong: Action.addSong })(AddSongDiv);
-
+AddSongDiv.contextType = Custom;
 
 class CreateStream extends React.Component{
 	constructor(props,context){
 		super(props);
+		let state = context.store.getState(),
+		Text = context.Text,
+		currentSong = state.currentSong
+
+		this.store = context.store;
 		this.save = this.save.bind(this);
-		this.formError = context.formError;
+		this.formError = Text.formError;
 		this.cleanUp = this.cleanUp.bind(this);
-		this.state = {message:()=> "", disabled:false, lang:props.lang, signal:signal.system};
-		this.Text = context.createStreamDiv;
+		this.state = {message:()=> "", disabled:false,signal:signal.system, appReachable: state.appReachable, subscribedToStream: state.subscribedToStream, index: state.ui.navigation.verseIndex, catName: state.currentCat.name, songName: currentSong.name, verses: currentSong.verses, view: state.ui.show.createStreamDiv, isStreaming: state.isStreaming};
+		this.Text = Text.createStreamDiv;
 		this.badInput = /\W/;
 	}
 
 	componentDidMount(){
+		let store = this.store;
+
+		this.unsubscribe = store.subscribe(()=>{
+			let cState = store.getState(),
+			state = this.state,
+			currentSong = cState.currentSong,
+			newState = {};
+
+			if(state.appReachable != cState.appReachable){
+				newState.appReachable = cState.appReachable;
+			}
+			if(state.subscribedToStream != cState.subscribedToStream){
+				newState.subscribedToStream = cState.subscribedToStream;
+			}
+			if(state.index != cState.ui.navigation.verseIndex){
+				newState.index = cState.ui.navigation.verseIndex;
+			}
+			if(state.catName != cState.currentCat.name){
+				newState.catName = cState.currentCat.name;
+			}
+			if(state.songName != currentSong.name){
+				newState.songName = currentSong.name;
+			}
+			if(state.verses != currentSong.verses){
+				newState.verses = currentSong.verses;
+			}
+			if(state.view != cState.ui.show.createStreamDiv){
+				newState.view = cState.ui.show.createStreamDiv
+			}
+			if(state.isStreaming != cState.isStreaming){
+				newState.isStreaming = cState.isStreaming;
+			}
+
+			if(Object.keys(newState).length){
+				this.setState(newState);
+			}
+		})
 		invoqueAfterMount('createStream');
 		this.box = document.querySelector(".popUp .Box");
 		this.popUp = document.querySelector(".popUp");
 	}
 
+	componentWillUmount(){
+		this.unsubscribe();
+	}
+
 	componentDidUpdate(prevProps,prevState){
 		invoqueAfterMount('createStream');
-		if(prevProps.lang != this.props.lang){
-			this.setState({...this.state, lang:this.props.lang});
-		}
 
-		if(prevProps.isStreaming && !this.props.isStreaming)
+		if(prevState.isStreaming && !this.state.isStreaming)
 			this.setState({message:()=>""});
 
 		this.props.adjustHeight();
 	}
 
 	save(){
-		let { appReachable, subscribedToStream, isStreaming,lang } = this.props,
+		let { appReachable, subscribedToStream, isStreaming, catName, songName, index, verses } = this.state,
+		{ lang, setAppUnreachable } = this.props,
 		{ Text,formError } = this,
-		data;
+		data,
+		store;
 
 		if(!appReachable)
 			return this.setState({message:Text.message.networkProblem, signal:signal.error});
@@ -1370,11 +1554,11 @@ class CreateStream extends React.Component{
 		startStream(streamName.toLowerCase());
 		data = {
 			[stF.name]: streamName,
-			[stF.catName]: this.props.catName,
+			[stF.catName]: catName,
 			[stF.song]:{
-				[stF.songName]: this.props.songName,
-				[stF.verses]: this.props.verses,
-				[stF.index]: this.props.index || 0
+				[stF.songName]: songName,
+				[stF.verses]: verses,
+				[stF.index]: index || 0
 			}
 		};
 		fetcher({
@@ -1394,7 +1578,7 @@ class CreateStream extends React.Component{
 					return this.setState({message:Text.message.nameDuplication, signal:signal.error});
 				}
 				this.setState({message:Text.message.creationError, signal:signal.error});
-				this.props.setAppUnreachable();
+				store.dispatch(setAppUnreachable());
 				stopStream(streamName.toLowerCase());
 			},
 			setter:(xml)=>{
@@ -1404,20 +1588,22 @@ class CreateStream extends React.Component{
 
 	}
 	cleanUp(){
-		let {_name} = this.refs;
-		let props = this.props;
+		let {_name} = this.refs,
+		{ changeStreamCreateView: changeView } = this.props,
+		store = this.store;
+
 		if(_name)
 			_name.value = "";
 		this.setState({...this.state,message:()=> "",disabled:false, signal:signal.system});
-		props.changeView(false);
+		store.dispatch(changeView(false));
 	}
 	render(){
-		let { message, disabled, signal} = this.state;
-		let { lang, isStreaming }  = this.props;
-		let text = this.Text;
-		let view = (this.props.view)? '':'whoosh';
-		let closeButton = <input type="submit" className='close blueBack' onClick={this.cleanUp} value={text.close(lang)}/>
-		let createForm = (
+		let { message, disabled, signal, isStreaming } = this.state,
+		{ lang }  = this.props,
+		text = this.Text,
+		view = (this.state.view)? '':'whoosh',
+		closeButton = <input type="submit" className='close blueBack' onClick={this.cleanUp} value={text.close(lang)}/>,
+		createForm = (
 			<>
 				<input ref="_name" type="text" placeholder={text.nameHolder(lang)}/>
 					<div className="actions il">
@@ -1437,88 +1623,61 @@ class CreateStream extends React.Component{
 	}
 }
 
-CreateStream.contextType = Texts;
+CreateStream.contextType = Custom;
 
-const CreateStreamC = connect((state,ownProps)=>{
-	return {
-		appReachable: 	state.appReachable,
-		subscribedToStream: state.subscribedToStream,
-		lang: state.language,
-		index: 	state.ui.navigation.verseIndex,
-		catName: state.currentCat.name,
-		songName: state.currentSong.name,
-		verses: state.currentSong.verses,
-		view: state.ui.show.createStreamDiv,
-		isStreaming: state.isStreaming,
-		...ownProps
-	}
-},{ setAppUnreachable: Action.setAppUnreachable, changeView: Action.changeStreamCreateView })(CreateStream)
+function Second(props){
+	let className = (props.direction && props.direction == "Right")? 'il TRRR ':'il Full ',
+	lang = props.lang;
 
-class Second extends React.Component{
-	constructor(props){
-		super(props);
-		this.clickHandler = this.clickHandler.bind(this);
-		this.initTime = Date.now();
-	}
-
-	shouldComponentUpdate(){
-		return true;
-	}
-
-	componentDidUpdate(){
-		invoqueAfterMount('favorite');
-	}
-
-	clickHandler(event){
-		let { changeCatListView, changeResultListView, changeStreamListView, changeFavListView, resultView, catListView, streamListView, favListView} = this.props;
-		if(event.target.inlist)
-			event.stopPropagation();
-		else{
-			if(catListView)
-				changeCatListView(false);
-			if(resultView)
-				changeResultListView(false);
-			if(streamListView)
-				changeStreamListView(false);
-			if(favListView)
-				changeFavListView(false);
-		}
-	}
-
-	render(){
-		let props = this.props;
-		let className = (props.direction && props.direction == "Right")? 'il TRRR ':'il Full ';
-		return (
-			<div onClick={this.clickHandler} id="second" className={className}>
+	return (
+		<div id="second" className={className}>
 				<Notification />
-				{
-					(props.showGuide)? 
-						<Guider end={props.endGuide} step={props.step} showGuide={props.showGuide} />
-						:
-						''
-				}
-				<Head2 />
-				<SongContent />
-			</div>
-			)
-	}
+				<Head2 {...props} />
+				<SongContent {...props} />
+		</div>
+	)
 }
 
 class CatToggler extends React.Component{
-	constructor(props){
+	constructor(props,context){
 		super(props);
+		let store = context.store,
+		state = store.getState();
+
 		this.clickHandler = this.clickHandler.bind(this);
+		this.store = store;
+		this.state = { catListView: state.ui.show.catList }
+		this.image = state.images.categorie;
+	}
+
+	componentDidMount(){
+		let store = this.store;
+
+		this.unsubscribe = store.subscribe(()=>{
+			let state = store.getState();
+
+			if(this.state.catListView != state.ui.show.catList){
+				this.setState({ catListView: state.ui.show.catList });
+			}
+		})
+	}
+
+	componentWillUmount(){
+		this.unsubscribe();
 	}
 
 	clickHandler(event){
-		let { changeCatListView, catListView } = this.props;
+		let { changeCatListView } = this.props,
+		{ catListView  } = this.state,
+		store = this.store;
+
 		event.preventDefault();
-		event.stopPropagation();
-		changeCatListView(!catListView);
+		event.nativeEvent.stopImmediatePropagation();
+		store.dispatch(changeCatListView(!catListView));
 	}
 
 	render(){
-		let { image } = this.props;
+		let { image } = this;
 
 		return <div className="il c1">
 				<a href="#" onClick={this.clickHandler}><img src={`img/${image}`}/></a>
@@ -1526,52 +1685,70 @@ class CatToggler extends React.Component{
 	}
 
 }
-
-const CatTogglerC = connect((state)=>({
-	catListView: state.ui.show.catList,
-	image: state.images.categorie
-}), { changeCatListView:Action.changeCatListView  })(CatToggler);
-
+CatToggler.contextType = Custom;
 
 const Head1 = (props)=>{
 	return (
 		<div className="head">
-			<CatTogglerC />
-			<InputC />
-			<TogglerC />
+			<CatToggler {...props} />
+			<Input {...props} />
+			<Toggler {...props} />
 			<Liner />
-			<CatNamesC />
-			<ResultListC />
+			<CatNames {...props} />
+			<ResultList {...props} />
 		</div>
 		)
 }
 
 class Input extends React.Component{
 
-	constructor(props){
+	constructor(props,context){
 		super(props);
+		let store = context.store,
+		state = store.getState();
+
 		this.inlet = "Josaphat";
 		this.initTime = Date.now();
+		this.state = { view: state.ui.show.resultList }
+		this.store = store;
 	}
 	componentDidMount(){
+		let store = this.store,
+		{ changeResultListView, searchSong } = this.props;
+
 		this.node = this.refs['_search'];
-		let view = this.props.view;
+		this.unsubscribe = store.subscribe(()=>{
+			let state = store.getState();
+
+			if(this.state.view != state.ui.show.resultList){
+				this.setState({ view: state.ui.show.resultList });
+			}
+		})
 		if(!this.node){
 			console.error("Input componentDidMount this.node is null");
 		}
 		else{
 			this.node.oninput = (event)=>{
-				let value = this.node.value;
+				let value = this.node.value,
+				{ view } = this.state;
+
 				if(value.length > 2){
-					this.search(value);
-					this.changeView(!view);
+					store.dispatch(searchSong(value));
+
+					if(!view){
+						store.dispatch(changeResultListView(true));
+					}
 				}
 				else{
-					if(this.props.view)
-						this.search("");
+					if(view){
+						store.dispatch(searchSong(""));
+					}
 				}
 			}
 		}
+	}
+	componentWillUmount(){
+		this.unsubscribe();
 	}
 	search(term){
 		this.props.searchSong(term);
@@ -1589,35 +1766,53 @@ class Input extends React.Component{
 	}
 	
 }
-
-const InputC = connect((state)=>({
-	view: state.ui.show.resultList,
-}), { searchSong: Action.searchSong, changeResultListView: Action.changeResultListView })(Input);
-
+Input.contextType = Custom;
 
 class Toggler extends React.Component{
-	constructor(props){
+	constructor(props,context){
 		super(props);
+		let store = context.store,
+		state = store.getState();
+
+		this.store = store;
+		this.state = { direction: state.ui.direction };
 		this.mustChangeDirection = this.mustChangeDirection.bind(this);
 		this.clickHandler = this.clickHandler.bind(this);
 	}
 
 	componentDidMount(){
+		let { changeDirection } = this.props,
+		{ direction } = this.state,
+		store = this.store;
+
 		if(this.mustChangeDirection()){
-			this.props.changeDirection((this.props.direction == "Right")? "Left":"Right");
+			store.dispatch(changeDirection((direction == "Right")? "Left":"Right"));
 		}
+
+		this.unsubscribe = store.subscribe(()=>{
+			let state = store.getState();
+
+			if(state.ui.direction != this.state.direction){
+				this.setState({ direction: state.ui.direction })
+			}
+		})
+	}
+
+	componentWillUmount(){
+		this.unsubscribe();
 	}
 
 	mustChangeDirection(){
 
-		let full = document.querySelector(".FULL");
+		let full = document.querySelector(".FULL"),
+		{ direction } = this.state;
 
 		if(full){
-			if(this.props.direction != "Left")
+			if(direction != "Left")
 				return true;
 			return false;
 		}
-		else if(this.props.direction == "Left"){
+		else if(direction == "Left"){
 			return true;
 		}
 		else
@@ -1626,14 +1821,17 @@ class Toggler extends React.Component{
 	}
 
 	clickHandler(event){
-		let { changeDirection , direction} = this.props;
+		let { changeDirection } = this.props,
+		{ direction } = this.state,
+		store = this.store;
+
 		event.preventDefault();
 		event.stopPropagation();
-		changeDirection(((direction == "Right")? "Left":"Right"));
+		store.dispatch(changeDirection(((direction == "Right")? "Left":"Right")));
 	}
 
 	render(){
-		let { direction } = this.props;
+		let { direction } = this.state;
 		direction = direction || "Right";
 
 		return (
@@ -1644,18 +1842,16 @@ class Toggler extends React.Component{
 
 	}
 }
-
-const TogglerC = connect((state)=>({
-	direction: state.ui.direction
-}), { changeDirection: Action.changeDirection,  })(Toggler)
-
-const Liner = ({additionalClass=''})=> <div className={`tight ${additionalClass}`}> </div>
-
+Toggler.contextType = Custom
 
 class CatNames extends React.Component{
 	constructor(props,context){
 		super(props);
-		this.text  = context.Categorie;
+		let Text = context.Text,
+		state = context.store.getState();
+
+		this.text  = Text.Categorie;
+		this.store = context.store;
 		this.clickHandler = this.clickHandler.bind(this);
 		this.addCatButton = this.addCatButton.bind(this);
 		this.topClass = "wrap";
@@ -1665,10 +1861,40 @@ class CatNames extends React.Component{
 		this.action2 = this.action2.bind(this);
 		this.download = this.download.bind(this);
 		this.propagationHandler = this.propagationHandler.bind(this);
+		this.state = { updateForced: state.updateForced.catNames, controls: state.keys.alt, view: state.ui.show.catList, catNames: state.Categories, controls: state.keys.alt }
+		this.image = state.images.download
 	}
 
 	componentDidMount(){
+		let store = this.store
+
+		this.unsubscribe = store.subscribe(()=>{
+			let cState = store.getState(),
+			state = this.state,
+			newState = {};
+
+			if(state.updateForced != cState.updateForced.catNames){
+				newState.updateForced = cState.updateForced.catNames;
+			}
+			if(state.controls != cState.keys.alt){
+				newState.controls = cState.keys.alt;
+			}
+			if(state.view != cState.ui.show.catList){
+				newState.view = cState.ui.show.catList;
+			}
+			if(state.catNames != cState.Categories){
+				newState.catNames = cState.Categories;
+			}
+
+			if(Object.keys(newState).length){
+				this.setState(newState);
+			}
+		})
 		this.node = document.querySelector(".catNames");
+	}
+
+	componentWillUmount(){
+		this.unsubscribe();
 	}
 
 	componentDidUpdate(){
@@ -1676,14 +1902,16 @@ class CatNames extends React.Component{
 	}
 
 	clickHandler(event){
-		let target = event.target, props = this.props;
-		event.preventDefault();
+		let target = event.target, 
+		{ changeCatView } = this.props,
+		store = this.store;
 		
 		if(target.className == "addCatCliquer" || target.className == "imgCliquer"){
-			props.changeCatView(true);
+			store.dispatch(changeCatView(true));
 		}
-		else
-			event.stopPropagation();
+		
+
+		event.preventDefault();
 	}
 
 	addCatButton(){
@@ -1697,29 +1925,35 @@ class CatNames extends React.Component{
 	}
 
 	modif(item,id){
-		let { setCurrentCat, changeCatView } = this.props;
+		let { setCurrentCat, changeCatView } = this.props,
+		store = this.store;
 
-		setCurrentCat(item.name || item,id);
-		changeCatView(true);
+		store.dispatch(setCurrentCat(item.name,item.id,item.location));
+		store.dispatch(changeCatView(true));
 	}
 	wipe(item,target,id){
-		let { removeCategorie } = this.props;
-		removeCategorie(item.name || item,id);
+		let { removeCategorie } = this.props,
+		store = this.store;
+
+		store.dispatch(removeCategorie(item.name,item.id));
 	}
 	action1(item,id){
-		let { changeIndex, setCurrentCat, updateSongList, changeCatListView } = this.props;
+		let { changeIndex, setCurrentCat, updateSongList, changeCatListView } = this.props,
+		store = this.store;
 
-		changeIndex(0);
-		setCurrentCat(item.name || item,id);
-		updateSongList(100);
-		changeCatListView(false);
+		store.dispatch(changeIndex(0));
+		store.dispatch(setCurrentCat(item.name,item.id,item.location));
+		store.dispatch(updateSongList(100));
+		store.dispatch(changeCatListView(false));
 	}
-	action2({name}){
-		let text = this.text;
-		let { lang } = this.props;
-		return db.insertCategorie(name)().then((r)=>{
+	action2({name,id}){
+		let text = this.text,
+		{ lang, addCategorie } = this.props;
+
+		return db.insertCategorie(name,id)().then((r)=>{
 			if(r){
 				notifier.addSpeed(text.insertion.success(lang,name));
+				store.dispatch(addCategorie(name,id));
 				return true;
 			}
 		}).Oups((e)=>{
@@ -1730,18 +1964,20 @@ class CatNames extends React.Component{
 		return db.getCategorie(name)();
 	}
 	propagationHandler(event){
-		event.stopPropagation();
+		event.nativeEvent.stopImmediatePropagation();
 	}
 
 	render(){
-		let { action1, wipe, modif, download } = this;
-		let props = this.props;
-		let hide = (props.view)? '':'whoosh';
-		let lang = props.lang;
-		let text = this.text;
-		let action2 = [this.action2]
-		let action = this.action1;
-		let style = {style:" abs abBottom shadowR list catNames BRRad "+hide}
+		let { action1, wipe, modif, download } = this,
+		{ lang } = this.props,
+		{ view, controls, catNames } = this.state,
+		image = this.image,
+		hide = (view)? '':'whoosh',
+		text = this.text,
+		action2 = [this.action2],
+		action = this.action1,
+		style = {style:" abs abBottom shadowR list catNames BRRad "+hide};
+
 		return (
 				<div onClick={this.propagationHandler}>
 					<List 
@@ -1750,11 +1986,11 @@ class CatNames extends React.Component{
 						action2={action2} 
 						modif={modif} 
 						wipe={wipe}  
-						controls={props.controls} 
+						controls={controls} 
 						first={this.addCatButton} 
-						src={props.image}
+						src={image}
 						action={action} 
-						list={props.catNames} 
+						list={catNames} 
 						abs={style}
 						topClass={this.topClass}
 						catName={true}
@@ -1763,30 +1999,41 @@ class CatNames extends React.Component{
 			)
 	}
 }
-CatNames.contextType = Texts;
-
-const CatNamesC = connect((state,ownProps)=>({
-	updateForced: state.updateForced.catNames,
-	controls: state.keys.alt,
-	view: state.ui.show.catList,
-	catNames: state.Categories,
-	controls: state.keys.alt,
-	image: state.images.download,
-	...ownProps
-}), { changeCatView: Action.changeCatView, setCurrentCat: Action.setCurrentCat, removeCategorie: Action.removeCategorie, changeIndex: Action.changeIndex, updateSongList: Action.updateSongList, changeCatListView: Action.changeCatListView })(CatNames)
-
+CatNames.contextType = Custom;
 
 class ResultList extends React.Component{
-	constructor(prop){
+	constructor(prop,context){
 		super(prop);
+		let store = context.store,
+		state = store.getState();
+
+
 		this.scrollHandler = scrollHandler;
 		this.action = this.action.bind(this);
+		this.state = { resultView: state.ui.show.resultList, songs: state.searchResult };
+		this.store = store;
 	}
 
 	componentDidMount(){
-		this.node = document.querySelector("#first .head .result");
-		let trackedTouchs = [];
+		let trackedTouchs = [],
+		store = this.store;
 
+		this.unsubscribe = store.subscribe(()=>{
+			let state = store.getState(),
+			newState = {};
+
+			if(state.ui.show.resultList != this.state.resultView){
+				newState.resultView = state.ui.show.resultList;
+			}
+			if(state.searchResult != this.state.songs){
+				newState.songs = state.searchResult;
+			}
+
+			if(Object.keys(newState).length){
+				this.setState(newState);
+			}
+		})
+		this.node = document.querySelector("#first .head .result");
 		this.node.ontouchmove = (event)=>{
 			this.scrollHandler(this.node,event,trackedTouchs);
 		}
@@ -1796,17 +2043,19 @@ class ResultList extends React.Component{
 	}
 	componentWillUmount(){
 		this.node.ontouchmove = this.node.ontouchend = null;
+		this.unsubscribe();
 	}
 
 	action({songId, catId, location,catName}){
-		let { setCurrentCat, setCurrentSong } = this.props;
+		let { setCurrentCat, setCurrentSong } = this.props,
+		store = this.store;
 
-		setCurrentCat(catName,catId);
-		setCurrentSong(songId, catId, location);
+		store.dispatch(setCurrentCat(catName,catId,location));
+		store.dispatch(setCurrentSong(songId, catId, location));
 	}
 
 	render(){
-		let {resultView, songs, setCurrentCat, setCurrentSong } = this.props,
+		let {resultView, songs } = this.state,
 		hide = (resultView)? '':'whoosh',
 		style = { style:" abs abBottom list result shadowC BLRad BRRad "+hide };
 		songs = (songs.length)? songs: ["Aucun resultat"];
@@ -1816,12 +2065,7 @@ class ResultList extends React.Component{
 
 	}
 }
-
-const ResultListC = connect((state)=>({
-	resultView: state.ui.show.resultList,
-	songs: state.searchResult || [],
-
-}), { setCurrentCat: Action.setCurrentCat, setCurrentSong: Action.setCurrentSong })(ResultList)
+ResultList.contextType = Custom;
 
 const List = ({catName,putInLastAccess,hide,updateMyCat,args,song,abs,src,list = [],action,action2,first=()=>{},controls,wipe,modif,download,downloadAll,topClass})=>{
 
@@ -1829,7 +2073,7 @@ const List = ({catName,putInLastAccess,hide,updateMyCat,args,song,abs,src,list =
 		<div className={(abs)? abs.style: ""}>
 			{first()}
 			{list.map((item,i)=>{
-				if(item.name) item = {...item,id:i};
+				if(item.name) item = {id:i,...item};
 						return	(<div className={`${(topClass)? topClass: ''}`+((song)? ` p${i}`:'')} key={i}>
 									<Item hide={hide} i={i} args={{...args}} item={item} action={action} action2={action2} controls={controls} src={src} wipe={wipe} modif={modif} updateMyCat={updateMyCat} song={song} downloadAll={downloadAll} download={download} />
 								</div>)
@@ -1988,7 +2232,10 @@ class Download extends React.Component{
 class SongList extends React.Component{
 	constructor(props,context){
 		super(props);
+
+
 		this.text = context.Song;
+		this.store = props.store;
 		this.scrollHandler = scrollHandler.bind(this);
 		this.addMoreSong = this.addMoreSong.bind(this);
 		this.shouldAddMoreSong = this.shouldAddMoreSong.bind(this);
@@ -2030,6 +2277,18 @@ class SongList extends React.Component{
 
 		this.listDiv.onscroll = this.addMoreSong;
 	}
+
+	componentDidUpdate(prevProps, prevState){
+		let props = this.props,
+		report = props.report;
+
+		if(report && !prevProps.report){
+			this.songInsert(props.songs, props.currentCat.id);
+		}
+
+		invoqueAfterMount('songList');
+	}
+
 	shouldComponentUpdate(nextProps,nextState){
 		let props = this.props;
 
@@ -2066,30 +2325,36 @@ class SongList extends React.Component{
 
 	addMoreSong(event){
 		try{
-			let { to, increment, updateSongList } = this.props;
+			let { to, increment, updateSongList, store } = this.props;
 			if(this.shouldAddMoreSong()){
 				let percent = Math.floor(((this.listDiv.clientHeight + this.listDiv.scrollTop) / this.listDiv.scrollHeight) * 100);
 
-				(percent > 65)? updateSongList(to + increment): '';
+				(percent > 65)? store.dispatch(updateSongList(to + increment)): '';
 			}
 		}	
 		catch(e){
-			alert(e);
+			console.log(e);
 		}
 	}
 	
 	reportSuccess(name,i,verses){
-		let { report, addSong, removeSong, counterUpdater, currentCat, songs, lang,} = this.props;
-		let catName = currentCat.name;
-		let catId = currentCat.id;
+		let { report, addSong, removeSong, counterUpdater, currentCat, songs, lang, location,store, addCategorie } = this.props,
+		catName = currentCat.name,
+		catId = currentCat.id,
+		addCat = (location == 'online' && !store.getState().offlineSongs[catId]),
+		status = (i == songs.length -1)? insertStatus.COMPLETE: insertStatus.SUCCESS;
+
 		if(report){
-			report((i == songs.length -1)? insertStatus.COMPLETE: insertStatus.SUCCESS, name);
+			report(status, name);
 		}
 		else
 			notifier.addSpeed(this.text.insertion.success(lang,name),undefined,undefined,undefined,signal.success);
 
-		addSong(0,name,catId, verses,'offline');
-		removeSong(i,catId,name);
+		if(addCat){
+			store.dispatch(addCategorie(catName,catId));
+		}
+		store.dispatch(addSong(0,name,catId, verses,'offline'));
+		store.dispatch(removeSong(i,catId,name));
 		counterUpdater(-1);
 
 		return true;
@@ -2106,13 +2371,14 @@ class SongList extends React.Component{
 
 		return true;
 	}
-	songInsert(songs,cat){
-		let c = Promise.resolve(true);
-		let self = this;
+	songInsert(songs,catId){
+		let c = Promise.resolve(true),
+		self = this;
+
 		songs.forEach((song,i)=>{
 			let { name, verses } = song;
 			c = c.then(()=>{
-				return db.insertSong(name,verses,cat)().then((r)=>{
+				return db.insertSong(name,verses,catId)().then((r)=>{
 					try{
 						if(r){
 							self.reportSuccess(name,0,verses);
@@ -2120,13 +2386,13 @@ class SongList extends React.Component{
 						}
 						else{
 							self.reportError(name);
-							alert("Failed");
+							console.error("Failed");
 							return false;
 						}
 					}
 					catch(e){
-						alert("insertSong Error"+c);
-						console.log(e);
+						console.error("insertSong Error"+c);
+						console.error(e);
 						return e;
 					}
 				})
@@ -2150,6 +2416,8 @@ class SongList extends React.Component{
 	}
 
 	insertSong(name,verses,cat,index,tried=0){
+		let { store } = this.props;
+
 		return db.insertSong(name,JSON.stringify(verses),cat)().then((r)=>{
 			if(r){
 				this.reportSuccess(name,index,verses);
@@ -2158,7 +2426,9 @@ class SongList extends React.Component{
 			else{
 				if(tried)
 					return false;
-				return this.insertCategorie(cat).then((id)=>{
+				let id = Date.now().toString() + cat;
+
+				return this.insertCategorie(cat,id).then((id)=>{
 					if(is.Number(id))
 						return this.insertSong(name,verses,id,index,1);
 					else
@@ -2168,8 +2438,8 @@ class SongList extends React.Component{
 		})
 	}
 
-	insertCategorie(cat){
-		return db.insertCategorie(cat)().then((id)=>{
+	insertCategorie(cat,id){
+		return db.insertCategorie(cat,id)().then((id)=>{
 			if(is.Number(id)){
 				return id;
 			}
@@ -2201,25 +2471,26 @@ class SongList extends React.Component{
 		})
 	}
 	modif(item,id){
-		let { changeIndex, setCurrentSong, location, changeAddSongView, currentCat } = this.props;
+		let { changeIndex, setCurrentSong, location, changeAddSongView, currentCat, store } = this.props;
 
-		changeIndex(0);
-		setCurrentSong(id,currentCat.id,item.name,location);
-		changeAddSongView(true);
+		store.dispatch(changeIndex(0));
+		store.dispatch(setCurrentSong(id,currentCat.id,item.name,location));
+		store.dispatch(changeAddSongView(true));
 	}
 	wipe(item,target,songId){
 		let name = item.name || item;
-		let { removeSong, currentCat, location, lang } = this.props;
+		let { removeSong, currentCat, location, lang, store } = this.props;
 		let catName = currentCat.name,
 		parent = target.parentNode,
 		catId = currentCat.id;
 
 		db.deleteSong(name,catName)().then((r)=>{
 			if(r){
-				removeSong(songId,catId,name,location);
+				store.dispatch(removeSong(songId,catId,name,location));
 
-				if(catName == name)
-					setCurrentSong("");
+				if(catName == name){
+					store.dispatch(setCurrentSong(""));
+				}
 
 				notifier.addSpeed(this.text.wiping.success(lang,name),undefined,undefined,undefined,signal.success);
 
@@ -2240,27 +2511,27 @@ class SongList extends React.Component{
 				
 	}
 	action(x,id){
-		let { currentCat, setCurrentSong, subscribedToStream, subscribeToStream, location, changeDirection } = this.props;
+		let { currentCat, setCurrentSong, subscribedToStream, subscribeToStream, location, changeDirection, store } = this.props;
 
 		abortSubscription(fetcher);
 		S.updateStream(currentCat.name, x.name, 0, x.verses);
-		setCurrentSong(id,currentCat.id,location);
 
-		if(window.innerWidth <= 425)
-			changeDirection('Left');
+		store.dispatch(setCurrentSong(id,currentCat.id,location));
 
-		if(subscribedToStream)
-			subscribeToStream(false);
-	}
-	componentDidUpdate(){
-		invoqueAfterMount('songList');
+		if(window.innerWidth <= 425){
+			store.dispatch(changeDirection('Left'));
+		}
+
+		if(subscribedToStream){
+			store.dispatch(subscribeToStream(false));
+		}
 	}
 
 	render(){
 		let props = this.props,
 		location = props.location || 'online',
 		songs = props.songs,
-		{ lang, to } = props,
+		{ lang, to,store, changeAddSongView,currentCat } = props,
 		saveSequence = new seq(),
 		report = props.report,
 		songProps = {
@@ -2270,64 +2541,36 @@ class SongList extends React.Component{
 			list:[]
 		},
 		action2Curried = curry(this.action2)(this.saveSequence),
-		catName = props.currentCat.name,
+		catName = currentCat.name,
+		catId = currentCat.id,
 		cat = props.currentCat.name,
 		text = this.text;
 
-		if(report){
-
-			let Fender = db.insertCategorie(catName)().then((id)=>{
-					if(is.Number(id)){
-						this.songInsert(songs,id);		
-					}
-					else{
-						console.error("insert Categorie Failed");
-						alert("Fender insertCategorie failed");
-					}
-			}).Oups((e)=>{
-				let passableCode = {};
-				passableCode[1] = true;
-				passableCode[6] = true;
-				if(passableCode[e.code]){
-					db.getCategorie(cat)().then((r)=>{
-						let id = r.pop().id;
-						this.songInsert(songs,id);
-					})
-				}
-				else{
-					console.error(e);
-					alert("Fender Oups");
-					alert(e.message);
-					alert(e.code);
-				}
-			})
-		
-		}
-		else{
+		if(!report){
 			songProps = {
-					song:(db.isBogus)? false:true,
-					updateMyCat:this.updateMyCat,
-					download:(global.alert)? this.download:null,
-					args:{cat:props.currentCat.name},
-					action2:[action2Curried],
-					modif:(!props.includeModify)? null: this.modif,
-					wipe: this.wipe,
-					controls:props.controls,
-					first:(props.includeAdder)? (!props.currentCat.name)? ()=> "":()=> <div className="wrapper"><div id="AddSong" className="il f1"><a onClick={(event)=> {event.preventDefault(); props.changeAddSongView(true)}} href="#">{text.adder(lang)}</a></div><div className="il"></div></div>: ()=>{},
-					action:this.action,
-					src:props.downloadImage,
-					downloadAll:(report)? true:false,
-					list:(report)? songs : songs.slice(0,to),
-					abs:{style:'list il'},
-					hide:(index)=>{
-						/*let className = `.p${index}`
-						let parent = document.querySelector(className);
-						if(parent)
-							parent.style.display = "none";
-						else
-							console.log("Couldn't hide p"+index); */
-					},
-					topClass:"wrapper"
+				song:(db.isBogus)? false:true,
+				updateMyCat:this.updateMyCat,
+				download:(global.alert)? this.download:null,
+				args:{cat:props.currentCat.name},
+				action2:[action2Curried],
+				modif:(!props.includeModify)? null: this.modif,
+				wipe: this.wipe,
+				controls:props.controls,
+				first:(props.includeAdder)? (!props.currentCat.name)? ()=> "":()=> <div className="wrapper"><div id="AddSong" className="il f1"><a onClick={(event)=> {event.preventDefault(); store.dispatch(changeAddSongView(true))}} href="#">{text.adder(lang)}</a></div><div className="il"></div></div>: ()=>{},
+				action:this.action,
+				src:props.downloadImage,
+				downloadAll:(report)? true:false,
+				list:(report)? songs : songs.slice(0,to),
+				abs:{style:'list il'},
+				hide:(index)=>{
+					/*let className = `.p${index}`
+					let parent = document.querySelector(className);
+					if(parent)
+						parent.style.display = "none";
+					else
+						console.log("Couldn't hide p"+index); */
+				},
+				topClass:"wrapper"
 			};
 		}
 
@@ -2337,44 +2580,73 @@ class SongList extends React.Component{
 SongList.contextType = Texts
 
 const Head2 = (props)=>{
-	let favListView = props.favListView;
-	let streamListView = props.streamListView;
 	return (
-		<div className="head">
-			<TogglerC />
-			<SettingsC />
-			<FavoriteC />
-			<StreamCreationC />
-			<StreamListC />
+		<div className="head" onClick={(event)=> event.nativeEvent.stopImmediatePropagation()}>
+			<Toggler {...props} />
+			<Settings {...props} />
+			<Favorite {...props} />
+			<StreamCreation {...props} />
+			<StreamList {...props} />
 			<Liner />
+			{/*<SettingsC />
+						<FavoriteC />
+						<StreamCreationC />
+						<StreamListC />
+						<Liner />*/}
 		</div>
 		)
 }
 
 class Favorite extends React.Component{
-	constructor(props){
+	constructor(props,context){
 		super(props);
+		let state = context.store.getState();
+
+		this.store = context.store;
+		this.state = { view: state.ui.show.favList, favorites:state.favorites }
 		this.clickHandler = this.clickHandler.bind(this);
 		this.action = this.action.bind(this);
+		this.image = state.images.favorite.start;
 	}
 
 	componentDidMount(){
+		let store = this.store;
 
+		this.unsubscribe = store.subscribe(()=>{
+			let state = store.getState(),
+			newState = {};
+
+			if(state.ui.show.favList != this.state.view){
+				newState.view = state.ui.show.favList;
+			}
+			if(state.favorites != this.state.favorites){
+				newState.favorites = state.favorites
+			}
+
+			if(Object.keys(newState).length){
+				this.setState(newState);
+			}
+		})
+	}
+
+	componentWillUmount(){
+		this.unsubscribe();
 	}
 
 	clickHandler(event){
-		event.preventDefault();
-		event.stopPropagation();
+		let { view } = this.state, 
+		{ changeFavListView } = this.props,
+		store = this.store;
 
-		let { changeFavListView, view } = this.props;
-		changeFavListView(!view);
+		store.dispatch(changeFavListView(!view));
 	}
 
 	action(item){
-		let { setCurrentCat, setCurrentSong } = this.props;
+		let { setCurrentCat, setCurrentSong } = this.props,
+		store = this.store;
 
-		setCurrentCat(item.catName, item.catId);
-		setCurrentSong(item.songId, item.catId, item.location);
+		store.dispatch(setCurrentCat(item.catName, item.catId, item.location));
+		store.dispatch(setCurrentSong(item.songId, item.catId, item.location));
 	}
 
 	buildFavList(favorites){
@@ -2393,7 +2665,8 @@ class Favorite extends React.Component{
 	}
 
 	render(){
-		let { image, favorites, view } = this.props,
+		let { favorites, view } = this.state,
+		image = this.image,
 		favList = this.buildFavList(favorites),
 		hide = (view)? '':'whoosh';
 		
@@ -2409,53 +2682,81 @@ class Favorite extends React.Component{
 			) 
 	}
 }
+Favorite.contextType = Custom;
 
-const FavoriteC = connect((state)=>({
-	view: state.ui.show.favList,
-	favorites: state.favorites,
-	image: state.images.favorite.start,
-
-}), { changeFavListView: Action.changeFavListView, setCurrentCat: Action.setCurrentCat, setCurrentSong: Action.setCurrentSong })(Favorite);
-
-class StreamCreation extends React.PureComponent{
+class StreamCreation extends React.Component{
 	constructor(props,context){
 		super(props);
+		let state = context.store.getState();
+
+		this.store = context.store;
 		this.showCreateStream = this.showCreateStream.bind(this);
 		this.stopStream = this.stopStream.bind(this);
-		this.text = context;
-		this.images = this.props.images;
-		this.state = {img:`img/${this.images.start}`};
+		this.text = context.Text;
+		this.images = state.images.streamCreate;
+		this.state = {img:`img/${this.images.start}`, isStreaming: state.isStreaming, songName: state.currentSong.name, appReachable: state.appReachable};
 	}
 
-	componentDidUpdate(prevProps){
+	componentDidUpdate(prevProps,prevState){
 		invoqueAfterMount('streamCreation');
 
-		if(prevProps.isStreaming == false && this.props.isStreaming == true){
+		if(prevState.isStreaming == false && this.state.isStreaming == true){
 			let streamName = S.getName();
 			this.setState({img:`img/${this.images.stop}`});
 		}
+	}
+
+	componentDidMount(){
+		let store = this.store;
+
+		this.unsubscribe = store.subscribe(()=>{
+			let state = store.getState(),
+			newState = {};
+
+			if(state.isStreaming != this.state.isStreaming){
+				newState.isStreaming = state.isStreaming;
+			}
+			if(state.appReachable != this.state.appReachable){
+				newState.appReachable = state.appReachable;
+			}
+			if(state.currentSong.name != this.state.songName){
+				newState.songName = state.currentSong.name;
+			}
+
+			if(Object.keys(newState).length){
+				this.setState(newState);
+			}
+		})
+
+		directAccess["streamCreation"] = this;
+		if(S.getName())
+			this.setState({img:`img/${this.images.stop}`});
+	}
+
+	componentWillUmount(){
+		this.unsubscribe();
 	}
 
 	showCreateStream(event){
 		event.preventDefault();
 		event.stopPropagation();
 
-		if(!this.props.songName){
+		let { songName } = this.state,
+		{ changeStreamCreateView } = this.props,
+		store = this.store;
+
+		if(!songName){
 			return alert("Please select a song before starting a stream");
 		}
-		if(!S.getName()) 
-			return this.props.changeStreamCreateView(true);
+		if(!S.getName()){ 
+			return store.dispatch(changeStreamCreateView(true));
+		}
 		this.stopStream();
 		let c = 0;
 		this.counter = setInterval(()=>{
 			notifier2.addSpeed(this.text.Stream.stopping(this.props.lang,S.getName(),".".repeat(c % 6)));
 			c++;
 		},100);
-	}
-	componentDidMount(){
-		directAccess["streamCreation"] = this;
-		if(S.getName())
-			this.setState({img:`img/${this.images.stop}`});
 	}
 
 	stopStream(){
@@ -2490,13 +2791,13 @@ class StreamCreation extends React.PureComponent{
 	}
 
 	render(){
-		let props = this.props;
-		let { img } = this.state;
+		let { img, appReachable } = this.state;
+
 		return (
 			<div className="streamCreation il c2 tip">
 				<div>
 					{ 
-						(props.appReachable)? 
+						(appReachable)? 
 							<a onClick={this.showCreateStream} href="#">
 								<img className="vmid" src={img} /><Liner additionalClass="vmid" /> 
 							</a>: ""
@@ -2506,16 +2807,7 @@ class StreamCreation extends React.PureComponent{
 			)
 	}
 }
-StreamCreation.contextType = Texts;
-
-const StreamCreationC = connect((state)=>({
-	images: state.images.streamCreate,
-	lang: state.language,
-	appReachable: state.appReachable,
-	isStreaming: state.isStreaming,
-	songName: state.currentSong.name
-
-}),{ changeStreamCreateView: Action.changeStreamCreateView})(StreamCreation);
+StreamCreation.contextType = Custom;
 
 const Search = ({view})=>{
 	let hide = (view)? '':'whoosh';
@@ -2529,26 +2821,51 @@ const Search = ({view})=>{
 class StreamList extends React.Component{
 	constructor(props,context){
 		super(props);
-		this.state = {list:[], showSearch:false, searchResult:[], searchTerm:""}
+		let state = context.store.getState(),
+		Text = context.Text;
+
+		this.store = context.store;
+		this.state = {list:[], showSearch:false, searchResult:[], searchTerm:"", appReachable: state.appReachable, view: state.ui.show.streamList, newCatId: state.Categories.length }
 		this.updateStream = this.updateStream.bind(this);
 		this.updateCurrentStreamInfo = this.updateCurrentStreamInfo.bind(this);
 		this.downloadSong = this.downloadSong.bind(this);
 		this.registerToStream = this.registerToStream.bind(this);
 		this.restartUpdateStream = this.restartUpdateStream.bind(this);
 		this.downloadSong.inFetch = {};
-		this.listText = context.streamList;
-		this.streamText = context.Stream;
+		this.listText = Text.streamList;
+		this.streamText = Text.Stream;
 		this.timer = {normal:5000, error:10000};
 		this.lastTimestamp;
 		this.hasOverflowed = this.hasOverflowed.bind(this);
 		this.handleSearchInput = this.handleSearchInput.bind(this);
 		this.scrollHandler = scrollHandler;
 		this.createDownloadLink = this.createDownloadLink.bind(this);
+		this.changeView = this.changeView.bind(this);
+		this.image = state.images.streamList
 	}
 
 	componentDidMount(){
-		if(this.props.appReachable)
-			this.updateStream();
+		let { appReachable } = this.state,
+		store = this.store;
+
+		this.unsubscribe = store.subscribe(()=>{
+			let state = store.getState(),
+			newState = {};
+
+			if(state.appReachable != this.state.appReachable){
+				newState.appReachable = state.appReachable;
+			}
+			if(state.ui.show.streamList != this.state.view){
+				newState.view = state.ui.show.streamList;
+			}
+			if(state.Categories.length != this.state.newCatId){
+				newState.newCatId = state.Categories.length;
+			}
+
+			if(Object.keys(newState).length){
+				this.setState(newState);
+			}
+		})
 
 		this.listDiv = document.querySelector(".streamList .list");
 		this.searchInput = document.querySelector(".streamList .list .search");
@@ -2563,11 +2880,15 @@ class StreamList extends React.Component{
 		this.listDiv.ontouchend = (event)=>{
 			trackedTouchs = [];
 		}
+
+		if(appReachable){
+			this.updateStream();
+		}
 	}
 
-	componentDidUpdate(prevProps){
-		let { showSearch, searchTerm } = this.state;
-		if(!prevProps.appReachable && this.props.appReachable)
+	componentDidUpdate(prevProps,prevState){
+		let { showSearch, searchTerm, appReachable } = this.state;
+		if(!prevState.appReachable && appReachable)
 			this.updateStream(this.lastTimestamp || 0);
 
 		let hasOverflowed = this.hasOverflowed();
@@ -2624,8 +2945,9 @@ class StreamList extends React.Component{
 	}
 
 	updateStream(t){
-		let text = this.text;
-		let { lang } = this.props,
+		let text = this.text,
+		{ lang, subscribeToStream, setAppUnreachable } = this.props,
+		store = this.store,
 		lastTime = t || 0;
 
 		fetcher({
@@ -2662,7 +2984,7 @@ class StreamList extends React.Component{
 						if(currentRegistration && !isNotIn(currentRegistration)){
 							notifier2.addSpeed(this.streamText.subscription.end(this.props.lang,currentRegistration));
 							delete this.subscribe.registration;
-							this.props.subscribeToStream(false);
+							store.dispatch(subscribeToStream(false));
 							this.updateCurrentStreamInfo();
 							abortSubscription(fetcher);
 						}
@@ -2682,7 +3004,7 @@ class StreamList extends React.Component{
 				
 			},
 			e:(e,xml)=>{
-				this.props.setAppUnreachable();
+				store.dispatch(setAppUnreachable());
 				notifier2.addSpeed(this.listText.updateStreamError(lang));
 				console.log("Error while retriving the stream",e);
 			}
@@ -2699,38 +3021,39 @@ class StreamList extends React.Component{
 		let url = `stream/song?action=download&${stF.name}=${streamName}`;
 		if(downloadSong.inFetch[url])
 			return;
-		let props = this.props;
-		let lang = props.lang;
-		let downloadText = this.streamText.download;
+		let { lang, addCategorie, addSong, setCurrentCat, setCurrentSong } = this.props,
+		{ newCatId } = this.state,
+		downloadText = this.streamText.download,
+		store = this.store;
+
 		downloadSong.inFetch[url] = true;
 		notifier2.addSpeed(downloadText.start(lang,songName));
 		fetcher({
 			url,
 			s:(response)=>{
-				let action = response.action;
+				let { action,songName, catName, verses } = response;
 				delete downloadSong.inFetch[url];
 				switch(action){
 					case SUB.DELETE:
 						notifier2.addSpeed(this.listText.songDeleted(lang,songName));
 						break;
 					case SUB.ADD:
-						let { catName, songName, verses } = response.payload,
-						newCatId = null;
+						let newCatId = null;
 						if(!fastAccess[catName]){
-							newCatId = this.props.newCatId
-							props.addCategorie(catName,newCatId);
+							newCatId = Date.now()
+							store.dispatch(addCategorie(catName,newCatId,'online'));
 							notifier2.addSpeed(this.listText.categorieInserted(lang,catName));
 						}
 						else{
 							newCatId = fastAccess[catName].id;
 						}
-						props.addSong(0,songName, newCatId, verses, 'online');
+						store.dispatch(addSong(0,songName, newCatId, verses, 'online'));
 						notifier2.addSpeed(this.listText.songInserted(lang,catName,songName));
 
 						if(this.streamCatName.toLowerCase() == catName.toLowerCase() && this.streamSongName.toLowerCase() == songName.toLowerCase()){
-							props.setCurrentCat(catName,newCatId);
+							store.dispatch(setCurrentCat(catName,newCatId,'online'));
 							let songId = fastAccess[catName]['online'][songName.toUpperCase()];
-							props.setCurrentSong(songId,newCatId,'online',this.streamPosition);
+							store.dispatch(setCurrentSong(songId,newCatId,'online',this.streamPosition));
 						}
 						break;
 					case SUB.STREAMDELETED:
@@ -2764,8 +3087,10 @@ class StreamList extends React.Component{
 	}
 
 	subscribe(streamName,update, past={}){
-		let props = this.props;
-		let url = `stream/subscribe?${stF.name}=${streamName}${(update)? `&${stq.updating}=true`:""}`;
+		let { subscribeToStream, setCurrentSong, setCurrentCat, lang } = this.props,
+		url = `stream/subscribe?${stF.name}=${streamName}${(update)? `&${stq.updating}=true`:""}`,
+		store = this.store;
+
 		fetcher({
 					url,
 					setter: (xml)=>{
@@ -2795,8 +3120,7 @@ class StreamList extends React.Component{
 								subscriptionSuccess = textSubscription.success,
 								subscriptionError = textSubscription.error,
 								dontHaveSong = textSubscription.dontHaveSong,
-								endSubscription = textSubscription.end,
-								{ lang, setCurrentSong, setCurrentCat, subscribeToStream } = this.props;
+								endSubscription = textSubscription.end;
 
 								if(catName && songName){
 									fastAccessCatName = fastAccess[catName],
@@ -2835,9 +3159,9 @@ class StreamList extends React.Component{
 											this.downloadSong(catName,songName,streamName)
 										}
 										else{
-											setCurrentCat(catName,fastAccessCatName.id);
 											let location = (songNotInOfflineCat)? 'online':'offline';
-											setCurrentSong(songId,catId,location,parseInt(position,10));
+											store.dispatch(setCurrentCat(catName,fastAccessCatName.id,location));
+											store.dispatch(setCurrentSong(songId,catId,location,parseInt(position,10)));
 												
 										}
 										this.updateCurrentStreamInfo(catName, songName, position);
@@ -2850,25 +3174,25 @@ class StreamList extends React.Component{
 										
 										notifier2.addSpeed(endSubscription(lang, streamName));
 										delete subscribeMethod.registration;
-										props.subscribeToStream(false);
+										store.dispatch(subscribeToStream(false));
 										this.updateCurrentStreamInfo();
 										break;
 
 									case SUB.NOTHING:
 
 										notifier2.addSpeed(textSubscription.nothing(this.props.lang, streamName));
-										props.subscribeToStream(false);
+										store.dispatch(subscribeToStream(false));
 										break;
 									default:
 
 										notifier2.addSpeed(subscriptionError(lang, streamName));
 										console.log("fetcher Odd response",response);
-										subscribeToStream(false);
+										store.dispatch(subscribeToStream(false));
 										this.updateCurrentStreamInfo();
 								}
 							}
 							catch(e){
-								alert(e);
+								console.log(e);
 							}
 
 						}
@@ -2876,45 +3200,49 @@ class StreamList extends React.Component{
 					},
 					e:({status,response})=>{
 						notifier2.addSpeed( this.text.Stream.subscription.error(this.props.lang, streamName));
-						props.subscribeToStream(false);
+						store.dispatch(subscribeToStream(false));
 						console.log("Error while trying to subscribe to stream",streamName,status,response);
 					}
 				});
 	}
 
 	registerToStream(streamName){
-		let props = this.props;
+		let { subscribeToStream } = this.props,
+		store = this.store;
+
 		if(streamName != this.subscribe.registration){
 			abortSubscription(fetcher);
 			this.subscribe(streamName);
-			props.subscribeToStream(true);
+			store.dispatch(subscribeToStream(true));
 		}
 	}
 
+	changeView(){
+		let { view } = this.state,
+		store = this.store,
+		{ changeStreamListView } = this.props;
+
+		store.dispatch(changeStreamListView(!view));
+	}
+
 	render(){
-		let hide = (this.props.view)? '':'whoosh';
-		let props = this.props;
-		let { list, showSearch, searchResult, searchTerm } = this.state;
-		let { banner, open } = props.image;
+		let { view, appReachable } = this.state, 
+		hide = (view)? '':'whoosh',
+		{ list, showSearch, searchResult, searchTerm } = this.state,
+		{ banner, open } = this.image;
 
 		if(searchTerm)
 			list = searchResult;
-
-		function switchStreamListVisibility(event){
-			event.preventDefault(); 
-			event.stopPropagation(); 
-			props.changeStreamListView(!props.view);
-		}
 
 		return (
 			<div className="streamList il c3 tip">
 				<div>
 					{ 
-						(props.appReachable)? 
-							<a className="streamListLink" onClick={switchStreamListVisibility} href="#"><img className="vmid" src={`img/${banner}`} /> <Liner additionalClass="vmid"/><span className="counter">{this.state.list.length}</span></a> : ""
+						(appReachable)? 
+							<a className="streamListLink" onClick={this.changeView} href="#"><img className="vmid" src={`img/${banner}`} /> <Liner additionalClass="vmid"/><span className="counter">{list.length}</span></a> : ""
 					}
 				</div>
-				{ (props.appReachable)?
+				{ (appReachable)?
 					<div className={`abs abBottom shadowL list listStream silverBack BLRad ${hide}`}>
 						<Search handleSearch={this.handleSearchInput} view={showSearch} />
 						<div className="items">
@@ -2936,20 +3264,12 @@ class StreamList extends React.Component{
 			)
 	}
 }
-StreamList.contextType = Texts;
-
-const StreamListC = connect((state)=>({
-	appReachable: state.appReachable,
-	lang: state.language,
-	view: state.ui.show.streamList,
-	image: state.images.streamList,
-	newCatId: state.Categories.length
-}), { subscribeToStream: Action.subscribeToStream, setAppUnreachable: Action.setAppUnreachable, addCategorie: Action.addCategorie, addSong: Action.addSong, setCurrentCat: Action.setCurrentCat, setCurrentSong: Action.setCurrentSong, changeStreamListView: Action.changeStreamListView })(StreamList);
+StreamList.contextType = Custom;
 
 const SongContent = (props)=>{
 	return (
 		<div className="body">
-			<ContentC />
+			<Content {...props} />
 		</div>
 		)
 }
@@ -2957,64 +3277,69 @@ const SongContent = (props)=>{
 class Content extends React.Component{
 	constructor(props,context){
 		super(props);
+		let state = context.store.getState(),
+		Text = context.Text,
+		currentCat = state.currentCat,
+		currentSong = state.currentSong,
+		isFavorite = (currentCat.name && state.favorites[currentCat.name] && state.favorites[currentCat.name][currentSong.name] && true) || false;
 		
-		this.Text = context.Favorite;
+		this.store = context.store;
+		this.Text = Text.Favorite;
 		this.storageHandler = storageHandler();
 		this.scrollHandler = scrollHandler.bind(this);
-		this.state = { verses:[], currentCatName:"", index:0, currentSongName:"", initialIndex:""};
+		this.state = { verses:currentSong.verses, currentCatName:"", index:0, currentSongName:"", currentCat, song: currentSong,isFavorite, currentSongName: currentSong.name};
 		this.goToVerse = this.goToVerse.bind(this);
 		this.clickHandler = this.clickHandler.bind(this);
-		this.initialVerseIndex;
 		this.propIndex;
+		this.images = state.images;
 	}
 	
 	componentDidMount(){
+		let store = this.store;
+
+		this.unsubscribe = store.subscribe(()=>{
+			let cState = store.getState(),
+			state = this.state,
+			currentCat = cState.currentCat,
+			currentSong = cState.currentSong,
+			isFavorite = (currentCat.name && cState.favorites[currentCat.name] && cState.favorites[currentCat.name][currentSong.name] && true) || false,
+			newState = {};
+
+			if(state.currentCat != currentCat){
+				newState.currentCat = currentCat;
+			}
+			if(state.song != currentSong){
+				newState.song = currentSong;
+			}
+			if(state.isFavorite != isFavorite){
+				newState.isFavorite = isFavorite;
+			}
+			if(state.currentSongName != cState.currentSong.name){
+				newState.currentSongName = cState.currentSong.name;
+				newState.index = 0;
+			}
+			if(state.verses != currentSong.verses){
+				newState.verses = currentSong.verses;
+			}
+			if(state.currentCatName != currentCat.name){
+				newState.currentCatName = currentCat.name;
+				newState.index = 0;
+			}
+
+			if(Object.keys(newState).length){
+				this.setState(newState);
+			}
+		})
 		this.listDiv = document.getElementById("content");
 		this.papa = document.querySelector("#content .papa");
 	}
 
-	shouldComponentUpdate(nextProps,nextState){
-		let props = this.props;
-		let state = this.state;
-		let nextCatName = nextProps.currentCat.name;
-		let catName = props.currentCat.name;
-		let songName = props.currentSongName;
-		let nextSongName = nextProps.song.name;
-		let verseIndex = state.index;
-		let nextVerseIndex = nextState.index;
-		let nextIsFavorite = nextProps.isFavorite,
-		isFavorite = props.isFavorite
-
-		if(nextCatName != catName || songName != nextSongName || verseIndex != nextVerseIndex || isFavorite != nextIsFavorite)
-			return true;
-
-		return false;
-	}
-
-	static getDerivedStateFromProps(props,state){
-		let currentCatName = props.currentCat.name;
-		let stateCurrentCatName = state.currentCatName;
-		let currentSongName = props.song.name;
-		let stateCurrentSongName = state.currentSongName;
-		let propIndex = props.verseIndex;
-		let initialIndex = state.initialIndex;
-
-		if(initialIndex !== propIndex || currentCatName != stateCurrentCatName || currentSongName != stateCurrentSongName){
-			return {
-				verses: props.song.verses,
-				currentCatName,
-				index: propIndex,
-				currentSongName,
-				initialIndex: (initialIndex !== propIndex)? propIndex: initialIndex
-			}
-		}
-
-		return null;
-
-	}
-
 	goToVerse(index){
+		let store = this.store,
+		{ changeIndex } = this.props;
+
 		console.log("go to Verse",index);
+		store.dispatch(changeIndex(index));
 		this.setState({index});
 	}
 
@@ -3037,13 +3362,17 @@ class Content extends React.Component{
 		}
 	}
 
-	addToFavorite(catName,catId,songName,songId,location,lang,fn,notify){
+	addToFavorite(catName,catId,songName,songId,location,lang,notify){
 		try{
-			let Text = this.Text;
+			let Text = this.Text,
+			{ addToFavorite } = this.props,
+			store = this.store;
+
+
 			if(!location)
 				console.error(`song ${songName} don't have a location`);
 
-			fn(catName, catId, songName, songId,location);
+			store.dispatch(addToFavorite(catName, catId, songName, songId,location));
 
 			notify.addSpeed(Text.added(lang,songName));
 		}
@@ -3052,11 +3381,13 @@ class Content extends React.Component{
 		}
 	}
 
-	removeFromFavorite(catName,catId,songName,songId,lang,fn,notify){
+	removeFromFavorite(catName,catId,songName,songId,lang,notify){
 		try{	
-			let Text =this.Text;
+			let Text =this.Text,
+			{ removeFromFavorite } = this.props,
+			store = this.store;
 
-			fn(catName,catId,songName,songId);
+			store.dispatch(removeFromFavorite(catName,catId,songName,songId));
 			notify.addSpeed(Text.deleted(lang,songName));
 		}
 		catch(e){
@@ -3066,8 +3397,9 @@ class Content extends React.Component{
 	}
 
 	isFavorite(catName,songName){
-		let props = this.props;
-		if(props.isFavorite)
+		let { isFavorite } = this.state;
+
+		if(isFavorite)
 			return true;
 		else{
 			let favorite = this.storageHandler.inStore('favorites',{},JSON.parse);
@@ -3079,19 +3411,19 @@ class Content extends React.Component{
 	}
 
 	clickHandler(event){
-		let { currentCatName, currentSongName, verses } = this.state,
-		props = this.props,
-		catId = props.currentCat.id,
-		{ isFavorite, lang, addToFavorite, removeFromFavorite, song } = props;
+		let { currentCatName, currentSongName, verses, currentCat, isFavorite, song } = this.state,
+		{ lang } = this.props,
+		catId = currentCat.id,
+		store
 
 		event.preventDefault();
 		event.stopPropagation();
 
 		if(!isFavorite){
-			this.addToFavorite(currentCatName,catId,currentSongName, song.id, song.location, lang, addToFavorite, notifier2)
+			this.addToFavorite(currentCatName,catId,currentSongName, song.id, song.location, lang, notifier2)
 		}
 		else{
-			this.removeFromFavorite(currentCatName,catId, currentSongName, song.id, lang, removeFromFavorite, notifier2);
+			this.removeFromFavorite(currentCatName,catId, currentSongName, song.id, lang, notifier2);
 		}
 
 	}
@@ -3102,15 +3434,14 @@ class Content extends React.Component{
 
 
 	render(){
-		this.initTime = Date.now();
-		let { verses, currentCatName, index } = this.state;
-		let props = this.props;
-		let currentVerse = (verses[index] && verses[index].Text) || "";
-		let catName = currentCatName;//props.currentCat.name;
-		let songName = props.song.name;
-		let location = props.song.location;
-		let favImg = props.images.favorite;
-		let lang = props.lang;
+		let { verses, currentCatName, index, song, isFavorite } = this.state,
+		{ lang } = this.props,
+		currentVerse = (verses[index] && verses[index].Text) || "",
+		catName = currentCatName,
+		songName = song.name,
+		location = song.location,
+		images = this.images,
+		favImg = images.favorite;
 		//let Verses = props.song.Verses;
 		let self = this;
 		function clickHandler(event){
@@ -3129,31 +3460,18 @@ class Content extends React.Component{
 			<>
 				<div id="content">
 					<div className="papa">
-						<h3>{songName}<a className="imFavorite" onClick={(songName)? this.clickHandler : this.voidHandler } href="#"><img src={(props.isFavorite)? `img/${favImg.unlove}`:`img/${favImg.love}`} /></a></h3>
+						<h3>{songName}<a className="imFavorite" onClick={(songName)? this.clickHandler : this.voidHandler } href="#"><img src={(isFavorite)? `img/${favImg.unlove}`:`img/${favImg.love}`} /></a></h3>
 						<p>{currentVerse}</p>
 					</div>
 				</div><br/>
-				<ArrowNav index={index} catName={currentCatName} songName={songName} total={Math.max(0,verses.length -1)} images={props.images.arrows} goToVerse={this.goToVerse} />
+				<ArrowNav index={index} catName={currentCatName} songName={songName} total={Math.max(0,verses.length -1)} images={images.arrows} goToVerse={this.goToVerse} />
 				<NavHelper goToVerse={this.goToVerse} currentIndex={index} catName={currentCatName} songName={songName} length={verses.length} />
 			</>
 
 			)
 	}
 }
-Content.contextType = Texts;
-
-const ContentC = connect((state,ownProps)=>{
-	return {
-		currentCat: state.currentCat,
-		song: state.currentSong,
-		verseIndex: state.ui.navigation.verseIndex,
-		isFavorite: (state.currentCat.name && state.favorites[state.currentCat.name] && state.favorites[state.currentCat.name][state.currentSong.name] && true ) || false,
-		images: state.images,
-		lang: state.language,
-		currentSongName: state.currentSong.name,
-		...ownProps
-	}
-}, { addToFavorite: Action.addToFavorite, removeFromFavorite: Action.removeFromFavorite })(Content);
+Content.contextType = Custom;
 
 class ArrowNav extends React.Component{
 	constructor(props){
@@ -3229,24 +3547,47 @@ const NavHelper = ({length,currentIndex, goToVerse, catName, songName})=>{
 }
 
 class PopUp extends React.Component{
-	constructor(props){
+	constructor(props,context){
 		super(props);
+
+		this.store = context.store;
 		this.adjustHeight = this.adjustHeight.bind(this);
-		this.checkIfMustBeVisible = this.checkIfMustBeVisible.bind(this);
 		this.getDimensions = this.getDimensions.bind(this);
 		this.isInTheMiddle = this.isInTheMiddle.bind(this);
 		this.putInTheMiddle = this.putInTheMiddle.bind(this);
 		this.wHeight = window.innerHeight;
+		this.state = { view:false };
 	}
 
 
 
 	componentDidMount(){
+		let store = this.store;
+
 		this.node = document.querySelector(".popUp");
 		this.box = document.querySelector(".popUp .Box");
 		let dimensions = this.node.getBoundingClientRect();
 		this.height = dimensions.height;
 		this.top = dimensions.top;
+		this.unsubscribe = store.subscribe(()=>{
+			let state = store.getState(),
+			{ addCatDiv:addCatView, addSongDiv:addSongView, createStreamDiv:createStreamView } = state.ui.show,
+			newState = {};
+
+			if(addCatView || addSongView || createStreamView){
+				if(!this.state.view){
+					this.adjustHeight();
+					newState.view = true;
+				}
+			}
+			else if(this.state.view){
+				newState.view = false;
+			}
+
+			if(Object.keys(newState).length){
+				this.setState(newState);
+			}
+		})
 
 		window.onresize = ()=>{
 			this.height = this.node.getBoundingClientRect().height;
@@ -3254,6 +3595,10 @@ class PopUp extends React.Component{
 				this.wHeight = window.innerHeight;
 			this.adjustHeight();
 		}
+	}
+
+	componentWillUmount(){
+		this.unsubscribe();
 	}
 
 	isInTheMiddle(){
@@ -3278,12 +3623,6 @@ class PopUp extends React.Component{
 
 	getDimensions(){
 		return this.node.getBoundingClientRect();
-	}
-
-	checkIfMustBeVisible(){
-		let { addCatView, addSongView, createStreamView } = this.props;
-
-		return (addCatView || addSongView || createStreamView);
 	}
 
 	adjustHeight(){
@@ -3313,16 +3652,16 @@ class PopUp extends React.Component{
 
 	render(){
 		let props = this.props;
-		let hide = this.checkIfMustBeVisible() ? '' : 'whoosh';
+		let hide = this.state.view ? '' : 'whoosh';
 		return (
 			<div className={`popUp ${hide}`}>
 				<div className={`popWrapper abs`}>
 					<div className="wrap">
 						<div className="Box il silverBack TLRad TRRad BLRad BRRad">
-							<SetupPopUpC adjustHeight={this.adjustHeight} />
-								<AddSongDivC adjustHeight={this.adjustHeight} />
-								<AddCatDivC adjustHeight={this.adjustHeight}  />
-									<CreateStreamC adjustHeight={this.adjustHeight} />
+							{/*<SetupPopUpC adjustHeight={this.adjustHeight} />*/}
+								<AddSongDiv adjustHeight={this.adjustHeight} {...props} />
+								<AddCatDiv adjustHeight={this.adjustHeight} {...props}  />
+									<CreateStream adjustHeight={this.adjustHeight} {...props} />
 						</div><Liner />
 					</div>
 				</div>
@@ -3330,19 +3669,7 @@ class PopUp extends React.Component{
 		)
 	}
 }
-
-const PopUpWrapper = connect((state)=>{
-	return {
-		VersesDiv: state.ui.addSongDiv.verses,
-		subscribedToStream: state.subscribedToStream,
-		addCatView: state.ui.show.addCatDiv,
-		addSongView: state.ui.show.addSongDiv,
-		createStreamView: state.ui.show.createStreamDiv,
-		isStreaming: state.isStreaming,
-		lastCatId: state.Categories.length,
-	}
-},{ setCurrentSong: Action.setCurrentSong, updateSong: Action.updateSong, addSong: Action.addSong, changeAddSongView: Action.changeAddSongView, updateCategorie: Action.updateCategorie, updateSongList: Action.updateSongList, addCategorie: Action.addCategorie, changeCatView: Action.changeCatView, setAppUnreachable: Action.setAppUnreachable, changeStreamCreateView: Action.changeStreamCreateView, forceUpdate: Action.setForceUpdate, changeVerseDivNumber: Action.changeVerseDivNumber })(PopUp);
-
+PopUp.contextType = Custom;
 
 class SetupPopUp extends React.Component{
 	constructor(props){
@@ -3369,51 +3696,62 @@ class SetupPopUp extends React.Component{
 
 }
 
-const SetupPopUpC = connect((state)=>{
-	return {
-		addCatView: 		state.ui.show.addCatDiv,
-		addSongView: 		state.ui.show.addSongDiv,
-		createStreamView: 	state.ui.show.createStreamView
-	}
-})(SetupPopUp);
-
 class Settings extends React.PureComponent{
-
-	constructor(props){
+	constructor(props,context){
 		super(props);
-		this.state = {
-			view:false
-		}
-		this.initTime = Date.now();
-		this.changeView = this.changeView.bind(this);
-	}
+		let state = context.store.getState();
 
-	componentDidMount(){
-		//alert(`it taked ${Date.now() - this.initTime} ms second to Mount Settings`);
+		this.store = context.store;
+		this.state = { view: state.ui.show.settingList }
+		this.changeView = this.changeView.bind(this);
 	}
 
 	componentDidUpdate(){
 		invoqueAfterMount('settings');
 	}
 
-	changeView(view){
-		this.setState({view});
+	componentDidMount(){
+		let store = this.store;
+
+		this.unsubscribe = store.subscribe(()=>{
+			let state = store.getState();
+
+			if(state.ui.show.settingList != this.state.view){
+				this.setState({ view: state.ui.show.settingList });
+			}
+		})
+	}
+
+	componentWillUmount(){
+		this.unsubscribe();
+	}
+
+	changeView(){
+		let { changeSettingListView } = this.props,
+		store = this.store,
+		{ view } = this.state;
+
+
+		store.dispatch(changeSettingListView(!view));
 	}
 
 	render(){
-		let { controls, setControl, changeDevToolView, viewDevTool } = this.props;
-		let { view } = this.state;
+		let { view } = this.state,
+		props = this.props;
 
 		let hide = (view)? '':'whoosh';
 		return (
 			<div className="settings il c0 tip" id="settings">
-				<SettingsTogglerC changeSettingsView={this.changeView} />
+				<div>
+					<a className="settingsToggler" onClick={this.changeView} href="#"><img className="vmid" src="img/settings.png" /><Liner additionalClass="vmid"/>
+					</a>
+				</div>
 				<div className={`abs abBottom list shadowR BRRad BLRad silverBack ${hide}`}>
 					<div>
-						<DayModeC />
-						<LanguageC />
-						<ControlC />
-						<DevToolViewTooglerC />
+						<DayMode {...props} />
+						<Language {...props} />
+						<Control {...props} />
+						<DevToolViewToogler {...props} />
 					</div>
 				</div>
 
@@ -3421,67 +3759,33 @@ class Settings extends React.PureComponent{
 			)
 	}
 }
-
-class SettingsToggler extends React.Component{
-	constructor(props){
-		super(props);
-		this.clickHandler = this.clickHandler.bind(this);
-	}
-
-	componentDidUpdate(prevProps){
-		let { view, changeView, changeSettingsView } = this.props;
-		
-		if(prevProps.view != view){
-			changeSettingsView(view);
-		}
-	}
-
-	clickHandler(event){
-		let { changeView, view, changeSettingsView } = this.props;
-		event.preventDefault();
-		event.stopPropagation();
-
-		changeView(!view);
-		changeSettingsView(!view);
-	}
-
-	render(){
-		let { view } = this.props;
-
-		return (
-			<div>
-				<a className="settingsToggler" onClick={this.clickHandler} href="#"><img className="vmid" src="img/settings.png" /><Liner additionalClass="vmid"/>
-				</a>
-			</div>
-			)
-	}
-}
-
-const SettingsTogglerC = connect((state,ownProps)=>({
-	view: 		state.ui.show.settingList,
-	...ownProps
-}),{ changeView: Action.changeSettingListView})(SettingsToggler);
-
-const SettingsC = connect((state,ownProps)=>({
-	nightMode: 		state.ui.nightMode,
-	lang: 			state.language,
-	controls: 		state.keys.alt,
-	view: 			state.ui.show.settingList,
-	viewDevTool: 	state.ui.show.devTool,
-	...ownProps
-
-}),{ changeMode: Action.changeNightMode, changeLanguage: Action.changeLanguage, changeView: Action.changeSettingListView, setControl: Action.setControl, changeDevToolView: Action.changeDevToolView })(Settings);
+Settings.contextType = Custom;
 
 class DayMode extends React.PureComponent{
-	constructor(props){
+	constructor(props,context){
 		super(props);
+		let store = context.store,
+		state = store.getState();
+
+		this.store = store;
+		this.state = { night: state.ui.nightMode }
 		this.changeMode = this.changeMode.bind(this);
 		this.initTime = Date.now();
 	}
 
 	componentDidMount(){
-		let { night } = this.props;
-		let react_container = document.getElementById("react-container");
+		let { night } = this.state,
+		react_container = document.getElementById("react-container"),
+		store = this.store;
+
+		this.unsubscribe = store.subscribe(()=>{
+			let state = store.getState();
+
+			if(state.ui.nightMode != this.state.night){
+				this.setState({ night: state.ui.nightMode })
+			}
+		})
+
 		if(!react_container)
 			throw Error("DayMode:componentDidMount No react container found");
 		else{
@@ -3489,13 +3793,13 @@ class DayMode extends React.PureComponent{
 			this.baseClassName = react_container.className.split(" ")[0];
 
 			if(night){
-				this.reactContainer = `${this.baseClassName} night`;
+				this.reactContainer.className = `${this.baseClassName} night`;
 			}
 		}
 	}
 
 	componentDidUpdate(){
-		let { night } = this.props,
+		let { night } = this.state,
 		reactContainer = this.reactContainer,
 		baseClassName = this.baseClassName,
 		newClassName = (night)? `${baseClassName} night`: baseClassName
@@ -3504,14 +3808,16 @@ class DayMode extends React.PureComponent{
 	}
 
 	changeMode(event){
-		let { changeMode,night } = this.props;
+		let { night } = this.state,
+		{ changeNightMode } = this.props;
 		event.preventDefault(); 
-		event.stopPropagation(); 
+		event.stopPropagation(),
+		store = this.store;
 
-		changeMode(!night);
+		store.dispatch(changeNightMode(!night));
 	}
 	render(){
-		let { night } = this.props;
+		let { night } = this.state;
 		return (
 			<div className="il f1 dayMode">
 				<span id="night">Night Mode </span> <a className="modeShift" href="#" onClick={this.changeMode}>{(night)? "On":"Off"}</a>
@@ -3519,18 +3825,16 @@ class DayMode extends React.PureComponent{
 		)
 	}
 }
-
-const DayModeC = connect((state,ownProps)=>{
-	return {
-		night: 		state.ui.nightMode,
-		...ownProps
-	}
-},{ changeMode: Action.changeNightMode})(DayMode);
+DayMode.contextType = Custom;
 
 class Language extends React.Component{
-	constructor(props){
+	constructor(props,context){
 		super(props);
+		let store = context.store;
+
+
 		this.state = { show:false};
+		this.store = store;
 		this.changeView = this.changeView.bind(this);
 		this.initTime = Date.now();
 	}
@@ -3549,17 +3853,17 @@ class Language extends React.Component{
 	}
 
 	render(){
-		let { changeLanguage, currentLanguage } = this.props;
+		let { changeLanguage, lang } = this.props;
 		let hide = (this.state.show)? '':'whoosh';
 		let list = [ "En","Fr" ];
 
 		return (
 			<div className="language il f1">
-				<span id="language">Language</span><a className="langShift" href="#" onClick={this.changeView}>{currentLanguage}</a>
+				<span id="language">Language</span><a className="langShift" href="#" onClick={this.changeView}>{lang}</a>
 				<div className={`list ${hide}`}>
 					{
 						list.map((lang2,i)=>
-							<a className={(currentLanguage == lang2)? signal.success:''} key={i} href="#" onClick={()=> changeLanguage(lang2)}>{lang2}</a>
+							<a className={(lang == lang2)? signal.success:''} key={i} href="#" onClick={()=> this.store.dispatch(changeLanguage(lang2))}>{lang2}</a>
 							)
 					}
 				</div>
@@ -3567,41 +3871,81 @@ class Language extends React.Component{
 		)
 	}
 }
+Language.contextType = Custom;
 
-const LanguageC = connect((state,ownProps)=>{
-	return {
-		currentLanguage: state.language,
-		...ownProps
-	}
-},{ changeLanguage: Action.changeLanguage })(Language);
+class Control extends React.Component{
+	constructor(props,context){
+		super(props);
+		let store = context.store,
+		state = store.getState();
 
-const Control = ({controls,setControl})=>{
-
-	function clickHandler(event){
-		event.preventDefault(); 
-		event.stopPropagation(); 
-		setControl(!controls);
+		this.store= store;
+		this.state = { controls: state.keys.alt }
+		this.changeControl = this.changeControl.bind(this);
 	}
 
-	return (
-		<div className="control il f1">
-			<span id="control">Controls</span><a className='controlShift' onClick={clickHandler} href="#">{(controls)? 'On':'Off'}</a>
-		</div>
-	)
+	componentDidMount(){
+		let store = this.store;
+
+		this.unsubscribe = store.subscribe(()=>{
+			let state = store.getState();
+
+			if(state.keys.alt != this.state.controls){
+				this.setState({ controls: state.keys.alt });
+			}
+		})
+	}
+
+	componentWillUmount(){
+		this.unsubscribe();
+	}
+
+	changeControl(){
+		let { controls } = this.state,
+		{ setControl } = this.props,
+		store = this.store;
+
+		store.dispatch(setControl(!controls));
+	}
+
+	render(){
+		let { controls } = this.state,
+		{ setControl } = this.props;
+
+		return (
+			<div className="control il f1">
+				<span id="control">Controls</span><a className='controlShift' onClick={this.changeControl} href="#">{(controls)? 'On':'Off'}</a>
+			</div>
+		)
+	}
 }
-
-const ControlC = connect((state,ownProps)=>{
-	return {
-		controls: state.keys.alt,
-		...ownProps
-	}
-},{ setControl: Action.setControl })(Control);
+Control.contextType = Custom;
 
 class DevToolViewToogler extends React.PureComponent{
-	constructor(props){
+	constructor(props,context){
 		super(props);
-		this.state = {view:props.view};
+		let store = context.store,
+		state = store.getState();
+
+		this.store = store;
+		this.state = {view:state.ui.show.devTool};
 		this.changeView = this.changeView.bind(this);
+	}
+
+	componentDidMount(){
+		let store = this.store
+
+		this.unsubscribe = store.subscribe(()=>{
+			let state = store.getState();
+
+			if(state.ui.show.devTool != this.state.view){
+				this.setState({ view: state.ui.show.devTool });
+			}
+		})
+	}
+
+	componentWillUmount(){
+		this.unsubscribe();
 	}
 
 	changeView(newView){
@@ -3620,12 +3964,8 @@ class DevToolViewToogler extends React.PureComponent{
 			)
 	}
 }
+DevToolViewToogler.contextType = Custom;
 
-const DevToolViewTooglerC = connect((state,ownProps)=>{
-	return {
-		view: state.ui.show.devTool
-	}
-},{ changeDevToolView: Action.changeDevToolView })(DevToolViewToogler);
 export class Guider extends React.PureComponent{
 	constructor(props){
 		super(props);
@@ -3875,13 +4215,6 @@ export class Guider extends React.PureComponent{
 	}
 }
 
-const GuiderConnected = connect((state,ownProps)=>{
-	return {
-		lang:state.language,
-		...ownProps
-	}
-})(Guider)
-
 const Styles = ({lists})=>{
 	return (
 		<>
@@ -3962,7 +4295,7 @@ export const HTML = ({data, styles,metas,links, scripts,title,store,nodeJs, mani
 			</head>
 				<body>
 					<div id="react-container" className="wrapper">
-						<App lang={data.language} direction={data.ui.direction} />
+						<App />
 					</div>
 					{
 						(scripts.tail && scripts.tail.length)? <Scripts lists={scripts.tail} /> : ''
@@ -3973,14 +4306,19 @@ export const HTML = ({data, styles,metas,links, scripts,title,store,nodeJs, mani
 }
 
 export class App extends React.Component{
-	constructor(props){
+	constructor(props,context){
 		super(props);
-		let guider = localStorage.guider;
-		this.state = {showGuide:(props.step)? true:false};
+		let guider = localStorage.guider,
+		store = context.store,
+		state = store.getState();
+
+
+		this.state = {showGuide:(props.step)? true:false, lang: state.language, direction: state.ui.direction };
+		this.store = store;
+		this.store = context.store;
 		this.endGuide = this.endGuide.bind(this);
 		this.keyRecorder = this.keyRecorder.bind(this);
 		this.initTime = Date.now();
-
 	}
 
 	endGuide(){
@@ -3990,9 +4328,21 @@ export class App extends React.Component{
 	}
 
 	componentDidMount(){
+		let store = this.store;
+
+		this.unsubscribe = store.subscribe(()=>{
+			let state = store.getState();
+
+			if(state.language != this.state.lang){
+				this.setState({ lang: state.language });
+			}
+		})
 		window.addEventListener('keydown',this.keyRecorder);
 
-		registerWorker('worker.js');
+		//registerWorker('worker.js');
+	}
+	componentWillUmount(){
+		this.unsubscribe();
 	}
 
 	keyRecorder(event){
@@ -4007,23 +4357,25 @@ export class App extends React.Component{
 	}
 
 	render(){
-		let {showGuide} = this.state;
-		let { step, lang, direction, streamManager,fAccess } = this.props;
+		let props = this.props,
+		{ showGuide, direction, lang } = this.state,
+		{ step, streamManager,fAccess } = props,
+		Guide = (showGuide)? <Guider end={this.endGuide} step={step} lang={lang} />: null;
 
 		return (
 			<ErrorBoundary>
-				<SetupC streamManager={streamManager} fAccess={fAccess} fastAccess={this.props.fastAccess} />
-				<First direction={direction}  lang={lang}  streamManager={this.props.streamManager} />
-				<Second direction={direction} />
-				{
-					(showGuide)? <GuiderConnected end={this.endGuide} step={step} />: ''
-				}
-				<PopUpWrapper />
-				<DevToolC />
+				<Setup streamManager={streamManager} fAccess={fAccess} fastAccess={this.props.fastAccess} {...props} />
+								<First direction={direction} lang={lang} {...props} />
+								
+								<Second direction={direction} lang={lang} {...props}/>
+								{Guide}
+								<PopUp {...props} />
+								{/*<DevToolC />*/}
 			</ErrorBoundary>
 			)
 	}
 }
+App.contextType = Custom;
 
 class DevTool extends React.PureComponent{
 	constructor(props){
@@ -4125,6 +4477,4 @@ class DevTool extends React.PureComponent{
 	}
 }
 
-const DevToolC = connect((state)=>({
-	view: state.ui.show.devTool
-}))(DevTool);
+const Liner = ({additionalClass=''})=> <div className={`tight ${additionalClass}`}> </div>
