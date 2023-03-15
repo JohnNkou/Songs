@@ -3,15 +3,14 @@ import { is } from './BrowserDb.cjs';
 
 export default (store)=>{
 	return (req,res)=>{
-		let {c,l} = req.query,
+		let {catId,l} = req.query,
 		Categories = store.Categories,
 		onlineSongs = store.onlineSongs,
-		catId = Categories.indexOf(c),
 		songs = onlineSongs[catId],
 		songsLength = songs.length;
 
 		l = parseInt(l);
-		if(catId == -1 || !is.Number(l)){
+		if(!songs || !is.Number(l)){
 			res.status(404).end();
 		}
 		else if(songsLength <= l){
