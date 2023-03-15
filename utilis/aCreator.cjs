@@ -52,21 +52,24 @@ exports.updateSong = (id,catId,name,verses,location='offline',oldName)=>({
 	location,
 	oldName
 })
-exports.addCategorie = (name,catId)=>({
+exports.addCategorie = (name,catId,location='offline')=>({
 	type: C.ADD_CATEGORIE,
 	name,
-	catId
+	catId,
+	location
 })
-exports.removeCategorie = (name,id)=>({
+exports.removeCategorie = (name,id,location='offline')=>({
 	type: C.REMOVE_CATEGORIE,
 	name,
-	id
+	id,
+	location
 })
-exports.updateCategorie = (oldName,newName,id)=>({
+exports.updateCategorie = (oldName,newName,id,location='offline')=>({
 	type: C.UPDATE_CAT,
 	oldName,
 	newName,
-	id
+	id,
+	location
 })
 exports.setCurrentCat = (name,id)=>({
 	type: C.SET_CURRENT_CAT,
