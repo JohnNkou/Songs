@@ -6,45 +6,31 @@ import { createStore, applyMiddleware }  from 'redux'
 import { Reducer }  from '../utilis/newReducer.cjs';
 import Action from '../utilis/aCreator.cjs'
 import songLoader  from '../utilis/songLoader.js';
-import {appState, dbChooser, getLocalData, getRemoteData, getStoreData, fetcher, streamer, storageHandler, curry, loadFromLocalStorage, saveToLocalStorage } from '../utilis/BrowserDb.cjs';
+import {appState, dbChooser, getLocalData, getRemoteData, fetcher, streamer, storageHandler, curry, loadFromLocalStorage, saveToLocalStorage } from '../utilis/BrowserDb.cjs';
 import { App  } from '../views/components.jsx'
 import { stepManager } from '../utilis/guider.js'
 import { System } from '../utilis/constant.cjs'
 import { saveUiInfo, checkReachability, timeAction, logAction, myThunk, ManageFastAccess } from '../middleware/index.js';
 import config from '../utilis/db.config.cjs';
+import Custom from '../utilis/context.cjs';
+import { store, fAccess } from '../utilis/store.js';
 
 window.mountNotifier = {};
 window.onerror = (e)=>{
 	console.error("window error",e);
 }
 
-let localStorageData = loadFromLocalStorage(System.LOCALSTORAGE);
-let save = curry(saveToLocalStorage)(System.LOCALSTORAGE);
-let saveUiInfoCurried = curry(saveUiInfo)(save);
-let timeWithFunction = curry(timeAction)((x,action)=>{
-	if(x > 1000)
-		alert(`action ${action.type} taked ${x} ms to pass`);
+let localStorageData = loadFromLocalStorage(System.LOCALSTORAGE),
+localData = getLocalData(dbChooser,store,Action),
+fastAccess = getRemoteData(store,songLoader,localData),
+streamManager = new streamer(fetcher,store,config.table),
+Msteps;
 
-})
-
-let serverData =  getStoreData(appState);
-let storeData = serverData;
-let fAccess = {};
-let ManageFastAccessCurried = curry(ManageFastAccess)(fAccess);
-
-let store = createStore(Reducer,storeData,applyMiddleware(myThunk,ManageFastAccessCurried,checkReachability,saveUiInfoCurried,logAction));
-
-let localData = getLocalData(dbChooser,store,Action);
-
-let fastAccess = getRemoteData(store,songLoader,localData);
 fastAccess.then(()=>{
 	console.log("Okay fastAccess");
 }).Oups((e)=>{
 	console.error("fastAccess catch Error",e);
 })
-
-let Msteps;
-let streamManager = new streamer(fetcher,store,config.table);
 
 Promise.all([localData,fastAccess]).then(()=>{
 	let state = store.getState(),
@@ -58,9 +44,9 @@ Promise.all([localData,fastAccess]).then(()=>{
 
 	if(nightMode != undefined)
 		store.dispatch(Action.changeNightMode(nightMode));
-	if(currentCat &&  (index = categories.indexOf(currentCat.name)) != -1){
-		store.dispatch(Action.setCurrentCat(currentCat.name, index));
-		store.dispatch(Action.setCurrentSong(currentSong.id, index, currentSong.location, currentSong.index));
+	if(currentCat){
+		store.dispatch(Action.setCurrentCat(currentCat.name, currentCat.id));
+		store.dispatch(Action.setCurrentSong(currentSong.id, currentCat.id, currentSong.location));
 	}
 	if(favorites){
 		for(catName in favorites){
@@ -73,6 +59,26 @@ Promise.all([localData,fastAccess]).then(()=>{
 			}
 		}
 	}
+
+	categories.forEach((cat)=>{
+		let catName = cat.name,
+		catId = cat.id,
+		onlineSongs = state.onlineSongs[catId],
+		offlineSongs = state.offlineSongs[catId];
+
+		fAccess[catName] = { online:{}, offline:{}, id:catId };
+
+		if(onlineSongs && onlineSongs.length){
+			onlineSongs.forEach((song,i)=>{
+				fAccess[catName].online[song.name.toUpperCase()] = i;
+			})
+		}
+		if(offlineSongs && offlineSongs.length){
+			offlineSongs.forEach((song,i)=>{
+				fAccess[catName].offline[song.name.toUpperCase()] = i;
+			})
+		}
+	})
 })
 
 	if(window.innerWidth > 500)
@@ -111,11 +117,11 @@ localData.then(({data})=>{
 
 	},15);
 
-
+	let pan = { store, Text };
 	render(
-		<Provider store={store}>
-			<App lang={data.language} direction={data.ui.direction} step={Msteps} fAccess={fAccess} fastAccess={fastAccess} streamManager={streamManager} />
-		</Provider>,
+		<Custom.Provider value={pan}>
+			<App  step={Msteps} fAccess={fAccess} fastAccess={fastAccess} streamManager={streamManager} {...Action} />
+		</Custom.Provider>,
 		document.getElementById('react-container')
 		)
 }).Oups((e)=>{
