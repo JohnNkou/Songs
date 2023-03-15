@@ -4,12 +4,13 @@ let totalReceived = 0;
 
 function songLoader(cat,songNumber,store,local){
 	let state = store.getState(),
+	catId = cat.id,
+	catName = cat.name,
 	currentCat = cat,
-	catId = state.Categories.indexOf(currentCat),
 	rSongs = 0;
 	return new Promise((resolve,reject)=>{
 		let xml = new XMLHttpRequest();
-		xml.open('GET',`songAdder.js?c=${cat}&l=${songNumber}`);
+		xml.open('GET',`songAdder.js?catId=${catId}&l=${songNumber}`);
 		xml.onload = ()=>{
 			if(xml.status < 100){
 				resolve({status:xml.status, error:'No internet connection', message: xml.response});
@@ -25,7 +26,7 @@ function songLoader(cat,songNumber,store,local){
 				rSongs = response.songs;
 				if(!response.full){
 					totalReceived += response.songs.length;
-					getNotInLocalStore(local,cat,rSongs).then((songs)=>{
+					getNotInLocalStore(local,catName,rSongs).then((songs)=>{
 						dispatchSong(store,cat,catId,songs,local);
 					})
 				}
@@ -53,7 +54,7 @@ function getNotInLocalStore(local,cat,songs){
 	return local.then(({data,fastLookUp})=>{
 		let catId = data.Categories.indexOf(cat);
 		let storedSongs = data.offlineSongs[catId];
-		let localSongs = fastLookUp[cat.toLowerCase()];
+		let localSongs = fastLookUp[cat.toLowerCase()] || {};
 		if(catId == -1)
 			throw Error("categorie not in Store");
 
@@ -69,7 +70,6 @@ function getNotInLocalStore(local,cat,songs){
 
 function dispatchSong(store,cat,catId,songs,local){
 	store.dispatch(addSongs(songs,catId));
-	console.log("New length", store.getState().onlineSongs[catId].length);
 	songLoader(cat,totalReceived,store,local)
 }
 
