@@ -6,14 +6,16 @@ import { appState, documentTree} from '../utilis/BrowserDb.cjs'
 import { Reducer } from '../utilis/newReducer.cjs'
 //import { First,Second }  from './components.jsx'
 import { HTML } from './components.jsx'
+import Custom from '../utilis/context.cjs';
+import  store from '../utilis/serverStore.cjs';
 
-let store = createStore(Reducer,appState);
-const started = (props)=>{
+const pan = { Text, store },
+started = (props)=>{
 	//let catNames = Object.keys(store.Categories);
 	return (
-		<Provider store={store}>
+		<Custom.Provider value={pan}>
 			<HTML {...documentTree} {...props} data={store.getState()} />
-		</Provider>
+		</Custom.Provider>
 		)
 	/*
 	return (
