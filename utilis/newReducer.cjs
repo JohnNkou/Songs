@@ -48,38 +48,43 @@ function rCat(state,action){
 	}
 }
 
-function rCats(states,action){
-	let { type, id, name, oldName, newName } = action,
-	index = 0;
-
-	if(name){
-		index = states.indexOf(name);
-	}
-	else if(id){
-		if(!states[id])
-			return states;
-	}
+function rCats(states,action,location){
+	let { type, id, catId, name, oldName, newName } = action,
+	index = 0,
+	newState,
+	cat,
+	length = states.length;
 
 	switch(type){
 		case C.ADD_CATEGORIE:
-			if(states.indexOf(name) != -1)
-				return states;
-			return [...states,name.toLowerCase()];
+			for(let i=0; i < length; i++){
+				if(states[i].name == name){
+					return states;
+				}
+			}
+
+			return [...states,{ name: name.toLowerCase(),id:catId }];
 
 		case C.REMOVE_CATEGORIE:
 			if(isUndefined(id))
 				return states;
-			states.splice(id,1);
+			newState = states.filter((cat)=> cat.id != id);
 
-			return [...states];
+			return newState;
 
 		case C.UPDATE_CAT:
 			if(isUndefined(id))
 				return states;
 
-			states[id] = newName;
+			for(let i=0; i < length;i++){
+				if(states[i].id == id){
+					cat = states[i];
+					cat.name = newName;
+					return [...states];
+				}
+			}
 
-			return [...states];
+			return states;
 
 		default:
 			return states;
@@ -88,11 +93,12 @@ function rCats(states,action){
 
 const SRed = (states,action,location='online')=>{
 	let { type, catId, id, name, verses, songs } = action,
-	aLocation = action.location, storedSongs = states[`${location}Songs`],
-	songsCat = (catId != undefined)? storedSongs[catId]: storedSongs[states.Categories.indexOf(name)],
-	currentCat = states.Categories[catId];
+	aLocation = action.location, 
+	storedSongs = states[`${location}Songs`],
+	songsCat = storedSongs[catId],
+	currentCat = states.currentCat;
 
-	if(aLocation && aLocation != location)
+	if(aLocation != location)
 		return storedSongs;
 
 	if(!currentCat && type != C.ADD_CATEGORIE)
@@ -158,7 +164,7 @@ const CRed = (states,action,location='offline')=>{
 		case C.ADD_CATEGORIE:
 		case C.REMOVE_CATEGORIE:
 		case C.UPDATE_CAT:
-			return rCats(states,action);
+			return rCats(states,action,location);
 
 		case C.SET_LOCAL_CAT:
 			if(location == 'online' || isUndefined(action.cat))
@@ -180,16 +186,12 @@ const CRed = (states,action,location='offline')=>{
 }
 
 function curCat(states,action){
-	let { type, name, id, oldName }  = action;
+	let { type, name, id, oldName }  = action,
+	Categories = states.Categories;
 
 	switch(type){
 		case C.SET_CURRENT_CAT:
-			let catName = states.Categories[id];
-			if(!catName)
-				return states.currentCat;
-			else{
-				return { name:catName, id };
-			}
+			return { name, id };
 		case C.UPDATE_CAT:
 			let currentCat = states.currentCat;
 			let currentCatName = currentCat.name;
@@ -456,7 +458,10 @@ function searchR(states,action){
 	length = 0,
 	songs;
 
-	states.Categories.forEach((catName,catId)=>{
+	states.Categories.forEach((cat)=>{
+		let catName = cat.name,
+		catId = cat.id;
+
 		songs = states.onlineSongs[catId];
 		length = songs.length;
 		for(let i=0; i < length; i++){
@@ -521,7 +526,7 @@ function appReachR(state,action){
 const Reducer = (states,action)=>{
 
 	return {
-		Categories: CRed(states.Categories,action),
+		Categories: CRed(states.Categories,action,'online'),
 		onlineSongs: SRed(states,action,'online'),
 		offlineSongs: SRed(states,action,'offline'),
 		currentCat: curCat(states,action),
