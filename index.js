@@ -8,7 +8,8 @@ import https from 'https'
 import logger from 'morgan'
 import path from 'path'
 import { indexRouter, storeProvider, Stream, Waiters, Subscription, PopulateCategoriesAndSongs,  streamCreator, streamCollector, streamUpdater, streamSubscription, streamDeleter, noStore, songDownloader, downloadToSubscriber, streamPicker, addDefaultsCategorieAndSongs }  from './router/index.js';
-import { appState, killUnusedStream, inEc2 } from './utilis/BrowserDb.cjs'
+import { killUnusedStream } from './utilis/sUtilities.js'
+import { appState } from './utilis/constant.cjs';
 import songAdderController from './utilis/songAdderController.js'
 import { streamFileName, lineTermination } from './db/data.js'
 
@@ -34,11 +35,7 @@ export const SubscriptionJest = Subscription(streamSubscribers);
 app.set('views',`${root}/views`)
 app.set("view engine","jsx")
 app.engine("jsx",express_react.createEngine());
-/*app.use(compression({filter:(req,res)=>{
-	if(path.basename(req.url).match(/\.(css|js|json)/))
-		return true;
-	return false;
-}}))*/
+app.use(compression());
 app.use(express.json());
 app.use(express.static(root,{setHeaders:(res,filepath)=> {
 	if(path.basename(filepath) == "worker.js"){
