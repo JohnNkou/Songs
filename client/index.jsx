@@ -11,7 +11,7 @@ import config from '../utilis/db.config.cjs';
 import Custom from '../utilis/context.cjs';
 import { store, fAccess } from '../utilis/store.js';
 import { validator, note } from '../utilis/utilities.cjs'
-import lazyGuider from '../utilis/guiderLazy.js';
+import lazyGuider from '../utilis/guiderLazy.cjs';
 
 window.mountNotifier = {};
 window.onerror = (e)=>{

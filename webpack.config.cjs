@@ -14,6 +14,7 @@ module.exports = ()=> ({
 	},
 	output:{
 		filename:"bundle.js",
+		chunkFilename:'[name].js',
 		environment:{
 			arrowFunction:false,
 			const: false,

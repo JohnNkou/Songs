@@ -417,7 +417,7 @@ exports.dbChooser = (options)=>{
 			require.ensure(['./openDb.cjs'],function(require){
 				let TT = require('./openDb.cjs');
 				resolve(new TT(options));
-			},function(e){ reject(e)})
+			},function(e){ reject(e)},'openDb')
 		})
 	}
 
@@ -426,7 +426,7 @@ exports.dbChooser = (options)=>{
 			require.ensure(['./indexDb.cjs'],function(require){
 				let TTT = require('./indexDb.cjs');
 				resolve(new TTT(options));
-			}, function(e){ reject(e) })
+			}, function(e){ reject(e) },'indexDb')
 		})
 	}
 	

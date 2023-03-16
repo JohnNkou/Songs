@@ -36253,7 +36253,7 @@ function toPercentage(coor, total) {
 exports.dbChooser = function (options) {
   if (window.openDatabase) {
     return new Promise(function (resolve, reject) {
-      __webpack_require__.e(/*! require.ensure */ "utilis_openDb_cjs").then((function (require) {
+      __webpack_require__.e(/*! require.ensure | openDb */ "openDb").then((function (require) {
         var TT = __webpack_require__(/*! ./openDb.cjs */ "./utilis/openDb.cjs");
         resolve(new TT(options));
       }).bind(null, __webpack_require__))['catch'](function (e) {
@@ -36263,7 +36263,7 @@ exports.dbChooser = function (options) {
   }
   if (window.indexedDB) {
     return new Promise(function (resolve, reject) {
-      __webpack_require__.e(/*! require.ensure */ "utilis_indexDb_cjs").then((function (require) {
+      __webpack_require__.e(/*! require.ensure | indexDb */ "indexDb").then((function (require) {
         var TTT = __webpack_require__(/*! ./indexDb.cjs */ "./utilis/indexDb.cjs");
         resolve(new TTT(options));
       }).bind(null, __webpack_require__))['catch'](function (e) {
@@ -37882,6 +37882,26 @@ module.exports = config;
 
 /***/ }),
 
+/***/ "./utilis/guiderLazy.cjs":
+/*!*******************************!*\
+  !*** ./utilis/guiderLazy.cjs ***!
+  \*******************************/
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+module.exports = function () {
+  return new Promise(function (resolve, reject) {
+    __webpack_require__.e(/*! require.ensure | guider */ "guider").then((function (require) {
+      var _require = __webpack_require__(/*! ./guider.js */ "./utilis/guider.js"),
+        stepManager = _require.stepManager;
+      resolve(stepManager);
+    }).bind(null, __webpack_require__))['catch'](function (e) {
+      return reject(e);
+    });
+  });
+};
+
+/***/ }),
+
 /***/ "./utilis/message.cjs":
 /*!****************************!*\
   !*** ./utilis/message.cjs ***!
@@ -39011,27 +39031,6 @@ function logAction(_ref8) {
 
 /***/ }),
 
-/***/ "./utilis/guiderLazy.js":
-/*!******************************!*\
-  !*** ./utilis/guiderLazy.js ***!
-  \******************************/
-/***/ (function(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": function() { return /* export default binding */ __WEBPACK_DEFAULT_EXPORT__; }
-/* harmony export */ });
-/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__() {
-  var moduleName = './guider.js';
-  return __webpack_require__.e(/*! import() */ "utilis_guider_js").then(__webpack_require__.bind(__webpack_require__, /*! ./guider.js */ "./utilis/guider.js")).then(function (module) {
-    return module.stepManager;
-  })["catch"](function (e) {
-    console.error("Error loading", moduleName);
-  });
-}
-
-/***/ }),
-
 /***/ "./utilis/songLoader.js":
 /*!******************************!*\
   !*** ./utilis/songLoader.js ***!
@@ -39230,7 +39229,7 @@ var fAccess = fastAccess;
 /******/ 		// This function allow to reference async chunks
 /******/ 		__webpack_require__.u = function(chunkId) {
 /******/ 			// return url for filenames based on template
-/******/ 			return "" + chunkId + ".bundle.js";
+/******/ 			return "" + chunkId + ".js";
 /******/ 		};
 /******/ 	}();
 /******/ 	
@@ -39443,7 +39442,8 @@ var __webpack_exports__ = {};
 /* harmony import */ var _utilis_context_cjs__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_utilis_context_cjs__WEBPACK_IMPORTED_MODULE_10__);
 /* harmony import */ var _utilis_store_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../utilis/store.js */ "./utilis/store.js");
 /* harmony import */ var _utilis_utilities_cjs__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../utilis/utilities.cjs */ "./utilis/utilities.cjs");
-/* harmony import */ var _utilis_guiderLazy_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utilis/guiderLazy.js */ "./utilis/guiderLazy.js");
+/* harmony import */ var _utilis_guiderLazy_cjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utilis/guiderLazy.cjs */ "./utilis/guiderLazy.cjs");
+/* harmony import */ var _utilis_guiderLazy_cjs__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_utilis_guiderLazy_cjs__WEBPACK_IMPORTED_MODULE_3__);
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 
 
@@ -39467,7 +39467,7 @@ var dbLoader = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.dbChooser)(
   name: 'Test',
   safeOp: _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.safeOp
 });
-(0,_utilis_guiderLazy_js__WEBPACK_IMPORTED_MODULE_3__["default"])();
+_utilis_guiderLazy_cjs__WEBPACK_IMPORTED_MODULE_3___default()();
 var localStorageData = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.loadFromLocalStorage)(_utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_4__.System.LOCALSTORAGE),
   localData = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.getLocalData)(dbLoader, _utilis_store_js__WEBPACK_IMPORTED_MODULE_5__.store, _utilis_aCreator_cjs__WEBPACK_IMPORTED_MODULE_6__),
   fastAccess = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.getRemoteData)(_utilis_store_js__WEBPACK_IMPORTED_MODULE_5__.store, _utilis_songLoader_js__WEBPACK_IMPORTED_MODULE_7__["default"], localData),
@@ -39530,7 +39530,7 @@ Promise.all([localData, fastAccess]).then(function () {
   });
 });
 if (window.innerWidth > 500) {
-  MStepLoader = (0,_utilis_guiderLazy_js__WEBPACK_IMPORTED_MODULE_3__["default"])();
+  MStepLoader = _utilis_guiderLazy_cjs__WEBPACK_IMPORTED_MODULE_3___default()();
 } else {
   MStepLoader = Promise.resolve(undefined);
 }

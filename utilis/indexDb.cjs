@@ -75,7 +75,7 @@ function TTT({safeOp}){
 			request.onerror = ()=> reject(request.error);
 		})
 	}
-	this.initialize().Oups((e)=>{
+	this.initialize().catch((e)=>{
 		console.error("Initializing indexedDB Error",e);
 	});
 	this.clear = ()=>{
@@ -114,7 +114,7 @@ function TTT({safeOp}){
 				this.version = db.version;
 
 			if(!db.objectStoreNames.length){
-				this.initialize().then(()=>this.txR(f,e)).Oups((er)=> e(er) );
+				this.initialize().then(()=>this.txR(f,e)).catch((er)=> e(er) );
 			}
 			else{
 				var tx = db.transaction(db.objectStoreNames,'readonly');
@@ -138,7 +138,7 @@ function TTT({safeOp}){
 				this.version = db.version;
 
 			if(!db.objectStoreNames.length){
-				this.initialize().then(()=>this.txW(f,e)).Oups((er)=> e(er));
+				this.initialize().then(()=>this.txW(f,e)).catch((er)=> e(er));
 			}
 			else{
 				var tx = db.transaction(db.objectStoreNames,'readwrite');
@@ -371,7 +371,7 @@ function TTT({safeOp}){
 					else{
 						reject({message:"Foreign key constrain violated",type:"error"})
 					}
-				}).Oups(reject);
+				}).catch(reject);
 			}
 			else{
 				this.getCategorie(cat)().then((r)=>{
@@ -380,7 +380,7 @@ function TTT({safeOp}){
 						var cat = r.id;
 						if(cat){
 							var v =  this.insertSong(name,verses,cat)();
-							v.then(resolve).Oups(reject);
+							v.then(resolve).catch(reject);
 						}
 						else{
 							
@@ -391,7 +391,7 @@ function TTT({safeOp}){
 						
 						resolve(false);
 					}
-				}).Oups(reject);
+				}).catch(reject);
 			}
 		})
 		return p;
@@ -438,13 +438,13 @@ function TTT({safeOp}){
 					this.getCategorie(cat)().then((r)=>{
 						if(r){
 							var id = r.id;
-							this.updateSong(name,id,newName,verses)().then(resolve).Oups(reject);
+							this.updateSong(name,id,newName,verses)().then(resolve).catch(reject);
 						}
 						else{
 							
 							resolve(false);
 						}
-					}).Oups(reject);
+					}).catch(reject);
 					break;
 				default:
 					
@@ -498,11 +498,11 @@ function TTT({safeOp}){
 						r = r.pop();
 						if(r){
 							var id = r.id;
-							this.deleteSong(name,id)().then(resolve).Oups(reject);
+							this.deleteSong(name,id)().then(resolve).catch(reject);
 						}
 						else
 							reject();
-					}).Oups(reject);
+					}).catch(reject);
 					break;
 				default:
 					
@@ -545,11 +545,11 @@ function TTT({safeOp}){
 					this.getCategorie(cat)().then((r)=>{
 						if(r){
 							 var id = r.id;
-							 this.getSong(name,id)().then(resolve).Oups(reject);
+							 this.getSong(name,id)().then(resolve).catch(reject);
 						}
 						else
 							resolve();
-					}).Oups(reject);
+					}).catch(reject);
 					break;
 				default:
 					
@@ -605,11 +605,11 @@ function TTT({safeOp}){
 						r = r.pop();
 						if(r){
 							var id = r.id;
-							this.getAllSongs(id)().then(resolve).Oups(reject);
+							this.getAllSongs(id)().then(resolve).catch(reject);
 						}
 						else
 							resolve();
-					}).Oups(reject);
+					}).catch(reject);
 					break;
 
 				default:
@@ -643,11 +643,11 @@ function TTT({safeOp}){
 					this.getCategorie(cat)().then((r)=>{
 						if(r){
 							var id = r.id;
-							this.countSong(id)().then(resolve).Oups(reject);
+							this.countSong(id)().then(resolve).catch(reject);
 						}
 						else
 							resolve();
-					}).Oups(reject);
+					}).catch(reject);
 					break;
 
 				default:
