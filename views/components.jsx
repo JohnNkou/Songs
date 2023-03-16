@@ -1,131 +1,35 @@
 import React  from 'react';
-import { connect } from 'react-redux';
-import { storageHandler,dbChooser, compose, relay, getAllReturn, seq, fetcher, abortSubscription,SUB, indexChanger, curry, safeOp, registerWorker, validator, is, timeThis, adjustHeight } from '../utilis/BrowserDb.cjs';
-import Text from '../utilis/Text.cjs';
-import Action from '../utilis/aCreator.cjs';
+import { storageHandler,compose, relay, getAllReturn, seq, fetcher, abortSubscription,indexChanger, curry, safeOp, registerWorker, is, adjustHeight, scrollHandler, invoqueAfterMount } from '../utilis/BrowserDb.cjs';
+import { SUB, insertStatus, signal, displayTime } from '../utilis/constant.cjs';
 import config from '../utilis/db.config.cjs';
 import Custom from '../utilis/context.cjs';
 
-const Texts = React.createContext(Text),
-{ table,filters } = config,
+const { table,filters } = config,
 { cat,song,stream } = table,
 cF = cat.fields,
 sF = song.fields,
 stF = stream.fields,
 stq = stream.query,
-displayTime = { fast:50, normal:1500, medium:3000, long:20000},
-insertStatus = {
-	FAILED:0,
-	SUCCESS:1,
-	DUPLICATE:2,
-	COMPLETE:3,
-	FAIL_ALL:4
-},
-signal={
-	system: "mSystem",
-	success:"mSuccess",
-	error:  "mError"
-},
-Validator = new validator();
+Categories = {},
+Songs = {},
+directAccess = {};
+
+let notifier,
+notifier2,
+db,
+Pseq,
+fastAccess = {__exec__:[]},
+Validator;
+fastAccess = {__exec__:[]};
 
 
-function scrollHandler(node,event,trackedTouchsArray){
-	try{
-		var touches = event.touches;
-
-		if(touches.length > 1){
-			var length = touches.length - 1;
-
-			node.scrollTop += touches[0].clientY - touches[length].clientY;
-
-			trackedTouchsArray.push(touches[length].clientY);
-		}
-		else{
-			if(trackedTouchsArray.length){
-				var pastY = trackedTouchsArray.shift()
-
-				node.scrollTop += pastY - touches[0].clientY;
-
-				trackedTouchsArray.push(touches[0].clientY);
-			}
-			else
-				trackedTouchsArray.push(touches[0].clientY);
-		}
-	}
-	catch(e){
-		console.error(e);
-	}
-}
-
-function note(){
-	let jsx;
-	let counter;
-	let timeout = displayTime.medium;
-	let sequence = new seq();
-	this.getTimeout = ()=> timeout;
-	this.setJsx = (j)=>{
-		jsx = j;
-		window.kk = this;
-	}
-
-	this.addSpeed = (message,progress,t,node,signalMessage)=>{
-		t = t || timeout;
-		sequence.add(()=>{
-			clearTimeout(counter);
-			let state = jsx.state;
-			let k = {message,progress,node, signal:signalMessage || signal.system,download:""};
-			jsx.setState(k);
-			counter = setTimeout(()=>{
-				this.clear();
-			},timeout)
-			return Promise.resolve();
-
-		})
-	}
-	this.add = (message,progress,t,node,signalMessage)=>{
-		t = t || timeout;
-		sequence.add(()=>{
-			return new Promise((resolve,reject)=>{
-				let state = jsx.state;
-				let k = {message,progress,node, signal:signalMessage || signal.system,download:""}
-				jsx.setState(k);
-				counter = setTimeout(()=>{
-					this.clear();
-					resolve(true);
-				},t);
-			})
-		})
-	}
-	this.post = (message, signal,download)=>{
-		sequence.add(()=>{
-			clearTimeout(counter);
-			let state = jsx.state;
-			let k = {message,signal,download};
-			jsx.setState(k);
-			return Promise.resolve();
-		})
-	}
-	this.clear = ()=>{
-		this.addSpeed("",null, displayTime.fast);
-	}
-
+function n(p,time,u='Update',f=1){
+	var j = (f ==1 )? notifier : notifier2;
+	j.add(`It Taked ${Date.now() - time} ms to ${u} ${p}`);
 }
 
 function meticulus(node,fn){
 	window.mountNotifier[node] = [fn];
-}
-
-function invoqueAfterMount(selector){
-	if(window.mountNotifier[selector]){
-		let subscriber;
-		let length = window.mountNotifier[selector].length;
-		while(length--){
-			subscriber = window.mountNotifier[selector].shift();
-			subscriber();
-		}
-
-		delete window.mountNotifier[selector];
-	}
 }
 
 function changeStreamCreationImage(img){
@@ -146,20 +50,6 @@ function startStream(name,createdInServer){
 function stopStream(name){
 	S.setName("",()=> changeStreamCreationImage(`img/${stopStream.img}`));
 	stopStream.f();
-}
-
-const notifier = new note();
-const notifier2 = new note();
-const db = (global.alert)? dbChooser('Test'): null;
-const Categories = {};
-const Songs = {};
-const Pseq = new seq();
-const directAccess = {};
-let fastAccess = {__exec__:[]};
-
-function n(p,time,u='Update',f=1){
-	var j = (f ==1 )? notifier : notifier2;
-	j.add(`It Taked ${Date.now() - time} ms to ${u} ${p}`);
 }
 
 var S;
@@ -570,7 +460,7 @@ class OnlineSongs extends React.Component{
 				else{
 					console.error("categorie not inserted",id);
 				}
-			}).Oups((e)=>{
+			}).catch((e)=>{
 				console.error("Error while trying to inserted categorie");
 				console.error(e);
 			})
@@ -642,7 +532,7 @@ class OnlineSongs extends React.Component{
 					<Counter i={songs.length} setUpdater={this.setUpdater} />{(show && songs.length)? <Download additionalClass="vmid" src={downloadImage} download={()=> Promise.resolve((db.isBogus)? [null]:[])} action={[()=> { return new Promise((resolve)=> { resolve(false); this.throwReport();})}]} additionalClass="vmid" />:''}
 					<Liner additionalClass="vmid" />
 				</div>
-				{(show)? <div onScroll={this.handleScroll} className="papa"><SongList location="online" counterUpdater={this.counterUpdater} includeAdder={false} {...pop} store={this.store} report={report} /></div>:''
+				{(show)? <div onScroll={this.handleScroll} className="papa"><SongList location="online" counterUpdater={this.counterUpdater} includeAdder={false} {...pop} store={this.store} report={report} Text={this.Text} /></div>:''
 			}
 			</div>
 			)
@@ -656,12 +546,14 @@ class OfflineSongs extends React.Component{
 		let state = context.store.getState(),
 		currentCat = state.currentCat,
 		songs = (state.offlineSongs[currentCat.id] || []),
-		songLength = songs.length; 
+		songLength = songs.length,
+		Text = context.Text; 
 
 		this.store = context.store;
 		this.state = {show:false, songs, songLength, updateForced: state.updateForced, controls: state.keys.alt, to: state.ui.navigation.to, increment: state.songIncrement, currentCat, subscribedToStream: state.subscribedToStream};
 		this.manageShowing = this.manageShowing.bind(this);
 		this.initTime = Date.now();
+		this.Text = Text.Song;
 
 	}
 
@@ -734,7 +626,7 @@ class OfflineSongs extends React.Component{
 					<Counter i={songs.length} />
 					<Liner additionalClass="vmid" />
 				</div>
-				{(show)? <div className="papa"><SongList location="offline" includeModify={true} includeAdder={true} {...pop} store={this.store} /></div>:''}
+				{(show)? <div className="papa"><SongList location="offline" includeModify={true} includeAdder={true} {...pop} store={this.store} Text={this.Text} /></div>:''}
 			</div>
 			)
 	}
@@ -939,7 +831,7 @@ class AddCatDiv extends React.Component{
 				}
 				else
 					console.log("something went wrong while trying to insert categorie ",catName);
-			}).Oups((e)=>{
+			}).catch((e)=>{
 				console.log("Failed to insertCategorie",e);
 			})
 		}
@@ -1230,7 +1122,7 @@ class AddSongDiv extends React.Component{
 				}
 				else
 					notifier.addSpeed(this.songText.insertion.failed(lang,songName),null,null,null,signal.error);
-			}).Oups((e)=>{
+			}).catch((e)=>{
 				alert("addCatDiv kak insertSong "+e);
 			})
 		}
@@ -1956,7 +1848,7 @@ class CatNames extends React.Component{
 				store.dispatch(addCategorie(name,id));
 				return true;
 			}
-		}).Oups((e)=>{
+		}).catch((e)=>{
 			notifier.addSpeed(text.insertion.failed(lang,name));
 		})
 	}
@@ -2159,7 +2051,7 @@ class Download extends React.Component{
 				else{
 					resolve(false);
 				}
-			}).Oups(reject);
+			}).catch(reject);
 		})
 	}
 
@@ -2181,7 +2073,7 @@ class Download extends React.Component{
 				if(!img)
 					this.setState({img:!img});
 			}
-		}).Oups((e)=>{
+		}).catch((e)=>{
 			console.error("checkImageDownload Error",e);
 		})
 	}
@@ -2206,7 +2098,7 @@ class Download extends React.Component{
 			else{
 				console.log("Odd thing happened");
 			}
-		}).Oups((e)=>{
+		}).catch((e)=>{
 			alert("doAction catch Error");
 			alert(e.message);
 		});
@@ -2232,9 +2124,9 @@ class Download extends React.Component{
 class SongList extends React.Component{
 	constructor(props,context){
 		super(props);
+		let Text = props.Text;
 
-
-		this.text = context.Song;
+		this.text = Text;
 		this.store = props.store;
 		this.scrollHandler = scrollHandler.bind(this);
 		this.addMoreSong = this.addMoreSong.bind(this);
@@ -2396,7 +2288,7 @@ class SongList extends React.Component{
 						return e;
 					}
 				})
-			}).Oups((e)=>{
+			}).catch((e)=>{
 				if(e.code != 6){
 					console.log("db insertSong catch");
 					console.log(e);
@@ -2444,7 +2336,7 @@ class SongList extends React.Component{
 				return id;
 			}
 			return false;
-		}).Oups((e)=>{
+		}).catch((e)=>{
 			if(e.code == 6)
 				return id;
 		})
@@ -2461,7 +2353,7 @@ class SongList extends React.Component{
 					}
 					else
 						return true;
-				}).Oups((e)=>{
+				}).catch((e)=>{
 					console.log("Error while trying to insert song",name);
 					console.log(e);
 				})
@@ -2503,7 +2395,7 @@ class SongList extends React.Component{
 			else{
 				notifier.addSpeed(this.text.wiping.error(lang,name),undefined,undefined,undefined,signal.error);
 			}
-		}).Oups((e)=>{
+		}).catch((e)=>{
 			notifier.addSpeed(this.text.wiping.error(lang,name),undefined,undefined,undefined,signal.error);
 			console.log("Oh oh");
 			console.log(e);
@@ -2577,7 +2469,6 @@ class SongList extends React.Component{
 		return <List {...songProps} />;
 	}
 }
-SongList.contextType = Texts
 
 const Head2 = (props)=>{
 	return (
@@ -3337,8 +3228,6 @@ class Content extends React.Component{
 	goToVerse(index){
 		let store = this.store,
 		{ changeIndex } = this.props;
-
-		console.log("go to Verse",index);
 		store.dispatch(changeIndex(index));
 		this.setState({index});
 	}
@@ -3555,7 +3444,6 @@ class PopUp extends React.Component{
 		this.getDimensions = this.getDimensions.bind(this);
 		this.isInTheMiddle = this.isInTheMiddle.bind(this);
 		this.putInTheMiddle = this.putInTheMiddle.bind(this);
-		this.wHeight = window.innerHeight;
 		this.state = { view:false };
 	}
 
@@ -3564,6 +3452,7 @@ class PopUp extends React.Component{
 	componentDidMount(){
 		let store = this.store;
 
+		this.wHeight = window.innerHeight;
 		this.node = document.querySelector(".popUp");
 		this.box = document.querySelector(".popUp .Box");
 		let dimensions = this.node.getBoundingClientRect();
@@ -4044,7 +3933,7 @@ export class Guider extends React.PureComponent{
 			this.setState({...this.state, section:step.section, step, action:step.section.action});
 		}).then(()=>{
 			this.animate(true);
-		}).Oups((e)=>{
+		}).catch((e)=>{
 			console.error("Guider toStep catch Error",e);
 		})
 	}
@@ -4054,7 +3943,7 @@ export class Guider extends React.PureComponent{
 			this.setState({...state, section, action: section.action});
 		}).then(()=>{
 			this.animate(true);
-		}).Oups((e)=>{
+		}).catch((e)=>{
 			console.error("Guide toSection catch error",e);
 		})
 	}
@@ -4068,7 +3957,7 @@ export class Guider extends React.PureComponent{
 				this.toSection(state.section.nextSection);
 			else
 				this.setState({...state, action: currentAction.nextAction});
-		}).Oups((e)=>{
+		}).catch((e)=>{
 			console.error("toAction catch error",e);
 		})
 	}
@@ -4111,7 +4000,7 @@ export class Guider extends React.PureComponent{
 		let clear = this.clear();
 
 		clear().then(()=> this.toSection((next)? section.nextSection: section.prevSection)
-			).Oups((e)=>{
+			).catch((e)=>{
 				console.error("Couldn't clear to go to ",((next)? 'next':'prev'),'step');
 			})
 	}
@@ -4120,7 +4009,7 @@ export class Guider extends React.PureComponent{
 		let { step } = this.state;
 		let clear = this.clear();
 
-		clear().then(()=> this.toStep((next)? step.nextStep: step.prevStep)).Oups((e)=>{
+		clear().then(()=> this.toStep((next)? step.nextStep: step.prevStep)).catch((e)=>{
 			console.error("Couldn't clear to go to ",((next)? 'next':'prev'),'step');
 		})
 	}
@@ -4319,6 +4208,14 @@ export class App extends React.Component{
 		this.endGuide = this.endGuide.bind(this);
 		this.keyRecorder = this.keyRecorder.bind(this);
 		this.initTime = Date.now();
+
+		if(props.db){
+			db = props.db;
+			Validator = new props.validator();
+			notifier = new props.note({displayTime, seq: props.seq, signal});
+			notifier2 = new props.note({displayTime, seq: props.seq, signal});
+			Pseq = new props.seq();
+		}
 	}
 
 	endGuide(){
@@ -4328,7 +4225,8 @@ export class App extends React.Component{
 	}
 
 	componentDidMount(){
-		let store = this.store;
+		let store = this.store,
+		props = this.props;
 
 		this.unsubscribe = store.subscribe(()=>{
 			let state = store.getState();
