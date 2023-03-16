@@ -1,34 +1,36 @@
 import React  from 'react'
 import  Text from '../utilis/Text.cjs'
 import { render }  from 'react-dom'
-import { Provider }  from 'react-redux'
-import { createStore, applyMiddleware }  from 'redux'
 import { Reducer }  from '../utilis/newReducer.cjs';
 import Action from '../utilis/aCreator.cjs'
 import songLoader  from '../utilis/songLoader.js';
-import {appState, dbChooser, getLocalData, getRemoteData, fetcher, streamer, storageHandler, curry, loadFromLocalStorage, saveToLocalStorage } from '../utilis/BrowserDb.cjs';
+import {dbChooser, getLocalData, getRemoteData, fetcher, streamer, storageHandler, curry, loadFromLocalStorage, saveToLocalStorage, seq, safeOp } from '../utilis/BrowserDb.cjs';
 import { App  } from '../views/components.jsx'
-import { stepManager } from '../utilis/guider.js'
 import { System } from '../utilis/constant.cjs'
-import { saveUiInfo, checkReachability, timeAction, logAction, myThunk, ManageFastAccess } from '../middleware/index.js';
 import config from '../utilis/db.config.cjs';
 import Custom from '../utilis/context.cjs';
 import { store, fAccess } from '../utilis/store.js';
+import { validator, note } from '../utilis/utilities.cjs'
+import lazyGuider from '../utilis/guiderLazy.js';
 
 window.mountNotifier = {};
 window.onerror = (e)=>{
 	console.error("window error",e);
 }
 
+const dbLoader = dbChooser({name:'Test', safeOp});
+lazyGuider();
+
 let localStorageData = loadFromLocalStorage(System.LOCALSTORAGE),
-localData = getLocalData(dbChooser,store,Action),
+localData = getLocalData(dbLoader,store,Action),
 fastAccess = getRemoteData(store,songLoader,localData),
 streamManager = new streamer(fetcher,store,config.table),
-Msteps;
+Msteps,
+MStepLoader;
 
 fastAccess.then(()=>{
 	console.log("Okay fastAccess");
-}).Oups((e)=>{
+}).catch((e)=>{
 	console.error("fastAccess catch Error",e);
 })
 
@@ -81,12 +83,19 @@ Promise.all([localData,fastAccess]).then(()=>{
 	})
 })
 
-	if(window.innerWidth > 500)
-		Msteps = stepManager(store,Text);
+	if(window.innerWidth > 500){
+		MStepLoader = lazyGuider();
+	}
+	else{
+		MStepLoader = Promise.resolve(undefined);
+	}
 
 window.store = store;
 
-localData.then(({data})=>{
+Promise.all([localData,MStepLoader]).then((r)=>{
+	let { data, db } = r[0],
+	stepManager = r[1];
+	Msteps = new stepManager;
 
 	setTimeout(()=>{
 		let local = storageHandler().getItems(JSON.parse, System.LOCALSTORAGE, 'stream');
@@ -120,10 +129,10 @@ localData.then(({data})=>{
 	let pan = { store, Text };
 	render(
 		<Custom.Provider value={pan}>
-			<App  step={Msteps} fAccess={fAccess} fastAccess={fastAccess} streamManager={streamManager} {...Action} />
+			<App  step={Msteps} fAccess={fAccess} fastAccess={fastAccess} streamManager={streamManager} {...Action} validator={validator} note={note} seq={seq} db={db} />
 		</Custom.Provider>,
 		document.getElementById('react-container')
-		)
-}).Oups((e)=>{
+	)
+}).catch((e)=>{
 	console.error("localData catch Error: ",e);
 })
