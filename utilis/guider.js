@@ -1,4 +1,5 @@
-import { step, curry, tA, helpWithCoordinate} from './BrowserDb.cjs'
+import { curry, tA, helpWithCoordinate} from './BrowserDb.cjs'
+import { step } from './utilities.cjs';
 import Text from './Text.cjs'
 import { setSelector, setControl, setForceUpdate, changeIndex, changeStreamCreateView,changeSongIncrement, changeCatView, changeAddSongView, changeCatListView, changeFavListView, changeStreamListView, changeResultListView, changeNightMode, changeSettingListView } from './aCreator.cjs'
 
@@ -60,16 +61,7 @@ const originalBorder = function(){
 		}
 	}
 }();
-/*
-function originalBorder(initial,nodes){
-	if(!nodes.pop || (typeof nodes.pop != "function"))
-		nodes = [nodes];
 
-	nodes.forEach((node)=> {
-		initial.push([node,'style','border',getComputedStyle(node).border])
-	})
-	return initial[initial.length -1][3];
-} */
 function originalBackground(initial,nodes){
 	if(!nodes.pop)
 		nodes = [nodes];
@@ -262,13 +254,7 @@ const clearCounters = function(){
 		}
 	}
 }();
-/*function clearCounters(counters){
-	let cnt;
-	
-	while(cnt = counters.pop())
-		clearInterval(cnt);
 
-}*/
 function removeListeners(listeners){
 	let listener;
 
@@ -1999,8 +1985,6 @@ export function stepManager(store,Text){
 					let i = initialState;
 					i = i.filter((x)=> (x.length == 3 && x[1] == 'disabled')? false:true);
 					toOriginalState(i);
-					/*inputBorder = originalBackground(initialState,input);
-					addButtonBorder = originalBackground(initialState,addButton); */
 				}
 
 			}
@@ -2910,4 +2894,3 @@ export function stepManager(store,Text){
 
 	return Ms;
 }
-
