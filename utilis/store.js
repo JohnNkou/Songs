@@ -1,8 +1,8 @@
 import { createStore,applyMiddleware } from 'redux';
 import { Reducer} from './newReducer.cjs';
 import { saveUiInfo, checkReachability, timeAction, logAction, myThunk, ManageFastAccess } from '../middleware/index.js';
-import { getStoreData, appState, curry, saveToLocalStorage } from './BrowserDb.cjs';
-import { System } from './constant.cjs';
+import { getStoreData, curry, saveToLocalStorage } from './BrowserDb.cjs';
+import { System,appState } from './constant.cjs';
 
 const storeData = getStoreData(appState),
 fastAccess = {},
