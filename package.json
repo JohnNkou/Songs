@@ -1,5 +1,6 @@
 {
   "name": "songs",
+  "sideEffects": "true",
   "type": "module",
   "version": "1.0.0",
   "description": "A song Manager",
@@ -9,8 +10,8 @@
     "testi": "NODE_ENV=test ROOT=`pwd` jest -i",
     "devStart": "NODE_ENV='development' ROOT=`pwd` node start.js",
     "prodStart": "NODE_ENV='production' ROOT=`pwd` node start.js",
-    "devBundle":"NODE_ENV='development' webpack",
-    "prodBundle":"NODE_ENV='production' webpack"
+    "devBundle": "NODE_ENV='development' webpack",
+    "prodBundle": "NODE_ENV='production' webpack"
   },
   "author": "Abel Kashoba",
   "license": "ISC",
