@@ -34,7 +34,10 @@ module.exports = ()=> ({
 			}
 		]
 	},
+	optimization:{
+		usedExports:true
+	},
 	plugins:[
-		 new Failer()
+		new Failer()
 	]
 })
