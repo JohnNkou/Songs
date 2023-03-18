@@ -4,7 +4,7 @@ import { render }  from 'react-dom'
 import { Reducer }  from '../utilis/newReducer.cjs';
 import Action from '../utilis/aCreator.cjs'
 import songLoader  from '../utilis/songLoader.js';
-import {dbChooser, getLocalData, getRemoteData, fetcher, streamer, storageHandler, curry, loadFromLocalStorage, saveToLocalStorage, seq, safeOp } from '../utilis/BrowserDb.cjs';
+import {dbChooser, getLocalData, getRemoteData, fetcher, streamer, storageHandler, curry, loadFromLocalStorage, saveToLocalStorage, seq, safeOp, errorLogger } from '../utilis/BrowserDb.cjs';
 import { App  } from '../views/components.jsx'
 import { System } from '../utilis/constant.cjs'
 import config from '../utilis/db.config.cjs';
@@ -17,6 +17,7 @@ window.mountNotifier = {};
 window.onerror = (e)=>{
 	console.error("window error",e);
 }
+console.error = errorLogger();
 
 const dbLoader = dbChooser({name:'Test', safeOp, seq});
 lazyGuider();
@@ -82,7 +83,7 @@ Promise.all([localData,fastAccess]).then(()=>{
 		}
 	})
 }).catch((e)=>{
-	console.error("RACH",e);
+	console.error("RACH",e.name, e.message, e.stack);
 })
 
 	if(window.innerWidth > 500){
@@ -97,7 +98,7 @@ window.store = store;
 Promise.all([localData,MStepLoader]).then((r)=>{
 	let { data, db } = r[0],
 	stepManager = r[1];
-	Msteps = new stepManager;
+	Msteps = stepManager;
 
 	setTimeout(()=>{
 		let local = storageHandler().getItems(JSON.parse, System.LOCALSTORAGE, 'stream');
@@ -136,5 +137,5 @@ Promise.all([localData,MStepLoader]).then((r)=>{
 		document.getElementById('react-container')
 	)
 }).catch((e)=>{
-	console.error("localData catch Error: ",e);
+	console.error("localData catch Error: ",e.name, e.message, e.stack);
 })

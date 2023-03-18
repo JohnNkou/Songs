@@ -760,15 +760,7 @@ function invoqueAfterMount(selector){
 	}
 }
 
-exports.indexChanger = function(index,catName,songName,f,stream){
-	stream.updateStream(catName,songName,index); f(index);
-}
-exports.setLocal = setLocalStorage;
-exports.getLocal = getLocalStorage;
-exports.seq = PSeq;
-exports.safeOp = safeOp;
-exports.curry = curry;
-exports.tA = function(d){
+function tA(d){
 	if(!d || !d.length)
 		return d;
 
@@ -815,9 +807,12 @@ exports.tA = function(d){
 	}
 	return d;
 }
-exports.adjustHeight = adjustHeight;
 
-exports.helpWithCoordinate = function(div1,div2){
+function indexChanger(index,catName,songName,f,stream){
+	stream.updateStream(catName,songName,index); f(index);
+}
+
+function helpWithCoordinate(div1,div2){
 	let c1 = div1.getBoundingClientRect();
 	let r = { coordi1:{...toPercentage({left:c1.left, width:c1.width},window.innerWidth), ...toPercentage({top:c1.top, height:c1.height},window.innerHeight)}};
 	if(div2){
@@ -828,6 +823,30 @@ exports.helpWithCoordinate = function(div1,div2){
 	return r;
 
 }
+
+function errorLogger(){
+	let oldConsole = window.console.error,
+	xml = new XMLHttpRequest(),
+	url = '/reportError';
+
+	return function(...p){
+		oldConsole.apply(window,arguments);
+		xml.open('POST',url,true);
+		xml.setRequestHeader('content-type','application/json');
+		xml.send(JSON.stringify(p));
+	}
+}
+
+exports.errorLogger = errorLogger;
+exports.indexChanger = indexChanger;
+exports.setLocal = setLocalStorage;
+exports.getLocal = getLocalStorage;
+exports.seq = PSeq;
+exports.safeOp = safeOp;
+exports.curry = curry;
+exports.tA = tA;
+exports.adjustHeight = adjustHeight;
+exports.helpWithCoordinate = helpWithCoordinate
 exports.scrollHandler = scrollHandler;
 exports.registerWorker = registerWorker;
 exports.getLocalData = getLocalData;
