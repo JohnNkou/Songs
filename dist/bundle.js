@@ -3999,6 +3999,9 @@ var Content = /*#__PURE__*/function (_React$Component18) {
           newState.currentCatName = currentCat.name;
           newState.index = 0;
         }
+        if (state.index != cState.ui.navigation.verseIndex) {
+          newState.index = cState.ui.navigation.verseIndex;
+        }
         if (Object.keys(newState).length) {
           _this56.setState(newState);
         }
@@ -4012,9 +4015,6 @@ var Content = /*#__PURE__*/function (_React$Component18) {
       var store = this.store,
         changeIndex = this.props.changeIndex;
       store.dispatch(changeIndex(index));
-      this.setState({
-        index: index
-      });
     }
   }, {
     key: "componentDidUpdate",
@@ -36431,16 +36431,7 @@ function invoqueAfterMount(selector) {
     delete window.mountNotifier[selector];
   }
 }
-exports.indexChanger = function (index, catName, songName, f, stream) {
-  stream.updateStream(catName, songName, index);
-  f(index);
-};
-exports.setLocal = setLocalStorage;
-exports.getLocal = getLocalStorage;
-exports.seq = PSeq;
-exports.safeOp = safeOp;
-exports.curry = curry;
-exports.tA = function (d) {
+function tA(d) {
   if (!d || !d.length) return d;
   var toAdd = {
     forEach: function forEach(x) {
@@ -36480,9 +36471,12 @@ exports.tA = function (d) {
     if (toAdd[o]) toAdd[o](d);
   }
   return d;
-};
-exports.adjustHeight = adjustHeight;
-exports.helpWithCoordinate = function (div1, div2) {
+}
+function indexChanger(index, catName, songName, f, stream) {
+  stream.updateStream(catName, songName, index);
+  f(index);
+}
+function helpWithCoordinate(div1, div2) {
   var c1 = div1.getBoundingClientRect();
   var r = {
     coordi1: _objectSpread(_objectSpread({}, toPercentage({
@@ -36504,7 +36498,31 @@ exports.helpWithCoordinate = function (div1, div2) {
     }, window.innerHeight));
   }
   return r;
-};
+}
+function errorLogger() {
+  var oldConsole = window.console.error,
+    xml = new XMLHttpRequest(),
+    url = '/reportError';
+  return function () {
+    for (var _len = arguments.length, p = new Array(_len), _key = 0; _key < _len; _key++) {
+      p[_key] = arguments[_key];
+    }
+    oldConsole.apply(window, arguments);
+    xml.open('POST', url, true);
+    xml.setRequestHeader('content-type', 'application/json');
+    xml.send(JSON.stringify(p));
+  };
+}
+exports.errorLogger = errorLogger;
+exports.indexChanger = indexChanger;
+exports.setLocal = setLocalStorage;
+exports.getLocal = getLocalStorage;
+exports.seq = PSeq;
+exports.safeOp = safeOp;
+exports.curry = curry;
+exports.tA = tA;
+exports.adjustHeight = adjustHeight;
+exports.helpWithCoordinate = helpWithCoordinate;
 exports.scrollHandler = scrollHandler;
 exports.registerWorker = registerWorker;
 exports.getLocalData = getLocalData;
@@ -37740,7 +37758,11 @@ module.exports = function () {
     __webpack_require__.e(/*! require.ensure | guider */ "guider").then((function (require) {
       var _require = __webpack_require__(/*! ./guider.js */ "./utilis/guider.js"),
         stepManager = _require.stepManager;
-      resolve(stepManager);
+      if (stepManager && stepManager.constructor) {
+        return resolve(new stepManager());
+      }
+      console.error("stepManager retrieved is not a function", stepManager);
+      resolve(null);
     }).bind(null, __webpack_require__))['catch'](function (e) {
       return reject(e);
     });
@@ -39310,6 +39332,7 @@ window.mountNotifier = {};
 window.onerror = function (e) {
   console.error("window error", e);
 };
+console.error = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.errorLogger)();
 var dbLoader = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.dbChooser)({
   name: 'Test',
   safeOp: _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.safeOp,
@@ -39377,7 +39400,7 @@ Promise.all([localData, fastAccess]).then(function () {
     }
   });
 })["catch"](function (e) {
-  console.error("RACH", e);
+  console.error("RACH", e.name, e.message, e.stack);
 });
 if (window.innerWidth > 500) {
   MStepLoader = _utilis_guiderLazy_cjs__WEBPACK_IMPORTED_MODULE_3___default()();
@@ -39390,7 +39413,7 @@ Promise.all([localData, MStepLoader]).then(function (r) {
     data = _r$.data,
     db = _r$.db,
     stepManager = r[1];
-  Msteps = new stepManager();
+  Msteps = stepManager;
   setTimeout(function () {
     var local = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.storageHandler)().getItems(JSON.parse, _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_4__.System.LOCALSTORAGE, 'stream');
     var cLocalStorage = local[_utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_4__.System.cLocalStorage];
@@ -39428,7 +39451,7 @@ Promise.all([localData, MStepLoader]).then(function (r) {
     db: db
   }))), document.getElementById('react-container'));
 })["catch"](function (e) {
-  console.error("localData catch Error: ", e);
+  console.error("localData catch Error: ", e.name, e.message, e.stack);
 });
 }();
 /******/ })()

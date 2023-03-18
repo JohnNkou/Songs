@@ -3216,6 +3216,9 @@ class Content extends React.Component{
 				newState.currentCatName = currentCat.name;
 				newState.index = 0;
 			}
+			if(state.index != cState.ui.navigation.verseIndex){
+				newState.index = cState.ui.navigation.verseIndex;
+			}
 
 			if(Object.keys(newState).length){
 				this.setState(newState);
@@ -3229,7 +3232,6 @@ class Content extends React.Component{
 		let store = this.store,
 		{ changeIndex } = this.props;
 		store.dispatch(changeIndex(index));
-		this.setState({index});
 	}
 
 	componentDidUpdate(prevProps){
