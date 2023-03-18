@@ -3640,7 +3640,6 @@ class Settings extends React.PureComponent{
 						<DayMode {...props} />
 						<Language {...props} />
 						<Control {...props} />
-						<DevToolViewToogler {...props} />
 					</div>
 				</div>
 
@@ -3809,51 +3808,6 @@ class Control extends React.Component{
 	}
 }
 Control.contextType = Custom;
-
-class DevToolViewToogler extends React.PureComponent{
-	constructor(props,context){
-		super(props);
-		let store = context.store,
-		state = store.getState();
-
-		this.store = store;
-		this.state = {view:state.ui.show.devTool};
-		this.changeView = this.changeView.bind(this);
-	}
-
-	componentDidMount(){
-		let store = this.store
-
-		this.unsubscribe = store.subscribe(()=>{
-			let state = store.getState();
-
-			if(state.ui.show.devTool != this.state.view){
-				this.setState({ view: state.ui.show.devTool });
-			}
-		})
-	}
-
-	componentWillUmount(){
-		this.unsubscribe();
-	}
-
-	changeView(newView){
-		this.setState({view:newView});
-		this.props.changeDevToolView(newView);
-	}
-
-
-	render(){
-		let stateView = this.state.view;
-		let view = (stateView)? 'On':'Off';
-		return (
-			<div>
-				<span>DevTool View</span><a onClick={()=> this.changeView(!stateView)}>{view}</a>
-			</div>
-			)
-	}
-}
-DevToolViewToogler.contextType = Custom;
 
 export class Guider extends React.PureComponent{
 	constructor(props){
@@ -4268,111 +4222,10 @@ export class App extends React.Component{
 								<Second direction={direction} lang={lang} {...props}/>
 								{Guide}
 								<PopUp {...props} />
-								{/*<DevToolC />*/}
 			</ErrorBoundary>
 			)
 	}
 }
 App.contextType = Custom;
-
-class DevTool extends React.PureComponent{
-	constructor(props){
-		super(props);
-		this.log = this.log.bind(this);
-		this.appendText = this.appendText.bind(this);
-		this.log = this.log.bind(this);
-		this.scrollHandler = scrollHandler.bind(this);
-	}
-
-	componentDidMount(){
-		this.node = document.getElementById("devTool");
-
-		if(window.innerWidth < 450){
-			let self = this;
-			console.log = function(){
-				self.log.apply(self,['success',...arguments]);
-			}
-			console.error = function(){
-				self.log.apply(self,['error',...arguments]);
-			}
-		}
-		let trackedTouchs = [];
-
-		this.node.ontouchmove = (event)=>{
-			try{
-				this.scrollHandler(this.node,event,trackedTouchs);
-			}
-			catch(e){
-				console.error(e);
-			}
-		}
-		this.node.ontouchend = function(){
-			trackedTouchs = [];
-		}
-	}
-
-	componentDidUpdate(){
-		if(!this.props.view)
-			this.node.innerHTML = "";
-	}
-
-	log(status){
-		let texts = [],
-		index = 1,
-		item,
-		stringRepresentation,
-		stringRepresentation2;
-
-		while(item = arguments[index++]){
-			if(!is.String(item)){
-				if(!is.Number(item)){
-					stringRepresentation = item.toString();
-
-					if(stringRepresentation === ({}).toString()){
-						try{
-							stringRepresentation2 = JSON.stringify(item);
-
-							item = stringRepresentation2.substr(0,60);
-						}
-						catch(e){
-							item = stringRepresentation;
-						}
-					}
-				}
-			}
-
-			texts.push(item);
-		}
-
-		this.appendText(status,texts.join("  "));
-	}
-
-	appendText(status,text){
-
-		//let p = `<p class='${status}'>${text}</p>`,
-		let p = document.createElement("p"),
-		node = this.node,
-		childLength = node.childNodes.length;
-		p.className = status;
-		p.textContent = text;
-
-		setTimeout(()=>{
-			node.appendChild(p);
-			//node.innerHTML = node.innerHTML + p;
-			node.scrollTop = node.scrollHeight;
-
-			if(childLength >= node.childNodes.length)
-				alert("Somethings is wrong");
-		},15);
-	}
-
-	render(){
-		let show = (this.props.view)? '':'whoosh';
-
-		return (
-			<div id="devTool" className={show}></div>
-			)
-	}
-}
 
 const Liner = ({additionalClass=''})=> <div className={`tight ${additionalClass}`}> </div>
