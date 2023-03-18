@@ -43,6 +43,19 @@ function storeError(res){
 	res.status(500).json({code:0,message:"Coudln't retrieve data from store"});
 }
 
+export function ErrorLogger(){
+	return (req,res)=>{
+		let headers = req.headers,
+		userAgent = headers['user-agent'],
+		body = req.body || {};
+
+		if(Object.keys(body).length){
+			console.error('user-agent',userAgent,body);
+		}
+		res.status(200).end();
+	}
+}
+
 export function CommitHandler({app,db,closeFunction,procs}){
 	let reg = /heads\/master$/;
 

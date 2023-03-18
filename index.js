@@ -7,7 +7,7 @@ import fs from 'fs';
 import https from 'https'
 import logger from 'morgan'
 import path from 'path'
-import { indexRouter, storeProvider, Stream, Waiters, Subscription, PopulateCategoriesAndSongs,  streamCreator, streamCollector, streamUpdater, streamSubscription, streamDeleter, noStore, songDownloader, downloadToSubscriber, streamPicker, addDefaultsCategorieAndSongs }  from './router/index.js';
+import { indexRouter, storeProvider, Stream, Waiters, Subscription, PopulateCategoriesAndSongs,  streamCreator, streamCollector, streamUpdater, streamSubscription, streamDeleter, noStore, songDownloader, downloadToSubscriber, streamPicker, addDefaultsCategorieAndSongs, ErrorLogger }  from './router/index.js';
 import { killUnusedStream } from './utilis/sUtilities.js'
 import { appState } from './utilis/constant.cjs';
 import songAdderController from './utilis/songAdderController.js'
@@ -55,6 +55,7 @@ app.get('/songAdder.js',noStore(), songAdderController(appState));
 app.route('/stream').get(StreamJest, Waiters(streamWaiter)).post(StreamJest,Subscription(streamSubscribers), Waiters(streamWaiter));
 app.get('/stream/subscribe',(req,res,next)=>{ res.status(0); next();  }, SubscriptionJest);
 app.get('/stream/song', StreamJest);
+app.post('/reportError',ErrorLogger());
 app.use(function(err,req,res,next){
 	console.error("OUps an error");
 	console.error(err.stack);
