@@ -151,7 +151,7 @@ input{
 	background-color:rgb(189,204,212);
 }
 .blueBack{
-	background-color:rgb(79,209,217);
+	background-color: rgb(5 191 202);
 	color:white;
 }
 .whoosh{
@@ -197,8 +197,8 @@ input{
 	position: relative;
 	z-index: 1;
 	border-right:1px solid silver;
-	box-shadow: 2px 0px 2px rgba(0,0,0,.5);
-	-webkit-box-shadow: 2px 0px 2px rgba(0,0,0,.5);
+	box-shadow: 2px 0px 2px rgb(182 180 180 / 50%);
+	/* -webkit-box-shadow: 2px 0px 2px rgba(0,0,0,.5); */
 }
 #first #download{
 	position:absolute;
@@ -339,10 +339,10 @@ input{
 }
 
 .songList .onlineHead a, .songList .offlineHead a{
-	font-size: 1.4em;
+	font-size: 1.3em;
 	color:white;
 	letter-spacing: 2px;
-	font-family: "Adobe Hebrew";
+	font-family: "courier";
 }
 #first .songList .heightHelper{
 	height: 93%;

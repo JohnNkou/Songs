@@ -7,6 +7,11 @@ CACHE:
 
 #js files
 dist/bundle.js
+dist/bundle.js.map
+dist/guider.js
+dist/guider.js.map
+dist/indexDb.js
+dist/indexDb.js.map
 polyfill/Symbol.js
 js/bluebird_mod.min.js
 
@@ -32,6 +37,8 @@ img/streamStart.png
 img/streamStop.png
 img/top.png
 img/unlove.png
+img/Adder.png
+img/settings.png
 
 NETWORK:
 /connect

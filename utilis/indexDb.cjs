@@ -1,4 +1,4 @@
-function TTT({safeOp}){
+function TTT({safeOp,seq}){
 
 	function dealWithConstraint(error){
 		if(error.name.toLowerCase() == "constrainterror"){
@@ -27,7 +27,7 @@ function TTT({safeOp}){
 				var req2 = store2.createIndex("by_song_cat", ["name","cat"], { unique:true});
 				var req3 = store2.createIndex("by_cat","cat");
 
-				var sequences = new PSeq();
+				var sequences = new seq();
 
 				var i1 = ()=>{
 					return new Promise((resolve,reject)=>{

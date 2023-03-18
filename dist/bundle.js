@@ -4498,7 +4498,7 @@ var Settings = /*#__PURE__*/function (_React$PureComponent4) {
         additionalClass: "vmid"
       }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
         className: "abs abBottom list shadowR BRRad BLRad silverBack ".concat(hide)
-      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(DayMode, props), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Language, props), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Control, props), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(DevToolViewToogler, props))));
+      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(DayMode, props), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Language, props), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Control, props))));
     }
   }]);
   return Settings;
@@ -4710,93 +4710,34 @@ var Control = /*#__PURE__*/function (_React$Component23) {
   return Control;
 }(react__WEBPACK_IMPORTED_MODULE_0__.Component);
 Control.contextType = (_utilis_context_cjs__WEBPACK_IMPORTED_MODULE_4___default());
-var DevToolViewToogler = /*#__PURE__*/function (_React$PureComponent6) {
-  _inherits(DevToolViewToogler, _React$PureComponent6);
-  var _super29 = _createSuper(DevToolViewToogler);
-  function DevToolViewToogler(props, context) {
-    var _this70;
-    _classCallCheck(this, DevToolViewToogler);
-    _this70 = _super29.call(this, props);
-    var store = context.store,
-      state = store.getState();
-    _this70.store = store;
-    _this70.state = {
-      view: state.ui.show.devTool
-    };
-    _this70.changeView = _this70.changeView.bind(_assertThisInitialized(_this70));
-    return _this70;
-  }
-  _createClass(DevToolViewToogler, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      var _this71 = this;
-      var store = this.store;
-      this.unsubscribe = store.subscribe(function () {
-        var state = store.getState();
-        if (state.ui.show.devTool != _this71.state.view) {
-          _this71.setState({
-            view: state.ui.show.devTool
-          });
-        }
-      });
-    }
-  }, {
-    key: "componentWillUmount",
-    value: function componentWillUmount() {
-      this.unsubscribe();
-    }
-  }, {
-    key: "changeView",
-    value: function changeView(newView) {
-      this.setState({
-        view: newView
-      });
-      this.props.changeDevToolView(newView);
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this72 = this;
-      var stateView = this.state.view;
-      var view = stateView ? 'On' : 'Off';
-      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("span", null, "DevTool View"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("a", {
-        onClick: function onClick() {
-          return _this72.changeView(!stateView);
-        }
-      }, view));
-    }
-  }]);
-  return DevToolViewToogler;
-}(react__WEBPACK_IMPORTED_MODULE_0__.PureComponent);
-DevToolViewToogler.contextType = (_utilis_context_cjs__WEBPACK_IMPORTED_MODULE_4___default());
-var Guider = /*#__PURE__*/function (_React$PureComponent7) {
-  _inherits(Guider, _React$PureComponent7);
-  var _super30 = _createSuper(Guider);
+var Guider = /*#__PURE__*/function (_React$PureComponent6) {
+  _inherits(Guider, _React$PureComponent6);
+  var _super29 = _createSuper(Guider);
   function Guider(props) {
-    var _this73;
+    var _this70;
     _classCallCheck(this, Guider);
-    _this73 = _super30.call(this, props);
-    _this73.state = {
+    _this70 = _super29.call(this, props);
+    _this70.state = {
       step: props.step,
       section: props.step.section,
       action: props.step.section.action,
       style: {},
       lang: props.lang
     };
-    _this73.toStep = _this73.toStep.bind(_assertThisInitialized(_this73));
-    _this73.toSection = _this73.toSection.bind(_assertThisInitialized(_this73));
-    _this73.animate = _this73.animate.bind(_assertThisInitialized(_this73));
-    _this73.goToStep = _this73.goToStep.bind(_assertThisInitialized(_this73));
-    _this73.goToSection = _this73.goToSection.bind(_assertThisInitialized(_this73));
-    _this73.clear = _this73.clear.bind(_assertThisInitialized(_this73));
-    _this73.adjustHeight = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.adjustHeight.bind(_assertThisInitialized(_this73));
-    _this73.isInTheMiddle = _this73.isInTheMiddle.bind(_assertThisInitialized(_this73));
-    _this73.putInTheMiddle = _this73.putInTheMiddle.bind(_assertThisInitialized(_this73));
-    _this73.setDimensions = _this73.setDimensions.bind(_assertThisInitialized(_this73));
-    _this73.moveHandler = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.compose)(function () {
-      return _this73.putInTheMiddle(_this73.isInTheMiddle);
-    }, _this73.setDimensions, _this73.adjustHeight);
-    return _this73;
+    _this70.toStep = _this70.toStep.bind(_assertThisInitialized(_this70));
+    _this70.toSection = _this70.toSection.bind(_assertThisInitialized(_this70));
+    _this70.animate = _this70.animate.bind(_assertThisInitialized(_this70));
+    _this70.goToStep = _this70.goToStep.bind(_assertThisInitialized(_this70));
+    _this70.goToSection = _this70.goToSection.bind(_assertThisInitialized(_this70));
+    _this70.clear = _this70.clear.bind(_assertThisInitialized(_this70));
+    _this70.adjustHeight = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.adjustHeight.bind(_assertThisInitialized(_this70));
+    _this70.isInTheMiddle = _this70.isInTheMiddle.bind(_assertThisInitialized(_this70));
+    _this70.putInTheMiddle = _this70.putInTheMiddle.bind(_assertThisInitialized(_this70));
+    _this70.setDimensions = _this70.setDimensions.bind(_assertThisInitialized(_this70));
+    _this70.moveHandler = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.compose)(function () {
+      return _this70.putInTheMiddle(_this70.isInTheMiddle);
+    }, _this70.setDimensions, _this70.adjustHeight);
+    return _this70;
   }
   _createClass(Guider, [{
     key: "componentDidMount",
@@ -4844,15 +4785,15 @@ var Guider = /*#__PURE__*/function (_React$PureComponent7) {
   }, {
     key: "toStep",
     value: function toStep(step) {
-      var _this74 = this;
+      var _this71 = this;
       this.animate(false).then(function () {
-        _this74.setState(_objectSpread(_objectSpread({}, _this74.state), {}, {
+        _this71.setState(_objectSpread(_objectSpread({}, _this71.state), {}, {
           section: step.section,
           step: step,
           action: step.section.action
         }));
       }).then(function () {
-        _this74.animate(true);
+        _this71.animate(true);
       })["catch"](function (e) {
         console.error("Guider toStep catch Error", e);
       });
@@ -4860,15 +4801,15 @@ var Guider = /*#__PURE__*/function (_React$PureComponent7) {
   }, {
     key: "toSection",
     value: function toSection(section) {
-      var _this75 = this;
+      var _this72 = this;
       var state = this.state;
       this.animate(false).then(function () {
-        _this75.setState(_objectSpread(_objectSpread({}, state), {}, {
+        _this72.setState(_objectSpread(_objectSpread({}, state), {}, {
           section: section,
           action: section.action
         }));
       }).then(function () {
-        _this75.animate(true);
+        _this72.animate(true);
       })["catch"](function (e) {
         console.error("Guide toSection catch error", e);
       });
@@ -4876,12 +4817,12 @@ var Guider = /*#__PURE__*/function (_React$PureComponent7) {
   }, {
     key: "toAction",
     value: function toAction(doAction) {
-      var _this76 = this;
+      var _this73 = this;
       var state = this.state;
       var currentAction = state.action;
       doAction.then(function (_ref14) {
         var updateText = _ref14.updateText;
-        if (updateText) _this76.forceUpdate();else if (!currentAction.nextAction && state.section.nextSection) _this76.toSection(state.section.nextSection);else _this76.setState(_objectSpread(_objectSpread({}, state), {}, {
+        if (updateText) _this73.forceUpdate();else if (!currentAction.nextAction && state.section.nextSection) _this73.toSection(state.section.nextSection);else _this73.setState(_objectSpread(_objectSpread({}, state), {}, {
           action: currentAction.nextAction
         }));
       })["catch"](function (e) {
@@ -4891,10 +4832,10 @@ var Guider = /*#__PURE__*/function (_React$PureComponent7) {
   }, {
     key: "animate",
     value: function animate(add) {
-      var _this77 = this;
+      var _this74 = this;
       return new Promise(function (resolve, reject) {
-        var main = _this77.refs.main;
-        var state = _this77.state;
+        var main = _this74.refs.main;
+        var state = _this74.state;
         var op = Number(getComputedStyle(main).opacity);
         var c = setInterval(function () {
           if (add && op < 1.0) {
@@ -4925,12 +4866,12 @@ var Guider = /*#__PURE__*/function (_React$PureComponent7) {
   }, {
     key: "goToSection",
     value: function goToSection() {
-      var _this78 = this;
+      var _this75 = this;
       var next = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
       var section = this.state.section;
       var clear = this.clear();
       clear().then(function () {
-        return _this78.toSection(next ? section.nextSection : section.prevSection);
+        return _this75.toSection(next ? section.nextSection : section.prevSection);
       })["catch"](function (e) {
         console.error("Couldn't clear to go to ", next ? 'next' : 'prev', 'step');
       });
@@ -4938,12 +4879,12 @@ var Guider = /*#__PURE__*/function (_React$PureComponent7) {
   }, {
     key: "goToStep",
     value: function goToStep() {
-      var _this79 = this;
+      var _this76 = this;
       var next = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
       var step = this.state.step;
       var clear = this.clear();
       clear().then(function () {
-        return _this79.toStep(next ? step.nextStep : step.prevStep);
+        return _this76.toStep(next ? step.nextStep : step.prevStep);
       })["catch"](function (e) {
         console.error("Couldn't clear to go to ", next ? 'next' : 'prev', 'step');
       });
@@ -5144,24 +5085,24 @@ var HTML = function HTML(_ref19) {
 };
 var App = /*#__PURE__*/function (_React$Component24) {
   _inherits(App, _React$Component24);
-  var _super31 = _createSuper(App);
+  var _super30 = _createSuper(App);
   function App(props, context) {
-    var _this80;
+    var _this77;
     _classCallCheck(this, App);
-    _this80 = _super31.call(this, props);
+    _this77 = _super30.call(this, props);
     var guider = localStorage.guider,
       store = context.store,
       state = store.getState();
-    _this80.state = {
+    _this77.state = {
       showGuide: props.step ? true : false,
       lang: state.language,
       direction: state.ui.direction
     };
-    _this80.store = store;
-    _this80.store = context.store;
-    _this80.endGuide = _this80.endGuide.bind(_assertThisInitialized(_this80));
-    _this80.keyRecorder = _this80.keyRecorder.bind(_assertThisInitialized(_this80));
-    _this80.initTime = Date.now();
+    _this77.store = store;
+    _this77.store = context.store;
+    _this77.endGuide = _this77.endGuide.bind(_assertThisInitialized(_this77));
+    _this77.keyRecorder = _this77.keyRecorder.bind(_assertThisInitialized(_this77));
+    _this77.initTime = Date.now();
     if (props.db) {
       db = props.db;
       Validator = new props.validator();
@@ -5177,7 +5118,7 @@ var App = /*#__PURE__*/function (_React$Component24) {
       });
       Pseq = new props.seq();
     }
-    return _this80;
+    return _this77;
   }
   _createClass(App, [{
     key: "endGuide",
@@ -5191,13 +5132,13 @@ var App = /*#__PURE__*/function (_React$Component24) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this81 = this;
+      var _this78 = this;
       var store = this.store,
         props = this.props;
       this.unsubscribe = store.subscribe(function () {
         var state = store.getState();
-        if (state.language != _this81.state.lang) {
-          _this81.setState({
+        if (state.language != _this78.state.lang) {
+          _this78.setState({
             lang: state.language
           });
         }
@@ -5252,104 +5193,6 @@ var App = /*#__PURE__*/function (_React$Component24) {
   return App;
 }(react__WEBPACK_IMPORTED_MODULE_0__.Component);
 App.contextType = (_utilis_context_cjs__WEBPACK_IMPORTED_MODULE_4___default());
-var DevTool = /*#__PURE__*/function (_React$PureComponent8) {
-  _inherits(DevTool, _React$PureComponent8);
-  var _super32 = _createSuper(DevTool);
-  function DevTool(props) {
-    var _this82;
-    _classCallCheck(this, DevTool);
-    _this82 = _super32.call(this, props);
-    _this82.log = _this82.log.bind(_assertThisInitialized(_this82));
-    _this82.appendText = _this82.appendText.bind(_assertThisInitialized(_this82));
-    _this82.log = _this82.log.bind(_assertThisInitialized(_this82));
-    _this82.scrollHandler = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.scrollHandler.bind(_assertThisInitialized(_this82));
-    return _this82;
-  }
-  _createClass(DevTool, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      var _this83 = this;
-      this.node = document.getElementById("devTool");
-      if (window.innerWidth < 450) {
-        var self = this;
-        console.log = function () {
-          self.log.apply(self, ['success'].concat(Array.prototype.slice.call(arguments)));
-        };
-        console.error = function () {
-          self.log.apply(self, ['error'].concat(Array.prototype.slice.call(arguments)));
-        };
-      }
-      var trackedTouchs = [];
-      this.node.ontouchmove = function (event) {
-        try {
-          _this83.scrollHandler(_this83.node, event, trackedTouchs);
-        } catch (e) {
-          console.error(e);
-        }
-      };
-      this.node.ontouchend = function () {
-        trackedTouchs = [];
-      };
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      if (!this.props.view) this.node.innerHTML = "";
-    }
-  }, {
-    key: "log",
-    value: function log(status) {
-      var texts = [],
-        index = 1,
-        item,
-        stringRepresentation,
-        stringRepresentation2;
-      while (item = arguments[index++]) {
-        if (!_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.is.String(item)) {
-          if (!_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.is.Number(item)) {
-            stringRepresentation = item.toString();
-            if (stringRepresentation === {}.toString()) {
-              try {
-                stringRepresentation2 = JSON.stringify(item);
-                item = stringRepresentation2.substr(0, 60);
-              } catch (e) {
-                item = stringRepresentation;
-              }
-            }
-          }
-        }
-        texts.push(item);
-      }
-      this.appendText(status, texts.join("  "));
-    }
-  }, {
-    key: "appendText",
-    value: function appendText(status, text) {
-      //let p = `<p class='${status}'>${text}</p>`,
-      var p = document.createElement("p"),
-        node = this.node,
-        childLength = node.childNodes.length;
-      p.className = status;
-      p.textContent = text;
-      setTimeout(function () {
-        node.appendChild(p);
-        //node.innerHTML = node.innerHTML + p;
-        node.scrollTop = node.scrollHeight;
-        if (childLength >= node.childNodes.length) alert("Somethings is wrong");
-      }, 15);
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var show = this.props.view ? '' : 'whoosh';
-      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
-        id: "devTool",
-        className: show
-      });
-    }
-  }]);
-  return DevTool;
-}(react__WEBPACK_IMPORTED_MODULE_0__.PureComponent);
 var Liner = function Liner(_ref20) {
   var _ref20$additionalClas = _ref20.additionalClass,
     additionalClass = _ref20$additionalClas === void 0 ? '' : _ref20$additionalClas;
@@ -36254,20 +36097,24 @@ exports.dbChooser = function (options) {
   if (window.openDatabase) {
     return new Promise(function (resolve, reject) {
       __webpack_require__.e(/*! require.ensure | openDb */ "openDb").then((function (require) {
-        var TT = __webpack_require__(/*! ./openDb.cjs */ "./utilis/openDb.cjs");
-        resolve(new TT(options));
+        var openDb = __webpack_require__(/*! ./openDb.cjs */ "./utilis/openDb.cjs"),
+          TT = new openDb(options);
+        resolve(TT);
       }).bind(null, __webpack_require__))['catch'](function (e) {
-        reject(e);
+        console.error("Error while loading the openDb file", e);
+        resolve(new bogusTT());
       });
     });
   }
   if (window.indexedDB) {
     return new Promise(function (resolve, reject) {
       __webpack_require__.e(/*! require.ensure | indexDb */ "indexDb").then((function (require) {
-        var TTT = __webpack_require__(/*! ./indexDb.cjs */ "./utilis/indexDb.cjs");
-        resolve(new TTT(options));
+        var indexDb = __webpack_require__(/*! ./indexDb.cjs */ "./utilis/indexDb.cjs"),
+          TTT = new indexDb(options);
+        resolve(TTT);
       }).bind(null, __webpack_require__))['catch'](function (e) {
-        reject(e);
+        console.error("Error while loading the indexDb file", e);
+        resolve(new bogusTT());
       });
     });
   }
@@ -39465,7 +39312,8 @@ window.onerror = function (e) {
 };
 var dbLoader = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.dbChooser)({
   name: 'Test',
-  safeOp: _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.safeOp
+  safeOp: _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.safeOp,
+  seq: _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.seq
 });
 _utilis_guiderLazy_cjs__WEBPACK_IMPORTED_MODULE_3___default()();
 var localStorageData = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.loadFromLocalStorage)(_utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_4__.System.LOCALSTORAGE),
@@ -39528,6 +39376,8 @@ Promise.all([localData, fastAccess]).then(function () {
       });
     }
   });
+})["catch"](function (e) {
+  console.error("RACH", e);
 });
 if (window.innerWidth > 500) {
   MStepLoader = _utilis_guiderLazy_cjs__WEBPACK_IMPORTED_MODULE_3___default()();

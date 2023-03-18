@@ -14,7 +14,8 @@ function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _ty
 function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
 function TTT(_ref) {
   var _this = this;
-  var safeOp = _ref.safeOp;
+  var safeOp = _ref.safeOp,
+    seq = _ref.seq;
   function dealWithConstraint(error) {
     if (error.name.toLowerCase() == "constrainterror") {
       return {
@@ -50,7 +51,7 @@ function TTT(_ref) {
           unique: true
         });
         var req3 = store2.createIndex("by_cat", "cat");
-        var sequences = new PSeq();
+        var sequences = new seq();
         var i1 = function i1() {
           return new Promise(function (resolve, reject) {
             req1.onsuccess = function () {

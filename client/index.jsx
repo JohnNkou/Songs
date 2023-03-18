@@ -18,7 +18,7 @@ window.onerror = (e)=>{
 	console.error("window error",e);
 }
 
-const dbLoader = dbChooser({name:'Test', safeOp});
+const dbLoader = dbChooser({name:'Test', safeOp, seq});
 lazyGuider();
 
 let localStorageData = loadFromLocalStorage(System.LOCALSTORAGE),
@@ -81,6 +81,8 @@ Promise.all([localData,fastAccess]).then(()=>{
 			})
 		}
 	})
+}).catch((e)=>{
+	console.error("RACH",e);
 })
 
 	if(window.innerWidth > 500){
