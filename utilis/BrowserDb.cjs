@@ -415,18 +415,26 @@ exports.dbChooser = (options)=>{
 	if(window.openDatabase){
 		return new Promise((resolve,reject)=>{
 			require.ensure(['./openDb.cjs'],function(require){
-				let TT = require('./openDb.cjs');
-				resolve(new TT(options));
-			},function(e){ reject(e)},'openDb')
+				let openDb = require('./openDb.cjs'),
+				TT = new openDb(options);
+				resolve(TT);
+			},function(e){ 
+				console.error("Error while loading the openDb file",e);
+				resolve(new bogusTT());
+			},'openDb')
 		})
 	}
 
 	if(window.indexedDB){
 		return new Promise((resolve,reject)=>{
 			require.ensure(['./indexDb.cjs'],function(require){
-				let TTT = require('./indexDb.cjs');
-				resolve(new TTT(options));
-			}, function(e){ reject(e) },'indexDb')
+				let indexDb = require('./indexDb.cjs'),
+				TTT = new indexDb(options);
+				resolve(TTT);
+			}, function(e){ 
+				console.error("Error while loading the indexDb file",e);
+				resolve(new bogusTT());
+			},'indexDb')
 		})
 	}
 	
