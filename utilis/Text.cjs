@@ -1,12 +1,13 @@
 module.exports = {
 	formError:{
 		badCharacter:(name)=>{
-			return (lang="En")=> (lang.toLowerCase() == "en")? `${name} must only contains number and alphabetic caracter`: `${name} ne doit contenir que des caracteres alphanumerique`;
+			return (lang="En")=> (lang.toLowerCase() == "en")? `${name} must only contains alphabenumeric character`: `${name} ne doit contenir que des caracteres alphanumerique`;
 		},
 		inputToLong:(name,threshold)=>{
 			return (lang="En")=> (lang.toLowerCase() == "en")? `${name} should have character length less than or Equal to ${threshold}`:`${name} devrait avoir une nombre de character inferieur ou egale à ${threshold}`;
 		},
-		required: (name)=> (lang="En")=> (lang.toLowerCase() == "en")? `${name} must be filled`: `le champ ${name} doit etre complété`
+		required: (name)=> (lang="En")=> (lang.toLowerCase() == "en")? `${name} must be filled`: `le champ ${name} doit etre complété`,
+		notAlphaNumeric: (name)=> (lang="en")=> (lang == "en")? `${name} should only contain alphanumerique character.`:`${name} ne doit contenir que des charactere alpha numeric`
 	},
  	catDiv:{
 		addCatDiv:(lang="En")=>{
@@ -20,7 +21,7 @@ module.exports = {
 	},
 	addCatDiv:{
 		nameHolder:(lang="En")=>{
-			return (lang.toLowerCase() == "en")? "Cat Name":"Nom de la Categorie"
+			return (lang.toLowerCase() == "en")? "Name":"Nom"
 		},
 		addButtonText:(lang="En")=>{
 			return (lang.toLowerCase() == "en")? "Add":"Ajouter"
@@ -43,13 +44,16 @@ module.exports = {
 			},
 			success:(lang="En")=>{
 				return (lang.toLowerCase() == "en")? "Categorie Added":"La categorie a été ajoutée"
+			},
+			insertFailure:(lang="En")=>{
+				return (lang.toLowerCase() == "en")? "We wasn't able to insert the category":"Nous n'avaons pas pu inserer la categorie"
 			}
 
 		}
 	},
 	addSongDiv:{
 		nameHolder:(lang="En")=>{
-			return (lang.toLowerCase() == "en")? "Song Name":"Nom de la chanson"
+			return (lang.toLowerCase() == "en")? "Name":"Nom"
 		},
 		verseNameHolder:(lang="En")=>{
 			return (lang.toLowerCase() == "en")? "Verse":"Verset";
@@ -71,10 +75,10 @@ module.exports = {
 		},
 		message:{
 			nameRequired:(lang="En")=>{
-				return (lang.toLowerCase() == "en")? "The name of the song is required":"Le nom de la chanson est obligatoire";
+				return (lang.toLowerCase() == "en")? "The name required":"Le nom de la chanson est obligatoire";
 			},
 			verseRequired:(lang="En")=>{
-				return (lang.toLowerCase() == "en")? "The son must at least have on verse and It must not be null":"La chanson doit avoir au moins un verset et il ne doit pas etre nulle"
+				return (lang.toLowerCase() == "en")? "The song must at least have one verse and It must not be null":"La chanson doit avoir au moins un verset et il ne doit pas etre nulle"
 			},
 			verseValueRequired:(lang="En",number)=>{
 				return (lang.toLowerCase() == "en")? `Verse ${number} has no value`:`Le verset ${number} n'as aucune valeur`
@@ -99,40 +103,40 @@ module.exports = {
 	},
 	createStreamDiv:{
 		nameHolder:(lang="En")=>{
-			return (lang.toLowerCase() == "en")? "Stream Name":"Nom du ruiseaux"
+			return (lang.toLowerCase() == "en")? "Stream Name":"Nom du stream"
 		},
 		create:(lang="En")=> (lang.toLowerCase() == "en")? "Create":"Creer",
 		close: (lang="En")=> (lang.toLowerCase() == "en")? "Close":"Fermer",
 		message:{
 			nameRequired:(lang="En")=>{
-				return (lang.toLowerCase() == "en")? "The stream name is empty, please provide a name": "Le nom du ruiseaux est vide. Veuillez entre un nom valide"
+				return (lang.toLowerCase() == "en")? "The stream name is empty, please provide a name": "Le nom du stream est vide. Veuillez entre un nom valide"
 			},
 			streamCreated:(lang="En")=>{
-				return (lang.toLowerCase() == "en")? "Stream created with success": "Le ruiseaux a ete crée avec success";
+				return (lang.toLowerCase() == "en")? "Stream created with success": "Le stream a ete crée avec success";
 			},
 			BadCharacter:(lang="En")=>{
 				return (lang.toLowerCase() == "en")? "The stream name must only contains number and alphabetic caracter": "Le nom du stream ne doit contenir que des caracteres alphanumerique";
 			},
 			isAlreadyStreaming:(lang="En")=>{
-				return (lang.toLowerCase() == "en")? "You have already a stream running. Please stop that stream to create another One":"Vous avez deja un ruiseaux en cour. Pour creer un autre ruiseaux veuiller arrete le ruiseaux courant"
+				return (lang.toLowerCase() == "en")? "You have already a stream running. Please stop that stream to create another One":"Vous avez deja un stream en cour. Pour creer un autre ruiseaux veuiller arrete le stream courant"
 			},
 			streamStopped:(lang="En")=>{
-				return (lang.toLowerCase() == "en")? "The stream was stopped": "Le ruiseaux a ete arreté";
+				return (lang.toLowerCase() == "en")? "The stream was stopped": "Le stream a ete arreté";
 			},
 			creationError:(lang="En")=>{
-				return (lang.toLowerCase() == "en")? "Sorry couldn't create the stream. Please try again": "Desolé, nous n'avons pas pu creer le ruiseaux. Veuillez reessayer de nouveau";
+				return (lang.toLowerCase() == "en")? "Sorry couldn't create the stream. Please try again": "Desolé, nous n'avons pas pu creer le stream. Veuillez reessayer de nouveau";
 			},
 			nameDuplication:(lang="En")=>{
-				return (lang.toLowerCase() == "en")? "A stream with that name Exist, please provide another name":"Un autre ruiseau possede deja ce nom, Veuillez modifier le nom de votre ruiseau";
+				return (lang.toLowerCase() == "en")? "A stream with that name Exist, please provide another name":"Un autre stream possede deja ce nom, Veuillez modifier le nom de votre stream";
 			},
 			UnsubscribeFirst:(lang="En")=>{
-				return (lang.toLowerCase() == "en")? "You are subscribe to a stream. You have to unsubscribe first. You can do that by clicking on a song":"Vous souscrit a un ruisseaux. Vous devez vous desouscrire du ruissant avant de creer votre propre ruiseeaux. Clique sur une chanson pour vous desouscrire"
+				return (lang.toLowerCase() == "en")? "You are subscribed to a stream. You have to unsubscribe first. You can do that by clicking on a song":"Vous etes souscrit a un stream. Vous devez vous desouscrire avant de creer votre propre stream. Clique sur une chanson pour vous desouscrire"
 			},
 			networkProblem:(lang="En")=>{
 				return (lang.toLowerCase() == "en")? "Sorry, but We can't connect to the server. Please check your connection":"Desolé, Nous ne pouvons pas nous connecter sur le serveur, veuillez verifier votre connexion internet"
 			},
 			stringToLong:(lang="En")=>{
-				return (lang.toLowerCase() == "en")? "The provided streamName must be less than or equal to 50": "Le nom du stream doit etre d'une longuer inferieur ou egale à 50"
+				return (lang.toLowerCase() == "en")? "The provided stream name must be less than or equal to 50": "Le nom du stream doit etre d'une longuer inferieur ou egale à 50"
 			}
 		}
 	},
@@ -146,16 +150,16 @@ module.exports = {
 	},
 	Stream:{
 		started:(lang="En",name="")=>{
-			return (lang.toLowerCase() == "en")? `stream ${name} started`: `Le ruiseaux ${name} a été créer`
+			return (lang.toLowerCase() == "en")? `stream ${name} started`: `Le stream ${name} a été créer`
 		},
 		stopped: (lang="En",name="")=>{
-			return (lang.toLowerCase() == "en")? `stream ${name} stopped`: `Le ruiseaux ${name} a été arreté`
+			return (lang.toLowerCase() == "en")? `stream ${name} stopped`: `Le stream ${name} a été arreté`
 		},
 		stopping: (lang="En",name,dot)=>{
-			return (lang.toLowerCase() == "en")? `Stopping stream ${name} ${dot}`:`Arret du ruisseaux ${name} ${dot}`
+			return (lang.toLowerCase() == "en")? `Stopping stream ${name} ${dot}`:`Arret du stream ${name} ${dot}`
 		},
 		stopError: (lang="En",name)=>{
-			return (lang.toLowerCase() == "en")? `Error while trying to stop stream ${name}`: `Une Erreur est survenue lors de l'arrete du ruisseaux ${name}`
+			return (lang.toLowerCase() == "en")? `Error while trying to stop stream ${name}`: `Une Erreur est survenue lors de l'arrete du stream ${name}`
 		},
 		download:{
 			start: (lang="En",songName)=>{
@@ -170,28 +174,28 @@ module.exports = {
 		},
 		subscription: {
 			success:(lang="En",name)=>{
-				return (lang.toLowerCase() == "en")? `Successfully subscribed to stream ${name}`: `Votre soubscription au ruisseaux ${name} a reussit`
+				return (lang.toLowerCase() == "en")? `Successfully subscribed to stream ${name}`: `Votre soubscription au stream ${name} a reussit`
 			},
 			failed:(lang="En",name)=>{
 				return (lang.toLowerCase() == "en")? `An Error occured while trying to subscribe to stream ${name}`: `Une Erreur est survenu lors de la souscription au reuisseaux ${name}`
 			},
 			end:(lang="En",name)=>{
-				return (lang.toLowerCase() == "en")? `The stream ${name} ended`: `Le ruisseaux ${name} est arreté`
+				return (lang.toLowerCase() == "en")? `The stream ${name} ended`: `Le stream ${name} est arreté`
 			},
 			error:(lang="En",name)=>{
-				return (lang.toLowerCase() == "en")? `An Error occured. Couln't connect to stream ${name}`: `Une Erreur est survenu. Impossible de se connecter au ruisseaux ${name}`
+				return (lang.toLowerCase() == "en")? `An Error occured. Couln't connect to stream ${name}`: `Une Erreur est survenu. Impossible de se connecter au stream ${name}`
 			},
 			alreadyStreaming:(lang="En")=>{
 				return (lang.toLowerCase() == "en")? "You can't stream an subscribe to a stream at the same time": "Vous ne pouvez pas effectuer un stream et etre souscrit à un stream en meme temps"
 			},
 			dontHaveSong:(lang="En",catName,songName)=>{
-				return (lang.toLowerCase() == "en")? `The streammed song is not available in the current song you have. streamed songName: ${songName}, categorieName: ${catName}`: `La chanson en ruisseaux n'est pas disponible sur votre system. Chanson en ruisseaux: ${songName}, Categorie: ${catName} `
+				return (lang.toLowerCase() == "en")? `The streammed song is not available in the current song you have. streamed songName: ${songName}, categorieName: ${catName}`: `La chanson en stream n'est pas disponible sur votre system. Chanson en stream: ${songName}, Categorie: ${catName} `
 			},
 			changed:(lang="En",songName)=>{
 				return (lang.toLowerCase() == "en")? `Sorry, we download the song ${songName} because the streamer is no longer streaming this song`:`Desolé, nous n'avons pas pu telecharger la chanson ${songName} parce que le streamer ne stream plus ce chant`
 			},
 			nothing:(lang = "En", name)=>{
-				return (lang.toLowerCase() == "en")? `The stream ${name} stoped`:`Le ruisseaux s'est arreté`
+				return (lang.toLowerCase() == "en")? `The stream ${name} stoped`:`Le stream s'est arreté`
 			}
 		}
 	},
