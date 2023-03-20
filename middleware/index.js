@@ -67,9 +67,9 @@ const fastAccessAction = (
 		function rmS(action,fastAccess,state){
 			let { id,catId,name,location } = action,
 			catName = state.currentCat.name,
-			songName = state[`${location}Songs`][catId][id].name.toUpperCase();
+			songName = name;
 
-			delete fastAccess[catName][location][songName];
+			delete fastAccess[catName][location][name];
 
 		}
 		function addC(action,fastAccess,state){
