@@ -1,9 +1,9 @@
 function validator(fields){
-  let toValidate = {};
+  let toValidate = {},
+  alfaReg = /^[a-z\sàáâèéêûùúîïôöòć'"]+$/i;
   
   let algo = {
 	  isRequired: function(value){
-	    console.log("isRequired",value);
 	    if(!value || !value.length)
 	      return false;
 	    return true;
@@ -65,6 +65,9 @@ function validator(fields){
 
 	  	return false;
 	  },
+	  isAlphaNumeric: function(data){
+	  	return alfaReg.test(data);
+	  },
 	  hasBadCharacter: function(name,reg){
 	  	if(reg.test(name))
 	  		return true;
@@ -79,7 +82,8 @@ function validator(fields){
   	this.isMoreThan = algo['isMoreThan'];
   	this.isNotIn = algo['isNotIn'];
   	this.isAllEmpty = algo['isAllEmpty'];
-  	this.hasBadCharacter = algo['hasBadCharacter']
+  	this.hasBadCharacter = algo['hasBadCharacter'];
+  	this.isAlphaNumeric = algo['isAlphaNumeric'];
 }
 
 function Action(){
