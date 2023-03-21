@@ -39,71 +39,67 @@ function TTT(_ref) {
         var db = request.result;
         console.log("Hey, I'm called");
         var store1 = db.createObjectStore('Categorie', {
-          autoIncrement: true
-        });
-        var store2 = db.createObjectStore('Song', {
-          autoIncrement: true
-        });
+            autoIncrement: true
+          }),
+          store2 = db.createObjectStore('Song', {
+            autoIncrement: true
+          });
         var req1 = store1.createIndex("by_name", "name", {
-          unique: true
-        });
-        var req2 = store2.createIndex("by_song_cat", ["name", "cat"], {
-          unique: true
-        });
-        var req3 = store2.createIndex("by_cat", "cat");
-        var sequences = new seq();
+            unique: true
+          }),
+          req2 = store2.createIndex("by_song_cat", ["name", "cat"], {
+            unique: true
+          }),
+          req3 = store2.createIndex("by_cat", "cat"),
+          req4 = store1.createIndex("by_id", "id", {
+            unique: true
+          });
         var i1 = function i1() {
-          return new Promise(function (resolve, reject) {
-            req1.onsuccess = function () {
-              return resolve(true);
-            };
-            req1.onerror = function () {
-              return reject(req1.error);
-            };
-          });
-        };
-        var i2 = function i2() {
-          return new Promise(function (resolve, reject) {
-            req2.onsuccess = function () {
-              return resolve(true);
-            };
-            req2.onerror = function () {
-              return reject(req2.error);
-            };
-          });
-        };
-        var i3 = function i3() {
-          return new Promise(function (resolve, reject) {
-            req3.onsuccess = function () {
-              return resolve(true);
-            };
-            req3.onerror = function () {
-              return reject(req3.error);
-            };
-          });
-        };
-        sequences.subscribe(sequences.add(i1), function () {
-          console.log('Index1 created with success');
-        }, function (e) {
-          console.log('Error while creating Index1', e);
-          reject(e);
-        });
-        sequences.subscribe(sequences.add(i2), function () {
-          console.log("Index2 created with success");
-        }, function (e) {
-          console.log("Error while creating Index2", e);
-          reject(e);
-        });
-        sequences.subscribe(sequences.add(i3), function () {
-          console.log("Index3 created with success");
-          resolve(true);
-        }, function (e) {
-          console.log("Error while creating Index3");
-          reject(e);
+            return new Promise(function (resolve, reject) {
+              req1.onsuccess = function () {
+                return resolve(true);
+              };
+              req1.onerror = function () {
+                return reject(req1.error);
+              };
+            });
+          },
+          i2 = function i2() {
+            return new Promise(function (resolve, reject) {
+              req2.onsuccess = function () {
+                return resolve(true);
+              };
+              req2.onerror = function () {
+                return reject(req2.error);
+              };
+            });
+          },
+          i3 = function i3() {
+            return new Promise(function (resolve, reject) {
+              req3.onsuccess = function () {
+                return resolve(true);
+              };
+              req3.onerror = function () {
+                return reject(req3.error);
+              };
+            });
+          },
+          i4 = function i4() {
+            return new Promise(function (resolve, reject) {
+              req4.onsuccess = function () {
+                return resolve(true);
+              };
+              req4.onerror = function () {
+                return reject(req4.error);
+              };
+            });
+          };
+        Promise.all([i1(), i2(), i3(), i4()]).then(resolve)["catch"](function (e) {
+          console.error("Couldn't initial the database", e);
         });
       };
       request.onblocked = function () {
-        console.log("Hey, someone is blocking be");
+        console.log("Hey, someone is blocking me");
       };
       request.onerror = function () {
         return reject(request.error);
@@ -184,135 +180,146 @@ function TTT(_ref) {
       e(request.error);
     };
   };
-  this.insertCategorie = function (name) {
-    var txt = 'insertCategorie';
-    var tx = _this.txW;
-    var p = function p() {
-      return new Promise(function (resolve, reject) {
-        tx(function (tx) {
-          var store = tx.objectStore("Categorie");
-          var request = store.put({
-            name: toL(name)
+  this.insertCategorie = function (name, id) {
+    var txt = 'insertCategorie',
+      tx = _this.txW,
+      p = function p() {
+        return new Promise(function (resolve, reject) {
+          tx(function (tx) {
+            var store = tx.objectStore("Categorie");
+            var request = store.put({
+              name: toL(name, id),
+              id: id
+            });
+            request.onsuccess = function (e) {
+              resolve(request.result);
+            };
+            request.onerror = function (e) {
+              e.preventDefault();
+              reject(dealWithConstraint(request.error));
+            };
+          }, function (e) {
+            sameCompose(reject, trError);
           });
-          request.onsuccess = function (e) {
-            resolve(request.result);
-          };
-          request.onerror = function (e) {
-            e.preventDefault();
-            reject(dealWithConstraint(request.error));
-          };
-        }, function (e) {
-          sameCompose(reject, trError);
         });
-      });
-    };
+      };
     return p;
   };
   this.updateCategorie = function (name, newName) {
-    var txt = 'updateCategorie';
-    var tx = _this.txW;
-    var p = function p() {
-      return new Promise(function (resolve, reject) {
-        tx(function (tx) {
-          var index = tx.objectStore("Categorie").index("by_name");
-          var request = index.openCursor(IDBKeyRange.only(toL(name)));
-          request.onsuccess = function () {
-            var cursor = request.result;
-            if (cursor) {
-              var req = cursor.update({
-                name: toL(newName)
+    var txt = 'updateCategorie',
+      tx = _this.txW,
+      p = function p() {
+        return new Promise(function (resolve, reject) {
+          tx(function (tx) {
+            var index = tx.objectStore("Categorie").index("by_name");
+            var request = index.openCursor(IDBKeyRange.only(toL(name)));
+            request.onsuccess = function () {
+              var cursor = request.result;
+              if (cursor) {
+                var req = cursor.update({
+                  name: toL(newName)
+                });
+                req.onsuccess = function (e) {
+                  resolve(Boolean(req.result));
+                };
+                req.onerror = function (e) {
+                  reject(dealWithConstraint(req.error));
+                };
+              } else {
+                resolve(false);
+              }
+            };
+            request.onerror = function (e) {
+              e.preventDefault();
+              reject(dealWithConstraint(request.error));
+            };
+          }, function (e) {
+            sameCompose(reject, trError);
+          });
+        });
+      };
+    return p;
+  };
+  this.removeCategorie = function (id) {
+    var txt = "removeCategorie",
+      tx = _this.txW,
+      p = function p() {
+        return new Promise(function (resolve, reject) {
+          _this.deleteCategorieSong(id)().then(function (r) {
+            if (r) {
+              tx(function (tx) {
+                var index = tx.objectStore("Categorie").index("by_id"),
+                  request = index.openCursor(IDBKeyRange.only(id));
+                request.onsuccess = function (e) {
+                  var cursor = request.result;
+                  if (cursor) {
+                    var req = cursor["delete"]();
+                    req.onsuccess = function (e) {
+                      resolve(!req.result);
+                    };
+                    req.onerror = function (e) {
+                      e.preventDefault();
+                      reject(dealWithConstraint(req.error));
+                    };
+                  } else {
+                    resolve(true);
+                  }
+                };
+                request.onerror = function (e) {
+                  e.preventDefault();
+                  reject(dealWithConstraint(request.error));
+                };
+              }, function (e) {
+                return sameCompose(reject, trError);
               });
-              req.onsuccess = function (e) {
-                resolve(Boolean(req.result));
-              };
-              req.onerror = function (e) {
-                reject(dealWithConstraint(req.error));
-              };
             } else {
+              console.error("Couldn't delete all the song of the categorie");
               resolve(false);
             }
-          };
-          request.onerror = function (e) {
-            e.preventDefault();
-            reject(dealWithConstraint(request.error));
-          };
-        }, function (e) {
-          sameCompose(reject, trError);
+          })["catch"](reject);
         });
-      });
-    };
+      };
     return p;
   };
-  this.removeCategorie = function (name) {
-    var txt = "removeCategorie";
-    var p = function p() {
-      return new Promise(function (resolve, reject) {
-        tx(function (tx) {
-          var index = tx.objectStore("Categorie").index("by_name");
-          var request = index.openCursor(IDBKeyRange.only(toL(name)));
-          request.onsuccess = function (e) {
-            var cursor = request.result;
-            if (cursor) {
-              var req = cursor["delete"]();
-              req.onsuccess = function (e) {
-                resolve(!req.result);
-              };
-              req.onerror = function (e) {
-                e.preventDefault();
-                reject(dealWithConstraint(req.error));
-              };
-            } else {
-              resolve();
-            }
-          };
-          request.onerror = function (e) {
-            e.preventDefault();
-            reject(dealWithConstraint(request.error));
-          };
-        }, function (e) {
-          return sameCompose(reject, trError);
+  this.getCategorie = function () {
+    var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+    var txt = 'getCategorie',
+      tx = _this.txR,
+      p = function p() {
+        return new Promise(function (resolve, reject) {
+          tx(function (tx) {
+            var index = tx.objectStore("Categorie").index("by_id"),
+              request = index.openCursor(toL(id));
+            request.onsuccess = function (e) {
+              var cursor = request.result;
+              if (cursor) {
+                resolve([_objectSpread({
+                  id: cursor.primaryKey
+                }, cursor.value)]);
+              } else {
+                resolve([]);
+              }
+            };
+            request.onerror = function (e) {
+              e.preventDefault();
+              reject(dealWithConstraint(request.error));
+            };
+          }, function (e) {
+            sameCompose(reject, trError);
+          });
         });
-      });
-    };
+      };
     return p;
   };
-  this.getCategorie = function (name) {
-    var txt = 'getCategorie';
-    var tx = _this.txR;
-    var p = function p() {
+  this.getCategorieByKey = function () {
+    var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+    var txt = 'getCategorieByKey',
+      tx = _this.txR;
+    p = function p() {
       return new Promise(function (resolve, reject) {
         tx(function (tx) {
-          var index = tx.objectStore("Categorie").index("by_name");
-          var request = index.openCursor(toL(name));
-          request.onsuccess = function (e) {
-            var cursor = request.result;
-            if (cursor) {
-              resolve([_objectSpread({
-                id: cursor.primaryKey
-              }, cursor.value)]);
-            } else {
-              resolve([]);
-            }
-          };
-          request.onerror = function (e) {
-            e.preventDefault();
-            reject(dealWithConstraint(request.error));
-          };
-        }, function (e) {
-          sameCompose(reject, trError);
-        });
-      });
-    };
-    return p;
-  };
-  this.getCategorieByKey = function (id) {
-    var txt = 'getCategorieByKey';
-    var tx = _this.txR;
-    var p = function p() {
-      return new Promise(function (resolve, reject) {
-        tx(function (tx) {
-          var store = tx.objectStore("Categorie");
-          var request = store.openCursor(id);
+          var index = tx.objectStore("Categorie").index("by_id"),
+            request = index.openCursor(id);
           request.onsuccess = function (s) {
             var cursor = request.result;
             if (cursor) {
@@ -335,57 +342,56 @@ function TTT(_ref) {
     return p;
   };
   this.getAllCategories = function () {
-    var txt = "getAllCategories";
-    var tx = _this.txR;
-    var p = function p() {
-      return new Promise(function (resolve, reject) {
-        tx(function (tx) {
-          var index = tx.objectStore("Categorie").index("by_name");
-          var request = index.getAll && index.getAll() || index.mozGetAll && index.mozGetAll();
-          if (request) {
-            request.onsuccess = function (e) {
-              resolve(request.result);
-            };
-            request.onerror = function (e) {
-              e.preventDefault();
-              reject(dealWithConstraint(request.error));
-            };
-          } else {
-            request = index.openCursor();
-            var result = [];
-            request.onsuccess = function (e) {
-              var cursor = request.result;
-              if (!cursor) {
-                console.log("getAllCategorie result", result);
-                resolve(result);
-              } else {
-                result.push(cursor.value);
-                cursor["continue"]();
-              }
-            };
-            request.onerror = function (e) {
-              console.error("getAllCategorie count Error", e);
-            };
-          }
-        }, function (e) {
-          return sameCompose(reject, trError);
+    var txt = "getAllCategories",
+      tx = _this.txR,
+      p = function p() {
+        return new Promise(function (resolve, reject) {
+          tx(function (tx) {
+            var index = tx.objectStore("Categorie").index("by_name");
+            var request = index.getAll && index.getAll() || index.mozGetAll && index.mozGetAll();
+            if (request) {
+              request.onsuccess = function (e) {
+                resolve(request.result);
+              };
+              request.onerror = function (e) {
+                e.preventDefault();
+                reject(dealWithConstraint(request.error));
+              };
+            } else {
+              request = index.openCursor();
+              var result = [];
+              request.onsuccess = function (e) {
+                var cursor = request.result;
+                if (!cursor) {
+                  console.log("getAllCategorie result", result);
+                  resolve(result);
+                } else {
+                  result.push(cursor.value);
+                  cursor["continue"]();
+                }
+              };
+              request.onerror = function (e) {
+                console.error("getAllCategorie count Error", e);
+              };
+            }
+          }, function (e) {
+            return sameCompose(reject, trError);
+          });
         });
-      });
-    };
+      };
     return p;
   };
   this.insertSong = function (name, verses, cat) {
-    var txt = 'insertSong';
-    var tx = _this.txW;
-    var p = function p() {
-      return new Promise(function (resolve, reject) {
-        if (typeof cat == "number") {
+    var txt = 'insertSong',
+      tx = _this.txW,
+      p = function p() {
+        return new Promise(function (resolve, reject) {
           _this.getCategorieByKey(cat)().then(function (r) {
             if (r) {
               tx(function (tx) {
                 var store = tx.objectStore("Song");
                 var request = store.put({
-                  name: name,
+                  name: toL(name),
                   verses: verses,
                   cat: cat
                 });
@@ -394,8 +400,6 @@ function TTT(_ref) {
                 };
                 request.onerror = function (e) {
                   e.preventDefault();
-                  //window.eee = {e,er:request.error};
-
                   reject(dealWithConstraint(request.error));
                 };
               }, function (e) {
@@ -408,253 +412,176 @@ function TTT(_ref) {
               });
             }
           })["catch"](reject);
-        } else {
-          _this.getCategorie(cat)().then(function (r) {
-            r = r.pop();
-            if (r) {
-              var cat = r.id;
-              if (cat) {
-                var v = _this.insertSong(name, verses, cat)();
-                v.then(resolve)["catch"](reject);
-              } else {
-                resolve(false);
-              }
-            } else {
-              resolve(false);
-            }
-          })["catch"](reject);
-        }
-      });
-    };
+        });
+      };
     return p;
   };
   this.updateSong = function (name, cat, newName, verses) {
-    var txt = "updateSong";
-    var tx = _this.txW;
-    var p = function p() {
-      return new Promise(function (resolve, reject) {
-        switch (_typeof(cat)) {
-          case "number":
-            tx(function (tx) {
-              var index = tx.objectStore("Song").index("by_song_cat");
-              var request = index.openCursor(IDBKeyRange.only([name, cat]));
-              request.onsuccess = function (e) {
-                var cursor = request.result;
-                var value = cursor.value;
-                if (cursor) {
-                  var req = cursor.update({
-                    name: newName || value.name,
+    var txt = "updateSong",
+      tx = _this.txW,
+      p = function p() {
+        return new Promise(function (resolve, reject) {
+          tx(function (tx) {
+            var index = tx.objectStore("Song").index("by_song_cat");
+            var request = index.openCursor(IDBKeyRange.only([toL(name), cat]));
+            request.onsuccess = function (e) {
+              var cursor = request.result;
+              if (cursor) {
+                var value = cursor.value,
+                  req = cursor.update({
+                    name: toL(newName) || value.name,
                     verses: verses || value.verses,
                     cat: cat
                   });
-                  req.onsuccess = function (e) {
-                    resolve(Boolean(req.result));
-                  };
-                  req.onerror = function (e) {
-                    e.preventDefault();
-                    reject(dealWithConstraint(req.error));
-                  };
-                } else {
-                  reject(false);
-                }
-              };
-              request.onerror = function (e) {
-                e.preventDefault();
-                reject(dealWithConstraint(request.error));
-              };
-            }, function (e) {
-              return sameCompose(reject, trError);
-            });
-            break;
-          case "string":
-            _this.getCategorie(cat)().then(function (r) {
-              if (r) {
-                var id = r.id;
-                _this.updateSong(name, id, newName, verses)().then(resolve)["catch"](reject);
+                req.onsuccess = function (e) {
+                  resolve(Boolean(req.result));
+                };
+                req.onerror = function (e) {
+                  e.preventDefault();
+                  reject(dealWithConstraint(req.error));
+                };
               } else {
-                resolve(false);
+                reject(false);
               }
-            })["catch"](reject);
-            break;
-          default:
-            reject({
-              type: "Error",
-              message: "Wrong categorie type ".concat(cat)
-            });
-        }
-      });
-    };
+            };
+            request.onerror = function (e) {
+              e.preventDefault();
+              reject(dealWithConstraint(request.error));
+            };
+          }, function (e) {
+            return sameCompose(reject, trError);
+          });
+        });
+      };
     return p;
   };
   this.deleteSong = function (name, cat) {
-    var txt = 'deleteSong';
-    var tx = _this.txW;
-    var p = function p() {
-      return new Promise(function (resolve, reject) {
-        switch (_typeof(cat)) {
-          case "number":
-            tx(function (tx) {
-              var index = tx.objectStore("Song").index("by_song_cat");
-              var request = index.openCursor(IDBKeyRange.only([name, cat]));
-              request.onsuccess = function (e) {
-                var cursor = request.result;
-                if (cursor) {
-                  var req = cursor["delete"]();
-                  req.onsuccess = function (e) {
-                    resolve(!req.result);
-                  };
-                  req.onerror = function (e) {
-                    e.preventDefault();
-                    reject(dealWithConstraint(req.error));
-                  };
-                } else {
-                  resolve(false);
-                }
-              };
-              request.onerror = function (e) {
-                e.preventDefault();
-                reject(dealWithConstraint(request.error));
-              };
-            }, function (e) {
-              return sameCompose(reject, trError);
-            });
-            break;
-          case "string":
-            _this.getCategorie(cat)().then(function (r) {
-              if (!Array.isArray(r)) throw Error("response should be array");
-              r = r.pop();
-              if (r) {
-                var id = r.id;
-                _this.deleteSong(name, id)().then(resolve)["catch"](reject);
-              } else reject();
-            })["catch"](reject);
-            break;
-          default:
-            reject({
-              type: 'Error',
-              message: 'Bad Categorie type'
-            });
-        }
-      });
-    };
+    var txt = 'deleteSong',
+      tx = _this.txW,
+      p = function p() {
+        return new Promise(function (resolve, reject) {
+          tx(function (tx) {
+            var index = tx.objectStore("Song").index("by_song_cat");
+            var request = index.openCursor(IDBKeyRange.only([toL(name), cat]));
+            request.onsuccess = function (e) {
+              var cursor = request.result;
+              if (cursor) {
+                var req = cursor["delete"]();
+                req.onsuccess = function (e) {
+                  resolve(!req.result);
+                };
+                req.onerror = function (e) {
+                  e.preventDefault();
+                  reject(dealWithConstraint(req.error));
+                };
+              } else {
+                resolve(false);
+              }
+            };
+            request.onerror = function (e) {
+              e.preventDefault();
+              reject(dealWithConstraint(request.error));
+            };
+          }, function (e) {
+            return sameCompose(reject, trError);
+          });
+        });
+      };
     return p;
   };
-  this.getSong = function (name, cat) {
-    var txt = 'getSong';
-    var tx = _this.txR;
-    var p = function p() {
-      return new Promise(function (resolve, reject) {
-        switch (_typeof(cat)) {
-          case "number":
-            tx(function (tx) {
-              var index = tx.objectStore("Song").index("by_song_cat");
-              var request = index.openCursor([name, cat]);
-              request.onsuccess = function (e) {
-                /*
-                resolve(request.result);*/
-                var cursor = request.result;
-                if (cursor) {
-                  resolve([_objectSpread({
-                    id: cursor.primaryKey
-                  }, cursor.value)]);
-                } else {
-                  resolve([]);
-                }
-              };
-              request.onerror = function (e) {
-                e.preventDefault();
-                reject(dealWithConstraint(request.error));
-              };
-            }, function (e) {
-              return sameCompose(reject, trError);
-            });
-            break;
-          case "string":
-            _this.getCategorie(cat)().then(function (r) {
-              if (r) {
-                var id = r.id;
-                _this.getSong(name, id)().then(resolve)["catch"](reject);
-              } else resolve();
-            })["catch"](reject);
-            break;
-          default:
-            reject({
-              type: 'error',
-              message: "Bad Categorie type ".concat(cat)
-            });
-        }
-      });
-    };
-    return p;
-  };
-  this.getAllSongs = function (cat) {
-    var txt = 'getAllSongs';
-    var tx = _this.txR;
-    var p = function p() {
-      return new Promise(function (resolve, reject) {
-        //console.log("Here is the typeof cat",typeof cat);
-        switch (_typeof(cat)) {
-          case "number":
-            tx(function (tx) {
-              var index = tx.objectStore("Song").index("by_cat");
-              var request = index.getAll && index.getAll(cat) || index.mozGetAll && index.mozGetAll(cat);
-              if (request) {
+  this.deleteCategorieSong = function (catId) {
+    var txt = 'deleteCategorieSong',
+      tx = _this.txW,
+      p = function p() {
+        return new Promise(function (resolve, reject) {
+          tx(function (tx) {
+            var index = tx.objectStore("Song").index("by_cat"),
+              request2 = index.count(catId);
+            request2.onsuccess = function () {
+              var totalSong = request2.result;
+              if (totalSong) {
+                request = index.openCursor(catId);
                 request.onsuccess = function (e) {
-                  resolve(request.result);
+                  var cursor = request.result;
+                  if (cursor) {
+                    var req = cursor["delete"]();
+                    req.onsuccess = function (e) {
+                      if (! --totalSong) {
+                        resolve(true);
+                      }
+                    };
+                    req.onerror = function (e) {
+                      e.preventDefault();
+                      reject(dealWithConstraint(req.error));
+                    };
+                    cursor["continue"]();
+                  } else {
+                    if (!totalSong) {
+                      resolve(true);
+                    } else {
+                      console.error(totalSong, "where not deleted");
+                      resolve(false);
+                    }
+                  }
                 };
                 request.onerror = function (e) {
                   e.preventDefault();
                   reject(dealWithConstraint(request.error));
                 };
               } else {
-                request = index.openCursor(cat);
-                var result = [];
-                request.onsuccess = function () {
-                  var cursor = request.result;
-                  if (!cursor) {
-                    resolve(result);
-                  } else {
-                    result.push(cursor.value);
-                    cursor["continue"]();
-                  }
-                };
-                request.onerror = function (e) {
-                  console.log("getAllSong openCursor error", e, request.error);
-                };
+                resolve(true);
               }
-            }, function (e) {
-              return sameCompose(reject, trError);
-            });
-            break;
-          case "string":
-            _this.getCategorie(cat)().then(function (r) {
-              r = r.pop();
-              if (r) {
-                var id = r.id;
-                _this.getAllSongs(id)().then(resolve)["catch"](reject);
-              } else resolve();
-            })["catch"](reject);
-            break;
-          default:
-            reject({
-              type: 'error',
-              message: "Bad Categorie type ".concat(cat)
-            });
-        }
-      });
-    };
+            };
+            request2.onerror = function (e) {
+              e.preventDefault();
+              reject(dealWithConstraint(request2.error));
+            };
+          }, function (e) {
+            return sameCompose(reject, trError);
+          });
+        });
+      };
     return p;
   };
-  this.countSong = function (cat) {
-    var txt = 'countSong';
-    var tx = _this.txR;
-    var p = function p() {
-      return new Promise(function (resolve, reject) {
-        switch (_typeof(cat)) {
-          case "number":
-            tx(function (tx) {
-              var index = tx.objectStore("Song").index("by_cat");
-              var request = index.count(cat);
+  this.getSong = function (name, cat) {
+    var txt = 'getSong',
+      tx = _this.txR,
+      p = function p() {
+        return new Promise(function (resolve, reject) {
+          tx(function (tx) {
+            var index = tx.objectStore("Song").index("by_song_cat");
+            var request = index.openCursor([name, cat]);
+            request.onsuccess = function (e) {
+              var cursor = request.result;
+              if (cursor) {
+                resolve([_objectSpread({
+                  id: cursor.primaryKey
+                }, cursor.value)]);
+              } else {
+                resolve([]);
+              }
+            };
+            request.onerror = function (e) {
+              e.preventDefault();
+              reject(dealWithConstraint(request.error));
+            };
+          }, function (e) {
+            return sameCompose(reject, trError);
+          });
+        });
+      };
+    return p;
+  };
+  this.getAllSongs = function (id) {
+    var txt = 'getAllSongs',
+      tx = _this.txR,
+      p = function p() {
+        return new Promise(function (resolve, reject) {
+          //console.log("Here is the typeof cat",typeof cat);
+          tx(function (tx) {
+            var index = tx.objectStore("Song").index("by_cat");
+            var request = index.getAll && index.getAll(id) || index.mozGetAll && index.mozGetAll(id);
+            if (request) {
               request.onsuccess = function (e) {
                 resolve(request.result);
               };
@@ -662,26 +589,49 @@ function TTT(_ref) {
                 e.preventDefault();
                 reject(dealWithConstraint(request.error));
               };
-            }, function (e) {
-              return sameCompose(reject, trError);
-            });
-            break;
-          case "string":
-            _this.getCategorie(cat)().then(function (r) {
-              if (r) {
-                var id = r.id;
-                _this.countSong(id)().then(resolve)["catch"](reject);
-              } else resolve();
-            })["catch"](reject);
-            break;
-          default:
-            reject({
-              type: 'error',
-              message: "Bad Categorie type ".concat(cat)
-            });
-        }
-      });
-    };
+            } else {
+              request = index.openCursor(id);
+              var result = [];
+              request.onsuccess = function () {
+                var cursor = request.result;
+                if (!cursor) {
+                  resolve(result);
+                } else {
+                  result.push(cursor.value);
+                  cursor["continue"]();
+                }
+              };
+              request.onerror = function (e) {
+                console.log("getAllSong openCursor error", e, request.error);
+              };
+            }
+          }, function (e) {
+            return sameCompose(reject, trError);
+          });
+        });
+      };
+    return p;
+  };
+  this.countSong = function (cat) {
+    var txt = 'countSong',
+      tx = _this.txR,
+      p = function p() {
+        return new Promise(function (resolve, reject) {
+          tx(function (tx) {
+            var index = tx.objectStore("Song").index("by_cat");
+            var request = index.count(cat);
+            request.onsuccess = function (e) {
+              resolve(request.result);
+            };
+            request.onerror = function (e) {
+              e.preventDefault();
+              reject(dealWithConstraint(request.error));
+            };
+          }, function (e) {
+            return sameCompose(reject, trError);
+          });
+        });
+      };
     return p;
   };
 }

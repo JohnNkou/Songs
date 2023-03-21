@@ -1025,6 +1025,7 @@ input{
 	}
 	.songList .list > div  a{
 		font-size:1.2em;
+		width: 100%;
 	}
 	#second .body{
 		height:90%;
