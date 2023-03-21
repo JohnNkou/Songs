@@ -145,7 +145,7 @@ function TTT({safeOp,seq}){
 		p = ()=> new Promise((resolve,reject)=>{
 			tx((tx)=>{
 				var store = tx.objectStore("Categorie");
-				var request = store.put({name:toL(name,id),id});
+				var request = store.put({name:toL(name),id});
 				request.onsuccess = (e)=>{
 					
 					resolve(request.result);
@@ -245,7 +245,7 @@ function TTT({safeOp,seq}){
 		p = ()=> new Promise((resolve,reject)=>{
 			tx((tx)=>{
 				var index = tx.objectStore("Categorie").index("by_id"),
-				request = index.openCursor(toL(id));
+				request = index.openCursor(id);
 				request.onsuccess = (e)=>{
 					var cursor = request.result;
 					if(cursor){
@@ -267,32 +267,6 @@ function TTT({safeOp,seq}){
 
 		return p;
 	};
-
-	this.getCategorieByKey = (id="")=>{
-		var txt = 'getCategorieByKey',
-		tx = this.txR;
-		p = ()=> new Promise((resolve,reject)=>{
-			tx((tx)=>{
-				var index = tx.objectStore("Categorie").index("by_id"),
-				request = index.openCursor(id);
-				request.onsuccess = (s)=>{
-					var cursor = request.result;
-					if(cursor){
-						resolve({id:cursor.key,...cursor.value});
-					}
-					else{
-						resolve(cursor);
-					}
-				}
-				request.onerror = (e)=>{
-					e.preventDefault();
-					reject(dealWithConstraint(request.error));
-				}
-			},(e)=> sameCompose(reject,trError));
-		});
-
-		return p;
-	}
 
 	this.getAllCategories = ()=>{
 		var txt = "getAllCategories",
@@ -339,7 +313,7 @@ function TTT({safeOp,seq}){
 		var txt = 'insertSong',
 		tx = this.txW,
 		p = ()=> new Promise((resolve,reject)=>{
-			this.getCategorieByKey(cat)().then((r)=>{
+			this.getCategorie(cat)().then((r)=>{
 				if(r){
 					tx((tx)=>{
 						var store = tx.objectStore("Song");
