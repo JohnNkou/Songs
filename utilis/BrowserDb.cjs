@@ -321,10 +321,12 @@ function registerWorker(src){
 function getLocalData(dbLoader,store,{addSong,addCategorie,addSongs}){
 	return dbLoader.then((db)=>{
 		return  db.getAllCategories()().then((categories)=>{
-			let catLength = categories.length -1;
-			let onlineCat = store.getState().Categories;
-			let fastLookUp = {};
-			let index;
+			let catLength = categories.length -1,
+			onlineCat = store.getState().Categories,
+			fastLookUp = {},
+			index,
+			iterationMax = 5;
+
 			if(!categories.length){
 				return {data: store.getState(), fastLookUp, db };
 			}
@@ -337,15 +339,15 @@ function getLocalData(dbLoader,store,{addSong,addCategorie,addSongs}){
 							catId = cat.id;
 
 							store.dispatch(addCategorie(catName,catId));
-							fastLookUp[catName] = {};
+							fastLookUp[catName] = {}; console.log("cat",cat);
 
 							db.getAllSongs(catId)().then((songs)=>{
 								songs = songs.map((song)=>{
 									delete song.cat;
 									fastLookUp[cat.name][song.name] = true;
-									do{
+									while(is.String(song.verses) && iterationMax--){
 										song.verses = JSON.parse(song.verses);
-									}while(is.String(song.verses));
+									}
 									return song;
 								});
 
@@ -389,8 +391,9 @@ function getStoreData(appState){
 }
 
 function bogusTT(){
-	this.getAllCategories = this.getAllSongs = ()=> ()=> new Promise((resolve)=> resolve([]));
-	this.getSong = this.getCategorie = ()=> ()=> new Promise((resolve)=> resolve([1]));
+	this.getAllCategories = this.getAllSongs = ()=> ()=> Promise.resolve([]);
+	this.getSong = this.getCategorie = ()=> ()=> Promise.resolve([]);
+	this.insertSong = this.insertCategorie = ()=> ()=> Promise.resolve(false);
 	this.isBogus = true;
 }
 
@@ -412,19 +415,6 @@ function toPercentage(coor,total){
 
 
 exports.dbChooser = (options)=>{
-	if(window.openDatabase){
-		return new Promise((resolve,reject)=>{
-			require.ensure(['./openDb.cjs'],function(require){
-				let openDb = require('./openDb.cjs'),
-				TT = new openDb(options);
-				resolve(TT);
-			},function(e){ 
-				console.error("Error while loading the openDb file",e);
-				resolve(new bogusTT());
-			},'openDb')
-		})
-	}
-
 	if(window.indexedDB){
 		return new Promise((resolve,reject)=>{
 			require.ensure(['./indexDb.cjs'],function(require){
@@ -437,8 +427,20 @@ exports.dbChooser = (options)=>{
 			},'indexDb')
 		})
 	}
+	if(window.openDatabase){
+		return new Promise((resolve,reject)=>{
+			require.ensure(['./openDb.cjs'],function(require){
+				let openDb = require('./openDb.cjs'),
+				TT = new openDb(options);
+				resolve(TT);
+			},function(e){ 
+				console.error("Error while loading the openDb file",e);
+				resolve(new bogusTT());
+			},'openDb')
+		})
+	}
 	
-		return Promise.resolve(new bogusTT()) 
+	return Promise.resolve(new bogusTT()) 
 
 }
 exports.streamer = function(fetcher,store,table){
@@ -825,12 +827,13 @@ function helpWithCoordinate(div1,div2){
 }
 
 function errorLogger(){
-	let oldConsole = window.console.error,
+	let oldConsole = window.console,
+	error = oldConsole.error,
 	xml = new XMLHttpRequest(),
 	url = '/reportError';
 
 	return function(...p){
-		oldConsole.apply(window,arguments);
+		error.apply(oldConsole,arguments);
 		xml.open('POST',url,true);
 		xml.setRequestHeader('content-type','application/json');
 		xml.send(JSON.stringify(p));

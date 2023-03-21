@@ -47,8 +47,13 @@ module.exports = {
 			},
 			insertFailure:(lang="En")=>{
 				return (lang.toLowerCase() == "en")? "We wasn't able to insert the category":"Nous n'avaons pas pu inserer la categorie"
+			},
+			updateFailure:(lang="En")=>{
+				return (lang.toLowerCase() == "en")? "We wasn't able to update the category. Please try again":"Nous n'avons pas pu modifier la categorie. Reessayer encore"
+			},
+			Error:(lang="En")=>{
+				return (lang.toLowerCase() == "en")? "An error happened while trying to update the category. Plese try again":"Une erreur est survenu lors de la modification de la categorie. Reassayer de nouveau"
 			}
-
 		}
 	},
 	addSongDiv:{
@@ -91,14 +96,7 @@ module.exports = {
 			},
 			verseNumberToBig:(lang="En")=>{
 				return (lang.toLowerCase() == "en")? "The verse Number is to big. A song can't have that many Verse. Are you a HACKER?":"Le nombre de verset est trop grand. Un chant ne peut pas avoir autant de verset. Etes vous un hacker?"
-			},
-			updated:(lang="En")=>{
-				return (lang.toLowerCase() == "en")? "The song has been updated":"La chanson a été modifiée"
-			},
-			success:(lang="En")=>{
-				return (lang.toLowerCase() == "en")? "The song has been added":"La chanson a été ajoutée"
 			}
-
 		}
 	},
 	createStreamDiv:{
@@ -215,11 +213,31 @@ module.exports = {
 			},
 			allNotDone:(lang="En",number,total)=>{
 				return (lang.toLowerCase() == "en")? `${number} out of ${total} songs where inserted`: `${number} sur ${total} ont été inseré`
+			},
+			error:(lang="En")=>{
+				return (lang.toLowerCase() == "en")? `An error  occured while trying adding the Song. Please try again`:`Une erreur s'est produit pendant l'ajout de la chanson. Veuillez reéssayer`
+			}
+		},
+		updating:{
+			success:(lang="En",name)=>{
+				return (lang.toLowerCase() == "en")? `The song ${name} was successfully updated`:`La chanson ${name} a été modifiée`
+			},
+			failed:(lang="En",name)=>{
+				return (lang.toLowerCase() == "en")? `We coudln't update the song. Please try again.`:`Nous n'avaons pas pu modifié la chanson. Veuillez reeassayer de nouveau`
+			},
+			duplicate:(lang="En")=>{
+				return (lang.toLowerCase() == "en")? `A song already have that name, please provide another name`:`Une chanson avec ce nom est dejà enregistré, veuillez entrer un autre nom`
+			},
+			error:(lang="En",name)=>{
+				return (lang.toLowerCase() == "en")? `An error happened while modifying the song. Please try again`:'Une erreur est survenu lors de la modification de la chanson. Veuillez reessayer.'
 			}
 		},
 		wiping:{
 			success:(lang="En",name)=>{
 				return (lang.toLowerCase() == "en")? `The song ${name} has been deleted`: `La chanson ${name} a été supprimé`
+			},
+			failed:(lang="En",name)=>{
+				return (lang.toLowerCase() == "en")? `Couldn't delete the song. Please try again.`:`La chanson n'a pas pu etre modifié veuillez reessayer`
 			},
 			error:(lang="En",name)=>{
 				return (lang.toLowerCase() == "en")? `An error happened while deleting song ${name}`:`Une erreur est survenue lors de la suppresion de la chanson ${name}`
