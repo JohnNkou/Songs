@@ -792,9 +792,9 @@ class AddCatDiv extends React.Component{
 				this.setState({ message: text.message.nameRequired, signal:signal.error});
 			}
 		}
-		else if(Validator.hasBadCharacter(catNameValue,this.badInput)){
+		else if(!Validator.isAlphaNumeric(catNameValue)){
 			action = ()=>{
-				this.setState({ message:this.formError.badCharacter(text.nameHolder(lang)), signal:signal.error})
+				this.setState({ message:this.formError.notAlphaNumeric(text.nameHolder(lang)), signal:signal.error})
 			}
 		}
 		else if(!Validator.isNotIn(catNameValue.toLowerCase(), catNames)){
@@ -822,15 +822,16 @@ class AddCatDiv extends React.Component{
 			return action();
 		}
 		else{
-			this.setState({ message:this.Text.message.success, signal:signal.success});
-
 			db.insertCategorie(catName,id)().then((r)=>{
 				if(r){
 					store.dispatch(addCategorie(catName, id));
+					this.setState({ message:this.Text.message.success, signal:signal.success});
 					console.log("categorie",catName,"was inserted");
 				}
-				else
+				else{
+					this.setState({ message:this.Text.message.insertFailure, signal:signal.error })
 					console.log("something went wrong while trying to insert categorie ",catName);
+				}
 			}).catch((e)=>{
 				console.log("Failed to insertCategorie",e);
 			})
@@ -839,21 +840,42 @@ class AddCatDiv extends React.Component{
 	updateCat(e){
 		let {_catName} = this.refs,
 		{ current } = this.state,
-		{ updateCategorie, setForceUpdate:forceUpdate } = this.props,
+		{ updateCategorie, setForceUpdate:forceUpdate, setControl } = this.props,
 		oldName = current.name,
 		newName = _catName.value,
 		{ action } = this.checker(e),
-		store = this.store;
+		store = this.store,
+		state = store.getState();
 
 		if(action){
 			return action();
 		}
 		else{
-			this.setState({message:this.Text.message.updated, name:_catName.value, signal:signal.success});
+			if(state.offlineSongs[current.id]){
+				db.updateCategorie(oldName,newName)().then((r)=>{
+					if(r){
+						this.setState({message:this.Text.message.updated, name:_catName.value, signal:signal.success});
 
-			store.dispatch(updateCategorie(oldName,newName,current.id));
-			store.dispatch(forceUpdate({node:'catNames', value:true}));
-			meticulus('catNames',()=> store.dispatch(forceUpdate({node:'catNames', value:false})))
+						store.dispatch(updateCategorie(oldName,newName,current.id));
+						store.dispatch(setControl(false));
+						store.dispatch(forceUpdate({node:'catNames', value:true}));
+						meticulus('catNames',()=> store.dispatch(forceUpdate({node:'catNames', value:false})))
+					}
+					else{
+						this.setState({message:this.Text.message.updateFailure, name:_catName.value, signal:signal.error})
+					}
+				}).catch((e)=>{
+
+				})
+			}
+			else{
+				this.setState({message:this.Text.message.updated, name:_catName.value, signal:signal.success});
+
+				store.dispatch(updateCategorie(oldName,newName,current.id));
+				store.dispatch(forceUpdate({node:'catNames', value:true}));
+				store.dispatch(setControl(false));
+				meticulus('catNames',()=> store.dispatch(forceUpdate({node:'catNames', value:false})))
+			}
 		}
 	}
 	cleanUp(){
@@ -864,7 +886,7 @@ class AddCatDiv extends React.Component{
 		isOfInterest = target.className.indexOf('add') != -1 || target.className.indexOf('close') != -1, 
 		className=null, 
 		{ controls, current } = this.state,
-		{ changeCatView } = this.props,
+		{ changeCatView, setControl } = this.props,
 		store = this.store;
 
 		if(isOfInterest){
@@ -880,6 +902,9 @@ class AddCatDiv extends React.Component{
 					this.submit(event);
 			}
 			else if(className.indexOf('close') != -1){
+				if(controls){
+					store.dispatch(setControl(false));
+				}
 				store.dispatch(changeCatView(false));
 				this.cleanUp();
 			}
@@ -927,9 +952,10 @@ class AddSongDiv extends React.Component{
 		this.scrollHandler = scrollHandler.bind(this);
 		this.lastUpdateOverflowed = false;
 		this.state = { VerseNumber:"",verses: [], name:"",message:"",VersesText:{}, signal:signal.system, location: current.location, controls: state.keys.alt, current, VersesDiv: state.ui.addSongDiv.verses, currentCatName: currentCat.name, catId: currentCat.id, view: state.ui.show.addSongDiv };
-		this.Text = Text.addSongDiv;
+		this.Text = Text;
 		this.formError = Text.formError;
 		this.songText = Text.Song;
+		this.addSongText = Text.addSongDiv;
 		this.handleClick = this.handleClick.bind(this);
 		this.focusSignal = this.focusSignal.bind(this);
 	}
@@ -1052,7 +1078,7 @@ class AddSongDiv extends React.Component{
 						if(!verse.onchange){
 							verse.onchange = ()=>{
 								let localState = this.state;
-								VersesText[input] = Verse.value;
+								VersesText[input] = verse.value;
 							}
 						}
 					}
@@ -1106,7 +1132,7 @@ class AddSongDiv extends React.Component{
 		if(action)
 			return action();
 		else{
-			let { currentCatName, catId } = this.state,
+			let { currentCatName, catId, VersesText } = this.state,
 			{ addSong, setForceUpdate:forceUpdate, lang } = this.props,
 			store = this.store;
 
@@ -1114,16 +1140,19 @@ class AddSongDiv extends React.Component{
 				if(r){
 					store.dispatch(addSong(0,songName,catId,verses));
 					store.dispatch(forceUpdate({node:'songList',value:true}));
-					this.setState({ name:"",message:this.Text.message.success(lang),VersesText:{},verses:[], VerseNumber:0, signal:signal.success})
+					this.setState({ name:"",message:this.songText.insertion.success(lang,songName),VersesText:{},verses:[], VerseNumber:0, signal:signal.success})
 					meticulus('songList',()=>{
 						store.dispatch(forceUpdate({node:'songList', value:false}));
 					})
-					notifier.addSpeed(this.songText.insertion.success(lang,songName),null,null,null,signal.success)
 				}
-				else
-					notifier.addSpeed(this.songText.insertion.failed(lang,songName),null,null,null,signal.error);
+				else{
+					this.setState({message:this.songText.insertion.failed(lang,songName), signal:signal.error })
+				}
 			}).catch((e)=>{
-				alert("addCatDiv kak insertSong "+e);
+				let message = (e.name == 'ConstraintError')? this.songText.insertion.duplicate(lang,songName): this.songText.insertion.error(lang);
+
+				this.setState({ message, signal:signal.error })
+				console.error(e);
 			})
 		}
 	}
@@ -1140,24 +1169,24 @@ class AddSongDiv extends React.Component{
 		let nV = _name.value;
 		
 		if(!_name.value.length){
-			this.setState({ name:"",VerseNumber:vvv || "",message:this.Text.message.nameRequired(this.props.lang), signal:signal.error})
+			this.setState({ name:"",VerseNumber:vvv || "",message:this.addSongText.message.nameRequired(this.props.lang), signal:signal.error})
 			return ;
 		}
 		if(is.Number(n)){
 			
 			if(n <= 0){
-				this.setState({ name:nV,VerseNumber:vvv,message:this.Text.message.verseNumberBadNumber(this.props.lang), signal:signal.error});
+				this.setState({ name:nV,VerseNumber:vvv,message:this.addSongText.message.verseNumberBadNumber(this.props.lang), signal:signal.error});
 				return;
 			}
 			else if(n >= 15){
-				this.setState({...this.state, name:nV, VerseNumber:vvv,message:this.Text.message.verseNumberToBig(this.props.lang), signal:signal.error});
+				this.setState({...this.state, name:nV, VerseNumber:vvv,message:this.addSongText.message.verseNumberToBig(this.props.lang), signal:signal.error});
 				return;
 			}
 			_verseNumber.value = n;
 			this.setState({ message:"",VerseNumber:n,name:nV, verses: new Array(n), signal:signal.system});
 		}
 		else{
-			this.setState({name:nV,VerseNumber:vvv,message:this.Text.message.verseNumberNotInteger(this.props.lang), signal:signal.error})
+			this.setState({name:nV,VerseNumber:vvv,message:this.addSongText.message.verseNumberNotInteger(this.props.lang), signal:signal.error})
 			
 			return;
 		}
@@ -1171,7 +1200,7 @@ class AddSongDiv extends React.Component{
 		verses = [],
 		{ VersesText } = this.state,
 		subRefs = {...this.refs},
-		{ Text, formError } = this,
+		{ Text, formError, addSongText } = this,
 		{ lang } = this.props;
 
 		delete subRefs['_name'];
@@ -1179,11 +1208,16 @@ class AddSongDiv extends React.Component{
 
 		if(!Validator.hasSomething(_name.value)){
 			return { action: ()=>{
-				this.setState({ name:"",message:this.Text.message.nameRequired(this.props.lang), VersesText, signal:signal.error}) ;
+				this.setState({ name:"",message:addSongText.message.nameRequired(this.props.lang), VersesText, signal:signal.error}) ;
+			}}
+		}
+		if(!Validator.isAlphaNumeric(_name.value)){
+			return { action:()=>{
+				this.setState({ name:_name.value, signal:signal.error, message:Text.formError.notAlphaNumeric(addSongText.nameHolder(lang))(lang), VersesText })
 			}}
 		}
 		if(Validator.isAllEmpty(subRefs,'value')){
-			message += this.Text.message.verseRequired(this.props.lang);
+			message += addSongText.message.verseRequired(this.props.lang);
 
 			return { action: ()=>{
 				this.setState({ message,name:_name.value, signal:signal.error});
@@ -1210,18 +1244,35 @@ class AddSongDiv extends React.Component{
 	}
 
 	updateSong(e){
-		let { action, verses, _name } = this.checker(e);
+		let { action, verses, _name } = this.checker(e),
+		newSongName = _name.value;
 
 		if(action)
 			return action();
 		else{
-			let { location, currentCatName, current, catId } = this.state,
-			{ updateSong, setCurrentSong, lang } = this.props,
+			let { location, currentCatName, current, catId, VersesText,controls } = this.state,
+			{ updateSong, setCurrentSong, lang, setControl } = this.props,
+			{ songText } = this,
+			oldName = current.name,
 			store = this.store;
 
-			store.dispatch(updateSong(current.id,catId,_name.value,verses,location,current.name));
-			store.dispatch(setCurrentSong(current.id,catId,location));
-			this.setState({ message:this.Text.message.updated(lang), signal:signal.success});
+			db.updateSong(oldName,catId, newSongName, verses)().then((r)=>{
+				if(r){
+					store.dispatch(updateSong(current.id,catId,newSongName,verses,location,oldName));
+					store.dispatch(setCurrentSong(current.id,catId,location));
+					store.dispatch(setControl(false));
+					this.setState({ message:songText.updating.success(lang,oldName), signal:signal.success, name:'', VersesText:{}});
+				}
+				else{
+					this.setState({ message:songText.updating.failed(lang,oldName), signal: signal.error, name:newSongName, VersesText })
+				}
+			}).catch((e)=>{
+				let message = (e.name == 'ConstraintError')? songText.updating.duplicate(lang): songText.updating.error(lang,newSongName);
+
+				this.setState({message, signal: signal.error, name:newSongName, VersesText});
+
+				console.error(e);
+			})
 		}
 	}
 
@@ -1257,7 +1308,7 @@ class AddSongDiv extends React.Component{
 		let target = e.target, isOfInterest = target.className.indexOf("add") != -1 || target.className.indexOf("close") != -1, 
 		className = null,
 		{ controls } = this.state, 
-		{ changeAddSongView, changeVerseDivNumber:changeVerseDiv } = this.props,
+		{ changeAddSongView, changeVerseDivNumber:changeVerseDiv, setControl } = this.props,
 		store = this.store;
 
 		if(isOfInterest){
@@ -1271,6 +1322,9 @@ class AddSongDiv extends React.Component{
 					this.kak(e);
 			}
 			else{
+				if(controls){
+					store.dispatch(setControl(false));
+				}
 				store.dispatch(changeAddSongView(false));
 				store.dispatch(changeVerseDiv(0));
 				this.cleanUp();
@@ -1281,7 +1335,7 @@ class AddSongDiv extends React.Component{
 	render(){
 		let { lang } = this.props,
 		{ verses,signal, controls, current, view } = this.state,
-		text = this.Text,
+		text = this.addSongText,
 		verseNumber = (controls)? (verses && verses.length) || (current.verses && current.verses.length) || 0: verses.length ,
 		but1 = (controls)? text.modiButtonText: text.addButtonText,
 		but2 = text.closeButtonText,
@@ -1758,7 +1812,7 @@ class CatNames extends React.Component{
 	}
 
 	componentDidMount(){
-		let store = this.store
+		let store = this.store;
 
 		this.unsubscribe = store.subscribe(()=>{
 			let cState = store.getState(),
@@ -1783,6 +1837,11 @@ class CatNames extends React.Component{
 			}
 		})
 		this.node = document.querySelector(".catNames");
+
+		if(db.isBogus){
+			this.addCatButton = ()=> null;
+			this.forceUpdate();
+		}
 	}
 
 	componentWillUmount(){
@@ -1818,16 +1877,33 @@ class CatNames extends React.Component{
 
 	modif(item,id){
 		let { setCurrentCat, changeCatView } = this.props,
-		store = this.store;
+		store = this.store,
+		state = store.getState();
 
 		store.dispatch(setCurrentCat(item.name,item.id,item.location));
 		store.dispatch(changeCatView(true));
 	}
 	wipe(item,target,id){
 		let { removeCategorie } = this.props,
-		store = this.store;
+		store = this.store,
+		state = store.getState();
 
-		store.dispatch(removeCategorie(item.name,item.id));
+		if(state.offlineSongs[item.id]){
+			db.removeCategorie(item.id)().then((r)=>{
+				if(r){
+					store.dispatch(removeCategorie(item.name,item.id));
+				}
+				else{
+					console.error("Couldn't delete categorie")
+				}
+
+			}).catch((e)=>{
+				console.error(e);
+			})
+		}
+		else{
+			store.dispatch(removeCategorie(item.name,item.id));
+		}
 	}
 	action1(item,id){
 		let { changeIndex, setCurrentCat, updateSongList, changeCatListView } = this.props,
@@ -1852,8 +1928,8 @@ class CatNames extends React.Component{
 			notifier.addSpeed(text.insertion.failed(lang,name));
 		})
 	}
-	download(name){
-		return db.getCategorie(name)();
+	download({id}){
+		return db.getCategorie(id)();
 	}
 	propagationHandler(event){
 		event.nativeEvent.stopImmediatePropagation();
@@ -1996,7 +2072,7 @@ const Item = ({i,hide,item,action,action2,controls,src,wipe,modif,updateMyCat,so
 				(src || controls)?
 					<>
 						<div className='il'>
-							{(controls)? <Controls wipe={({target})=> wipe(item,target,i)} modif={()=> modif(item,i)} />: (action2)? <Download hide={()=> hide(i)} args={args} downloadAll={downloadAll} updateMyCat={updateMyCat} name={name} song={song} src={src} download={download} action={action2} />:''}
+							{(controls)? <Controls wipe={({target})=> wipe(item,target,i)} modif={()=> modif(item,i)} />: (action2)? <Download hide={()=> hide(i)} args={args} downloadAll={downloadAll} updateMyCat={updateMyCat} name={name} song={song} src={src} download={download} action={action2} item={item} />:''}
 						</div>
 					</>: ''
 			}
@@ -2056,14 +2132,14 @@ class Download extends React.Component{
 	}
 
 	checkImageDownload(){
-		let {args, action2, download, name} = this.props;
+		let {args, action2, download, name, item} = this.props;
 		let { img } = this.state;
 		if(!download){
 			if(img)
 				this.setState({img:!img});
 			return false;
 		}
-		download(name).then((r)=>{
+		download(item).then((r)=>{
 			if(r.length){
 				if(img){
 					this.setState({img:!img});
@@ -2366,7 +2442,7 @@ class SongList extends React.Component{
 		let { changeIndex, setCurrentSong, location, changeAddSongView, currentCat, store } = this.props;
 
 		store.dispatch(changeIndex(0));
-		store.dispatch(setCurrentSong(id,currentCat.id,item.name,location));
+		store.dispatch(setCurrentSong(id,currentCat.id,location));
 		store.dispatch(changeAddSongView(true));
 	}
 	wipe(item,target,songId){
@@ -2376,7 +2452,7 @@ class SongList extends React.Component{
 		parent = target.parentNode,
 		catId = currentCat.id;
 
-		db.deleteSong(name,catName)().then((r)=>{
+		db.deleteSong(name,catId)().then((r)=>{
 			if(r){
 				store.dispatch(removeSong(songId,catId,name,location));
 
@@ -2393,11 +2469,10 @@ class SongList extends React.Component{
 				parent.style.display = "none";
 			}
 			else{
-				notifier.addSpeed(this.text.wiping.error(lang,name),undefined,undefined,undefined,signal.error);
+				notifier.addSpeed(this.text.wiping.failed(lang,name),undefined,undefined,undefined,signal.error);
 			}
 		}).catch((e)=>{
 			notifier.addSpeed(this.text.wiping.error(lang,name),undefined,undefined,undefined,signal.error);
-			console.log("Oh oh");
 			console.log(e);
 		})
 				
@@ -4185,10 +4260,11 @@ export class App extends React.Component{
 		props = this.props;
 
 		this.unsubscribe = store.subscribe(()=>{
-			let state = store.getState();
+			let cState = store.getState(),
+			state = this.state;
 
-			if(state.language != this.state.lang){
-				this.setState({ lang: state.language });
+			if(state.lang != cState.language){
+				this.setState({ lang: cState.language });
 			}
 		})
 		window.addEventListener('keydown',this.keyRecorder);
@@ -4223,7 +4299,7 @@ export class App extends React.Component{
 								
 								<Second direction={direction} lang={lang} {...props}/>
 								{Guide}
-								<PopUp {...props} />
+								<PopUp {...props} lang={lang} />
 			</ErrorBoundary>
 			)
 	}
