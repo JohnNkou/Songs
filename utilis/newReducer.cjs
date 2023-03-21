@@ -468,7 +468,6 @@ function searchR(states,action){
 		return states.searchResult;
 
 	if(!songName){
-		console.error("searchR error: action doesn't have a songName",action);
 		return [];
 	}
 	let result = [],
@@ -481,21 +480,24 @@ function searchR(states,action){
 		catId = cat.id;
 
 		songs = states.onlineSongs[catId];
-		length = songs.length;
-		for(let i=0; i < length; i++){
-			let song = songs[i];
-			if(Reg.test(song.name)){
-				result.push({catName,catId,...song, songId:i, name:song.name.toLowerCase(), location:'online'});
+		if(songs){
+			length = songs.length;
+			for(let i=0; i < length; i++){
+				let song = songs[i];
+				if(Reg.test(song.name)){
+					result.push({catName,catId,...song, songId:i, name:song.name.toLowerCase(), location:'online'});
+				}
 			}
 		}
 
 		songs = states.offlineSongs[catId];
-		length = songs.length;
-
-		for(let i=0; i < length; i++){
-			let song = songs[i];
-			if(Reg.test(song.name)){
-				result.push({catName,catId,...song, songId:i, name:song.name.toLowerCase(), location:'offline'});
+		if(songs){
+			length = songs.length;
+			for(let i=0; i < length; i++){
+				let song = songs[i];
+				if(Reg.test(song.name)){
+					result.push({catName,catId,...song, songId:i, name:song.name.toLowerCase(), location:'offline'});
+				}
 			}
 		}
 
