@@ -308,10 +308,11 @@ class OnlineSongs extends React.Component{
 		let state = context.store.getState(),
 		Text = context.Text,
 		currentCat = state.currentCat,
-		songs = (state.onlineSongs[currentCat.id] || []);
+		songs = (state.onlineSongs[currentCat.id] || []),
+		show = (songs.length)? true:false;
 
 		this.store = context.store;
-		this.state = {show:false,report:false, songs, to: state.ui.navigation.to, catName: currentCat.name, controls: state.keys.alt, currentCat, downloadImage: state.images.download, updateForced: state.updateForced, increment: state.songIncrement, subscribedToStream: state.subscribedToStream};
+		this.state = {show,report:false, songs, to: state.ui.navigation.to, catName: currentCat.name, controls: state.keys.alt, currentCat, downloadImage: state.images.download, updateForced: state.updateForced, increment: state.songIncrement, subscribedToStream: state.subscribedToStream};
 		this.initialSongLength = songs.length;
 		this.SavedSongs = 0;
 		this.failedToSavedSongs = [];
@@ -389,6 +390,10 @@ class OnlineSongs extends React.Component{
 		
 		if(!songLength && report){
 			this.setState({report:false});
+		}
+
+		if(this.state.currentCat.name != prevState.currentCat.name && this.state.songs.length){
+			this.setState({ show:true })
 		}
 
 		invoqueAfterMount('online');
@@ -510,10 +515,10 @@ class OnlineSongs extends React.Component{
 	}
 
 	render(){
-		let { show, report, songs, downloadImage } = this.state,
+		let { show, report, songs, downloadImage, currentCat } = this.state,
 		{ lang } = this.props,
 		mustReport = report,
-		additionalClass = (show)? 'heightHelper' : 'online',
+		onlineClass = `il ${(!currentCat.name || !this.store.getState().onlineSongs[currentCat.id])? 'whoosh':''} ${(show)? 'heightHelper':'online'}`,
 		pop =  { ...this.props, ...this.state };
 
 		// Report expect to have status, name, parameter
@@ -526,10 +531,10 @@ class OnlineSongs extends React.Component{
 		}
 
 		return (
-			<div id="online" className={`il ${additionalClass}`}>
+			<div id="online" className={onlineClass}>
 				<div className="onlineHead il blueBack">
 					<a className="vmid tagName" id="onLink" href="#" onClick={this.manageShowing}>Online</a>
-					<Counter i={songs.length} setUpdater={this.setUpdater} />{(show && songs.length)? <Download additionalClass="vmid" src={downloadImage} download={()=> Promise.resolve((db.isBogus)? [null]:[])} action={[()=> { return new Promise((resolve)=> { resolve(false); this.throwReport();})}]} additionalClass="vmid" />:''}
+					<Counter i={songs.length} />{(show && songs.length)? <Download additionalClass="vmid" src={downloadImage} download={()=> Promise.resolve((db.isBogus)? [null]:[])} action={[()=> { return new Promise((resolve)=> { resolve(false); this.throwReport();})}]} additionalClass="vmid" />:''}
 					<Liner additionalClass="vmid" />
 				</div>
 				{(show)? <div onScroll={this.handleScroll} className="papa"><SongList location="online" counterUpdater={this.counterUpdater} includeAdder={false} {...pop} store={this.store} report={report} Text={this.Text} /></div>:''
@@ -547,18 +552,23 @@ class OfflineSongs extends React.Component{
 		currentCat = state.currentCat,
 		songs = (state.offlineSongs[currentCat.id] || []),
 		songLength = songs.length,
-		Text = context.Text; 
+		Text = context.Text,
+		show = (currentCat.name)? true:false;
 
 		this.store = context.store;
-		this.state = {show:false, songs, songLength, updateForced: state.updateForced, controls: state.keys.alt, to: state.ui.navigation.to, increment: state.songIncrement, currentCat, subscribedToStream: state.subscribedToStream};
+		this.state = {show, songs, songLength, updateForced: state.updateForced, controls: state.keys.alt, to: state.ui.navigation.to, increment: state.songIncrement, currentCat, subscribedToStream: state.subscribedToStream};
 		this.manageShowing = this.manageShowing.bind(this);
 		this.initTime = Date.now();
 		this.Text = Text.Song;
 
 	}
 
-	componentDidUpdate(){
-		invoqueAfterMount('offline')
+	componentDidUpdate(prevProps,prevState){
+		invoqueAfterMount('offline');
+
+		if(this.state.currentCat.name != prevState.currentCat.name && this.state.currentCat.name){
+			this.setState({show:true});
+		}
 	}
 
 	componentDidMount(){
@@ -614,15 +624,15 @@ class OfflineSongs extends React.Component{
 	}
 	
 	render(){
-		let { show, songs } = this.state,
-		additionalClass = (show)? 'heightHelper':'offline',
-		pop = { ...this.props, ...this.state };
+		let { show, songs,currentCat } = this.state,
+		pop = { ...this.props, ...this.state },
+		offlineClass = `il ${(currentCat.name)?'':'whoosh'} ${(show)? 'heightHelper':'offline'}`;
 
 
 		return (
-			<div id="offline" className={`il ${additionalClass}`}>
+			<div id="offline" className={offlineClass}>
 				<div className="offlineHead il open blueBack">
-					<a className="vmid tagName" id="offLink" onClick={this.manageShowing} href="#">Downloaded</a>
+					<a className="vmid tagName" id="offLink" onClick={this.manageShowing} href="#">Local</a>
 					<Counter i={songs.length} />
 					<Liner additionalClass="vmid" />
 				</div>
@@ -1302,7 +1312,7 @@ class AddSongDiv extends React.Component{
 	}
 
 	cleanUp(){
-		this.setState({...this.state,message:"",VersesText:{},name:"",VerseNumber:"", verses:[]});
+		this.setState({message:"",VersesText:{},name:"",VerseNumber:"", verses:[]});
 	}
 	handleClick(e){
 		let target = e.target, isOfInterest = target.className.indexOf("add") != -1 || target.className.indexOf("close") != -1, 
@@ -1322,11 +1332,11 @@ class AddSongDiv extends React.Component{
 					this.kak(e);
 			}
 			else{
+				store.dispatch(changeAddSongView(false));
+				store.dispatch(changeVerseDiv(0));
 				if(controls){
 					store.dispatch(setControl(false));
 				}
-				store.dispatch(changeAddSongView(false));
-				store.dispatch(changeVerseDiv(0));
 				this.cleanUp();
 			}
 		}
@@ -1807,6 +1817,7 @@ class CatNames extends React.Component{
 		this.action2 = this.action2.bind(this);
 		this.download = this.download.bind(this);
 		this.propagationHandler = this.propagationHandler.bind(this);
+		this.showControl = this.showControl.bind(this);
 		this.state = { updateForced: state.updateForced.catNames, controls: state.keys.alt, view: state.ui.show.catList, catNames: state.Categories, controls: state.keys.alt }
 		this.image = state.images.download
 	}
@@ -1863,6 +1874,11 @@ class CatNames extends React.Component{
 		
 
 		event.preventDefault();
+	}
+	showControl({id}){
+		let store = this.store;
+
+		return (id in store.getState().offlineSongs);
 	}
 
 	addCatButton(){
@@ -1962,6 +1978,8 @@ class CatNames extends React.Component{
 						abs={style}
 						topClass={this.topClass}
 						catName={true}
+						itemClass='categorieContextMenu'
+						showControl={this.showControl}
 					/>
 				</div>
 			)
@@ -2035,7 +2053,7 @@ class ResultList extends React.Component{
 }
 ResultList.contextType = Custom;
 
-const List = ({catName,putInLastAccess,hide,updateMyCat,args,song,abs,src,list = [],action,action2,first=()=>{},controls,wipe,modif,download,downloadAll,topClass})=>{
+const List = ({catName,putInLastAccess,hide,updateMyCat,args,song,abs,src,list = [],action,action2,first=()=>{},controls,wipe,modif,download,downloadAll,topClass, itemClass,showControl})=>{
 
 	return (
 		<div className={(abs)? abs.style: ""}>
@@ -2043,7 +2061,7 @@ const List = ({catName,putInLastAccess,hide,updateMyCat,args,song,abs,src,list =
 			{list.map((item,i)=>{
 				if(item.name) item = {id:i,...item};
 						return	(<div className={`${(topClass)? topClass: ''}`+((song)? ` p${i}`:'')} key={i}>
-									<Item hide={hide} i={i} args={{...args}} item={item} action={action} action2={action2} controls={controls} src={src} wipe={wipe} modif={modif} updateMyCat={updateMyCat} song={song} downloadAll={downloadAll} download={download} />
+									<Item itemClass={itemClass || ''} hide={hide} i={i} args={{...args}} item={item} action={action} action2={action2} controls={controls} src={src} wipe={wipe} modif={modif} updateMyCat={updateMyCat} song={song} downloadAll={downloadAll} download={download} showControl={showControl} />
 								</div>)
 							}
 				)}
@@ -2052,7 +2070,7 @@ const List = ({catName,putInLastAccess,hide,updateMyCat,args,song,abs,src,list =
 }
 
 
-const Item = ({i,hide,item,action,action2,controls,src,wipe,modif,updateMyCat,song,downloadAll, download,args})=>{
+const Item = ({i,hide,item,action,action2,src,wipe,modif,updateMyCat,song,downloadAll, download,args, itemClass, showControl})=>{
 	let name = item.name || item;
 
 	if(args){
@@ -2066,18 +2084,14 @@ const Item = ({i,hide,item,action,action2,controls,src,wipe,modif,updateMyCat,so
 	return (
 		<>
 			<div className={`il f1 ${name}`}>
-				<a inlist="true" onClick={(action)? (event)=>{ event.preventDefault(); action(item,i) }:'' } href="#">{name}</a>
+				<a id={item.id} className={itemClass} inlist="true" onClick={(action)? (event)=>{ event.preventDefault(); action(item,i) }:'' } href="#">{name}</a>
 			</div>
-			{
-				(src || controls)?
-					<>
-						<div className='il'>
-							{(controls)? <Controls wipe={({target})=> wipe(item,target,i)} modif={()=> modif(item,i)} />: (action2)? <Download hide={()=> hide(i)} args={args} downloadAll={downloadAll} updateMyCat={updateMyCat} name={name} song={song} src={src} download={download} action={action2} item={item} />:''}
-						</div>
-					</>: ''
-			}
+			<div className='il'>
+				{(item && showControl && showControl(item))? <Controls wipe={({target})=> wipe(item,target,i)} modif={()=> modif(item,i)} />:null}
+				{(src && action2)? <Download hide={()=> hide(i)} args={args} downloadAll={downloadAll} updateMyCat={updateMyCat} name={name} song={song} src={src} download={download} action={action2} item={item} />:null}
+			</div>
 		</>
-		);
+	);
 }
 
 
@@ -2085,8 +2099,8 @@ const Controls = (props)=>{
 	
 	return (
 			<div>
-				{(props.modif)? <a className='modif' onClick={(event)=> {event.preventDefault(); props.modif()}} href="#">M</a>:''}
-				<a className='wipe' onClick={(event)=>{ event.preventDefault(); props.wipe(event)}} href="#">D</a>
+				{(props.modif)? <a className='modif' onClick={(event)=> {event.preventDefault(); props.modif()}} href="#"><img src='img/edit.png' /></a>:''}
+				<a className='wipe' onClick={(event)=>{ event.preventDefault(); props.wipe(event)}} href="#"><img src='img/remove.png' /></a>
 			</div>
 		)
 }
@@ -2104,15 +2118,15 @@ class Download extends React.Component{
 	componentDidMount(){
 		if(this.props.downloadAll)
 			this.save();
-		if(!this.props.song)
-			this.checkImageDownload();
+
+		this.checkImageDownload();
 	}
 
 	componentDidUpdate(){
 		if(this.props.downloadAll){
 			this.save();
 		}
-		else if(!this.props.song){
+		else{
 			this.checkImageDownload();
 		}
 	}
@@ -2161,13 +2175,13 @@ class Download extends React.Component{
 		let { action,args, song, name } = this.props;
 		this.doAction(action,args,song).then((r)=>{
 			if(r){
-				if(song){
+				/*if(song){
 					let hide = this.props.hide;
 					if(hide)
 						hide();
 					this.props.updateMyCat();
 				}
-				else
+				else*/
 					this.setState({img:false});
 				
 			}
@@ -2182,8 +2196,8 @@ class Download extends React.Component{
 	}
 
 	render(){
-		var show = this.state.img;
-		let {additionalClass} = this.props;
+		let show = this.state.img;
+
 		if(!this.props.song && !Categories[this.name] && this.name){
 			Categories[this.name] = {img:show, setState:this.setState.bind(this)};
 		}
@@ -2191,7 +2205,7 @@ class Download extends React.Component{
 			Songs[this.name] = {img:show, setState:this.setState.bind(this)};
 
 		return (
-					(show)? <a className={`downloader ${additionalClass}`} onClick={this.save} href="#" ref='dad'><img src={'img/'+this.props.src} /></a>:''
+					(show)? <a className='sdownloader' onClick={this.save} href="#" ref='dad'><img src={'img/'+this.props.src} /></a>:''
 			
 			)
 	}
@@ -2217,6 +2231,7 @@ class SongList extends React.Component{
 		this.wipe = this.wipe.bind(this);
 		this.action = this.action.bind(this);
 		this.saveSequence = new seq();
+		this.showControl = this.showControl.bind(this);
 		this.initTime = Date.now();
 		this.insertSong = this.insertSong.bind(this);
 		this.insertCategorie = this.insertCategorie.bind(this);
@@ -2323,7 +2338,6 @@ class SongList extends React.Component{
 		}
 		store.dispatch(addSong(0,name,catId, verses,'offline'));
 		store.dispatch(removeSong(i,catId,name));
-		counterUpdater(-1);
 
 		return true;
 	}
@@ -2379,30 +2393,33 @@ class SongList extends React.Component{
 		if(Categories[currentCat.name].img)
 			Categories[currentCat.name].setState({img:false});
 	}
-	download({name,cat}){
-		return db.getSong(name,cat)();
+	download({name}){
+		let { currentCat } = this.props;
+
+		return db.getSong(name,currentCat.id)();
 	}
 
-	insertSong(name,verses,cat,index,tried=0){
-		let { store } = this.props;
+	async insertSong(name,verses,cat,index,tried=0){
+		let { store, currentCat, lang } = this.props,
+		songText = this.text.Song,
+		catName = currentCat.name,
+		catId = currentCat.id,
+		state = store.getState(),
+		r;
 
-		return db.insertSong(name,JSON.stringify(verses),cat)().then((r)=>{
+		if(!state.offlineSongs[catId]){
+			r = await db.insertCategorie(catName, catId)();
+			if(!r){
+				return false;
+			}
+		}
+
+		return db.insertSong(name,verses,cat)().then((r)=>{
 			if(r){
 				this.reportSuccess(name,index,verses);
 				return true;
 			}
-			else{
-				if(tried)
-					return false;
-				let id = Date.now().toString() + cat;
-
-				return this.insertCategorie(cat,id).then((id)=>{
-					if(is.Number(id))
-						return this.insertSong(name,verses,id,index,1);
-					else
-						return false;
-				});
-			}
+			return r;
 		})
 	}
 
@@ -2420,9 +2437,12 @@ class SongList extends React.Component{
 
 	action2(sequence,{name,verses,cat,index}){
 		return new Promise((resolve,reject)=>{
-			let self = this;
+			let self = this,
+			{ currentCat } = this.props,
+			catId = currentCat.id;
+
 			sequence.subscribe(sequence.add(()=>{
-				return self.insertSong(name,verses,cat,index).then((r)=>{
+				return self.insertSong(name,verses,catId,index).then((r)=>{
 					if(!r){
 						self.reportError(name);
 						return false;
@@ -2430,6 +2450,7 @@ class SongList extends React.Component{
 					else
 						return true;
 				}).catch((e)=>{
+					self.reportError(name);
 					console.log("Error while trying to insert song",name);
 					console.log(e);
 				})
@@ -2439,10 +2460,11 @@ class SongList extends React.Component{
 		})
 	}
 	modif(item,id){
-		let { changeIndex, setCurrentSong, location, changeAddSongView, currentCat, store } = this.props;
+		let { changeIndex, setCurrentSong, location, changeAddSongView, currentCat, store, setControl } = this.props;
 
-		store.dispatch(changeIndex(0));
 		store.dispatch(setCurrentSong(id,currentCat.id,location));
+		store.dispatch(changeIndex(0));
+		store.dispatch(setControl(true));
 		store.dispatch(changeAddSongView(true));
 	}
 	wipe(item,target,songId){
@@ -2494,6 +2516,10 @@ class SongList extends React.Component{
 		}
 	}
 
+	showControl(){
+		return (this.props.location == 'offline');
+	}
+
 	render(){
 		let props = this.props,
 		location = props.location || 'online',
@@ -2537,7 +2563,9 @@ class SongList extends React.Component{
 					else
 						console.log("Couldn't hide p"+index); */
 				},
-				topClass:"wrapper"
+				showControl:this.showControl,
+				topClass:"wrapper",
+				itemClass:(location == 'offline')? 'songContextMenu': undefined
 			};
 		}
 
@@ -3426,7 +3454,7 @@ class Content extends React.Component{
 			<>
 				<div id="content">
 					<div className="papa">
-						<h3>{songName}<a className="imFavorite" onClick={(songName)? this.clickHandler : this.voidHandler } href="#"><img src={(isFavorite)? `img/${favImg.unlove}`:`img/${favImg.love}`} /></a></h3>
+						<h3><span>{songName}</span><a className="imFavorite" onClick={(songName)? this.clickHandler : this.voidHandler } href="#"><img src={(isFavorite)? `img/${favImg.unlove}`:`img/${favImg.love}`} /></a></h3>
 						<p>{currentVerse}</p>
 					</div>
 				</div><br/>
@@ -3716,7 +3744,6 @@ class Settings extends React.PureComponent{
 					<div>
 						<DayMode {...props} />
 						<Language {...props} />
-						<Control {...props} />
 					</div>
 				</div>
 
@@ -3837,54 +3864,6 @@ class Language extends React.Component{
 	}
 }
 Language.contextType = Custom;
-
-class Control extends React.Component{
-	constructor(props,context){
-		super(props);
-		let store = context.store,
-		state = store.getState();
-
-		this.store= store;
-		this.state = { controls: state.keys.alt }
-		this.changeControl = this.changeControl.bind(this);
-	}
-
-	componentDidMount(){
-		let store = this.store;
-
-		this.unsubscribe = store.subscribe(()=>{
-			let state = store.getState();
-
-			if(state.keys.alt != this.state.controls){
-				this.setState({ controls: state.keys.alt });
-			}
-		})
-	}
-
-	componentWillUmount(){
-		this.unsubscribe();
-	}
-
-	changeControl(){
-		let { controls } = this.state,
-		{ setControl } = this.props,
-		store = this.store;
-
-		store.dispatch(setControl(!controls));
-	}
-
-	render(){
-		let { controls } = this.state,
-		{ setControl } = this.props;
-
-		return (
-			<div className="control il f1">
-				<span id="control">Controls</span><a className='controlShift' onClick={this.changeControl} href="#">{(controls)? 'On':'Off'}</a>
-			</div>
-		)
-	}
-}
-Control.contextType = Custom;
 
 export class Guider extends React.PureComponent{
 	constructor(props){
