@@ -48,8 +48,14 @@ Promise.all([localData,fastAccess]).then(()=>{
 	if(nightMode != undefined)
 		store.dispatch(Action.changeNightMode(nightMode));
 	if(currentCat){
-		store.dispatch(Action.setCurrentCat(currentCat.name, currentCat.id));
-		store.dispatch(Action.setCurrentSong(currentSong.id, currentCat.id, currentSong.location));
+		if(state.onlineSongs[currentCat.id] || state.offlineSongs[currentCat.id]){
+			store.dispatch(Action.setCurrentCat(currentCat.name, currentCat.id));	
+		}
+		if(currentSong.name){
+			if(state[`${currentSong.location}Songs`][currentCat.id]){
+				store.dispatch(Action.setCurrentSong(currentSong.id, currentCat.id, currentSong.location));
+			}
+		}
 	}
 	if(favorites){
 		for(catName in favorites){
