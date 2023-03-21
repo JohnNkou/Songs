@@ -7,6 +7,8 @@ const subConstant = {
 	[C.SET_CURRENT_SONG]: 	true,
 	[C.CHANGE_LANGUAGE]: 	true,
 	[C.CHANGE_NIGHTMODE]: 	true,
+	[C.REMOVE_SONG]:		true,
+	[C.REMOVE_CATEGORIE]:	true,
 	[C.ADD_TO_FAVORITE]: 	true,
 	[C.REMOVE_FROM_FAVORITE]: 	true
 }
@@ -49,8 +51,7 @@ const fastAccessAction = (
 		}
 		function upS(action,fastAccess,state){
 			let { catId,id,location,name } = action,
-			song = state[`${location}Songs`][catId][id],
-			oldName = action.oldName.toUpperCase();
+			oldName = action.oldName.toUpperCase(),
 			catName = state.currentCat.name,
 			old;
 
