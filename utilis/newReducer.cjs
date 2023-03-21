@@ -125,7 +125,7 @@ const SRed = (states,action,location='online')=>{
 
 			return {...storedSongs};
 
-		case C.UPDATE_SONGS:
+		case C.UPDATE_SONG:
 			let songToUpdate = songsCat[id];
 			if(!songsCat || !songToUpdate)
 				return storedSongs;
@@ -136,14 +136,11 @@ const SRed = (states,action,location='online')=>{
 			return { ...storedSongs };
 
 		case C.ADD_CATEGORIE:
-
 			storedSongs[catId] = [];
-
 			return {...storedSongs};
 
 		case C.REMOVE_CATEGORIE:
 			let Exist = storedSongs[id];
-
 			if(Exist){
 				delete storedSongs[id];
 				return {...storedSongs};
@@ -193,31 +190,52 @@ function curCat(states,action){
 		case C.SET_CURRENT_CAT:
 			return { name, id };
 		case C.UPDATE_CAT:
-			let currentCat = states.currentCat;
-			let currentCatName = currentCat.name;
-			let isCurrentCat = currentCatName == oldName;
+			let currentCat = states.currentCat,
+			currentCatName = currentCat.name,
+			isCurrentCat = currentCatName == oldName;
 
 			if(isCurrentCat)
 				return { name: newName, id: currentCat.id}
 
 			return states.currentCat; 
 
+		case C.REMOVE_CATEGORIE:
+			if(states.currentCat.id == id){
+				return { name:'' }
+			}
+			return states.currentCat;
 		default:
 			return states.currentCat;
 	}
 
+	return states.currentCat;
 }
 
 function curSong(states,action){
 	let { type, name, catId, location, id } = action, 
 	storeSongs = (location == 'online')? states.onlineSongs : states.offlineSongs, 
-	catSongs = storeSongs[catId], 
+	catSongs = storeSongs[catId],
 	song = catSongs && catSongs[id];
 
-	if(type != C.SET_CURRENT_SONG || !catSongs || !song)
-		return states.currentSong;
+	switch(type){
+		case C.SET_CURRENT_SONG:
+			return {...song, id, location, catId };
+		case C.REMOVE_CATEGORIE:
+			if(states.currentSong.catId == id){
+				return {name:"", verses:[]}
+			}
+			break;
+		case C.REMOVE_SONG:
+			if(name == states.currentSong.name){
+				return {name:"", verses:[]};
+			}
+			break;
+		default:
+				return states.currentSong;
+	}
 
-	return { ...song, id, location };
+	return states.currentSong;
+
 }
 
 function uiR(states,action){
