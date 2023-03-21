@@ -331,7 +331,7 @@ input{
 	text-align: right;
 }
 #first .songList .heightHelper .onlineHead, #first .songList .heightHelper .offlineHead{
-	height:5%;
+	height: 40px;
 }
 
 .songList .online .onlineHead,.songList .offline .offlineHead{
@@ -1008,7 +1008,7 @@ input{
 		height: 10%;
 	}
 	#first .songList .heightHelper .onlineHead, #first .songList .heightHelper .offlineHead{
-		height:7%;
+		/* height:7%; */
 	}
 	.songList{
 		padding:0;

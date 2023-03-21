@@ -415,18 +415,6 @@ function toPercentage(coor,total){
 
 
 exports.dbChooser = (options)=>{
-	if(window.indexedDB){
-		return new Promise((resolve,reject)=>{
-			require.ensure(['./indexDb.cjs'],function(require){
-				let indexDb = require('./indexDb.cjs'),
-				TTT = new indexDb(options);
-				resolve(TTT);
-			}, function(e){ 
-				console.error("Error while loading the indexDb file",e);
-				resolve(new bogusTT());
-			},'indexDb')
-		})
-	}
 	if(window.openDatabase){
 		return new Promise((resolve,reject)=>{
 			require.ensure(['./openDb.cjs'],function(require){
@@ -437,6 +425,18 @@ exports.dbChooser = (options)=>{
 				console.error("Error while loading the openDb file",e);
 				resolve(new bogusTT());
 			},'openDb')
+		})
+	}
+	if(window.indexedDB){
+		return new Promise((resolve,reject)=>{
+			require.ensure(['./indexDb.cjs'],function(require){
+				let indexDb = require('./indexDb.cjs'),
+				TTT = new indexDb(options);
+				resolve(TTT);
+			}, function(e){ 
+				console.error("Error while loading the indexDb file",e);
+				resolve(new bogusTT());
+			},'indexDb')
 		})
 	}
 	

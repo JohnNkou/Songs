@@ -16,6 +16,9 @@ function TT(_ref) {
   var _this = this;
   var name = _ref.name,
     safeOp = _ref.safeOp;
+  function toL(name) {
+    return safeOp(name, "toLowerCase", null);
+  }
   this.db = openDb(name, "");
   this.query = this.db.query.bind(this.db);
   this.initialize = function () {
@@ -67,7 +70,7 @@ function TT(_ref) {
     var txt = 'Wb insertCategorie';
     var p = function p() {
       return new Promise(function (resolve, reject) {
-        _this.query('INSERT INTO Categorie(name,id) VALUES(?,?)', [safeOp(name, "toLowerCase", null), id]).then(function (s) {
+        _this.query('INSERT INTO Categorie(name,id) VALUES(?,?)', [toL(name), id]).then(function (s) {
           if (s.inserted) {
             resolve(s.inserted);
           } else {
@@ -82,7 +85,7 @@ function TT(_ref) {
     var txt = "Wb updateCategorie ";
     var p = function p() {
       return new Promise(function (resolve, reject) {
-        _this.query('UPDATE Categorie SET name=? WHERE name=?', [safeOp(newName, "toLowerCase", null), safeOp(name, "toLowerCase", null)]).then(function (s) {
+        _this.query('UPDATE Categorie SET name=? WHERE name=?', [toL(newName), toL(name)]).then(function (s) {
           if (s.updated) {
             resolve(true);
           } else {
@@ -131,10 +134,11 @@ function TT(_ref) {
     return p;
   };
   this.insertSong = function (name, verses, cat) {
-    var txt = "Wb insertSong";
-    verses = JSON.stringify(verses), p = function p() {
+    var p = function p() {
       return new Promise(function (resolve, reject) {
-        _this.query("INSERT INTO Song(name,verses,cat) VALUES(?,?,?)", [safeOp(name, "toUpperCase", null), verses, cat]).then(function (s) {
+        var txt = "Wb insertSong";
+        verses = JSON.stringify(verses);
+        _this.query("INSERT INTO Song(name,verses,cat) VALUES(?,?,?)", [toL(name), verses, cat]).then(function (s) {
           if (s.inserted) {
             resolve(true);
           } else {
@@ -147,8 +151,8 @@ function TT(_ref) {
   };
   this.updateSong = function (name, cat, newName, verses) {
     var txt = "Wb updateSong",
-      name = safeOp(name, "toUpperCase", null),
-      newName = safeOp(newName, "toUpperCase", null),
+      name = toL(name),
+      newName = toL(newName),
       sql = "UPDATE Song SET " + (newName ? "name=?" + (verses ? ", verses=?" : "") : "verses=?") + " WHERE name=? AND cat=?",
       holder = [newName ? newName : verses, newName && verses ? verses : name, newName && verses ? name : cat, newName && verses ? cat : null].filter(function (s) {
         return s;
@@ -170,7 +174,7 @@ function TT(_ref) {
     var txt = "Wb deleteSong",
       p = function p() {
         return new Promise(function (resolve, reject) {
-          _this.query("DELETE FROM Song WHERE name=? AND cat=?", [safeOp(name, "toUpperCase", null), cat]).then(function (s) {
+          _this.query("DELETE FROM Song WHERE name=? AND cat=?", [toL(name), cat]).then(function (s) {
             if (s.updated) {
               resolve(true);
             } else {
@@ -185,22 +189,25 @@ function TT(_ref) {
     var txt = 'Wb getSong',
       p = function p() {
         return new Promise(function (resolve, reject) {
-          _this.query("SELECT * from Song WHERE name=? AND cat=?", [safeOp(name, "toUpperCase", null), cat]).then(function (s) {
-            if (s.data.length) {
-              s.data = s.data.pop();
-              s.data.verses = JSON.parse(s.data.verses);
-            }
+          _this.query("SELECT * from Song WHERE name=? AND cat=?", [toL(name), cat]).then(function (s) {
+            s.data.forEach(function (song) {
+              song.verses = JSON.parse(song.verses);
+            });
             resolve(s.data);
           })["catch"](reject);
         });
       };
     return p;
   };
-  this.getAllSongs = function (cat) {
+  this.getAllSongs = function () {
+    var cat = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     var txt = 'Wb getAllSongs',
       p = function p() {
         return new Promise(function (resolve, reject) {
           _this.query("SELECT * FROM Song WHERE cat=?", [cat]).then(function (s) {
+            s.data.forEach(function (song) {
+              song.verses = JSON.parse(song.verses);
+            });
             resolve(s.data);
           })["catch"](reject);
         });

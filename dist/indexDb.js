@@ -188,7 +188,7 @@ function TTT(_ref) {
           tx(function (tx) {
             var store = tx.objectStore("Categorie");
             var request = store.put({
-              name: toL(name, id),
+              name: toL(name),
               id: id
             });
             request.onsuccess = function (e) {
@@ -289,7 +289,7 @@ function TTT(_ref) {
         return new Promise(function (resolve, reject) {
           tx(function (tx) {
             var index = tx.objectStore("Categorie").index("by_id"),
-              request = index.openCursor(toL(id));
+              request = index.openCursor(id);
             request.onsuccess = function (e) {
               var cursor = request.result;
               if (cursor) {
@@ -309,36 +309,6 @@ function TTT(_ref) {
           });
         });
       };
-    return p;
-  };
-  this.getCategorieByKey = function () {
-    var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
-    var txt = 'getCategorieByKey',
-      tx = _this.txR;
-    p = function p() {
-      return new Promise(function (resolve, reject) {
-        tx(function (tx) {
-          var index = tx.objectStore("Categorie").index("by_id"),
-            request = index.openCursor(id);
-          request.onsuccess = function (s) {
-            var cursor = request.result;
-            if (cursor) {
-              resolve(_objectSpread({
-                id: cursor.key
-              }, cursor.value));
-            } else {
-              resolve(cursor);
-            }
-          };
-          request.onerror = function (e) {
-            e.preventDefault();
-            reject(dealWithConstraint(request.error));
-          };
-        }, function (e) {
-          return sameCompose(reject, trError);
-        });
-      });
-    };
     return p;
   };
   this.getAllCategories = function () {
@@ -386,7 +356,7 @@ function TTT(_ref) {
       tx = _this.txW,
       p = function p() {
         return new Promise(function (resolve, reject) {
-          _this.getCategorieByKey(cat)().then(function (r) {
+          _this.getCategorie(cat)().then(function (r) {
             if (r) {
               tx(function (tx) {
                 var store = tx.objectStore("Song");
