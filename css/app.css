@@ -50,7 +50,8 @@ input{
 	left:0%
 }
 .TRR{
-	width:30%;
+	width: 30%;
+	position: absolute;
 }
 .TLL{
 	width:0%;
@@ -58,7 +59,7 @@ input{
 	overflow:scroll;
 }
 .TRRR{
-	width:70%;
+	width: 70%;
 }
 .Full{
 	width:100%;
@@ -320,10 +321,21 @@ input{
 	position: relative;
 	color:white;
 	z-index: 10000000;
+	text-align: left;
+	padding-left: 10px;
+}
+.songList #online .onlineHead *{
+	vertical-align:middle;
+}
+#onLink img{
+	margin-left:10px;
+}
+#onLink span, #offLink span{
+	font-family:"courier";
+	font-size:1em;
 }
 .songList #online .tagName, .songList #offline .tagName{
-	width:70%;
-	text-align: left;
+	width: 70%;
 }
 .songList #online .counter, .songList #offline .counter{
 	display: inline-block;
@@ -887,7 +899,7 @@ input{
 	}
 	#first{
 		z-index: 1000000;
-		width:40%;
+		width: 350px;
 	}
 	#second{
 		width:100%;
@@ -913,7 +925,6 @@ input{
 
 @media(max-width:710px){
 	#first{
-		width:50%;
 	}
 	#second .head .list{
 		width:140%;
@@ -945,7 +956,6 @@ input{
 
 @media(max-width: 540px){
 	#first{
-		width:60%;
 	}
 	.TLL{
 		left:-60%;

@@ -62,17 +62,7 @@ var table = (_utilis_db_config_cjs__WEBPACK_IMPORTED_MODULE_1___default().table)
   Categories = {},
   Songs = {},
   directAccess = {};
-var notifier,
-  notifier2,
-  db,
-  Pseq,
-  fastAccess = {
-    __exec__: []
-  },
-  Validator;
-fastAccess = {
-  __exec__: []
-};
+var notifier, notifier2, db, Pseq, fastAccess, Validator;
 function n(p, time) {
   var u = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'Update';
   var f = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1;
@@ -179,6 +169,7 @@ var Setup = /*#__PURE__*/function (_React$Component2) {
       	if(fastAccess.hasOwnProperty(n))
       		fAccess[n] = fAccess[n];
       }*/
+      console.log(fAccess);
       fastAccess = fAccess;
     }
   }, {
@@ -241,7 +232,7 @@ var Setup = /*#__PURE__*/function (_React$Component2) {
         streamText = this.streamText;
       startStream.f = startStream ? function () {
         notifier2.addSpeed(streamText.started(lang), undefined, undefined, undefined, _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.success);
-        _this2.props.startStream();
+        _this2.store.dispatch(_this2.props.startStream());
         setTimeout(function () {
           localStorage.setItem("stream", JSON.stringify({
             name: S.getName(),
@@ -253,7 +244,7 @@ var Setup = /*#__PURE__*/function (_React$Component2) {
       };
       _stopStream.f = _stopStream ? function () {
         notifier2.addSpeed(streamText.stopped(lang));
-        _this2.props.stopStream();
+        _this2.store.dispatch(_this2.props.stopStream());
         setTimeout(function () {
           localStorage.removeItem("stream");
         }, 15);
@@ -265,9 +256,9 @@ var Setup = /*#__PURE__*/function (_React$Component2) {
     }
   }, {
     key: "configureStreamManager",
-    value: function configureStreamManager(fAccess, streamManager, fastAccess) {
+    value: function configureStreamManager(fAccess, streamManager) {
       S = streamManager;
-      S.addFastAccess(fastAccess);
+      S.addFastAccess(fAccess);
     }
   }, {
     key: "handleKeydown",
@@ -288,13 +279,13 @@ var Setup = /*#__PURE__*/function (_React$Component2) {
         startStream = _this$props2.startStream,
         stopStream = _this$props2.stopStream,
         setControl = _this$props2.setControl,
+        fAccess = _this$props2.fAccess,
         lang = this.state.lang,
         images = this.images,
-        fAccess = this.props.fastAccess,
         fn = null;
-      this.populateFastAccess(this.props.fAccess);
+      this.populateFastAccess(fAccess);
       this.configureStream();
-      this.configureStreamManager(fAccess, streamManager, fastAccess);
+      this.configureStreamManager(fAccess, streamManager);
       this.registerGlobalClickHandler(this.globalClickHandler);
       this.unsubscribe = store.subscribe(function () {
         var state = _this3.state,
@@ -435,20 +426,28 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
     _this5.updateSongStatus = _this5.updateSongStatus.bind(_assertThisInitialized(_this5));
     _this5.initTime = Date.now();
     _this5.handleScroll = _this5.handleScroll.bind(_assertThisInitialized(_this5));
+    _this5.fetchSongs = _this5.fetchSongs.bind(_assertThisInitialized(_this5));
+    _this5.fetchStatus = {};
+    _this5.nodeRef = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createRef();
     return _this5;
   }
   _createClass(OnlineSongs, [{
     key: "componentDidMount",
     value: function componentDidMount() {
       var _this6 = this;
-      var store = this.store;
+      var store = this.store,
+        emptyArray = [];
       this.unsubscribe = store.subscribe(function () {
         var cState = store.getState(),
           state = _this6.state,
           currentCat = cState.currentCat,
-          songs = cState.onlineSongs[currentCat.id] || [],
+          songs = cState.onlineSongs[currentCat.id] || emptyArray,
           newState = {};
-        if (state.songs != songs) {
+        if (state.currentCat == currentCat) {
+          if (state.songs.length != songs.length) {
+            newState.songs = songs;
+          }
+        } else {
           newState.songs = songs;
         }
         if (state.to != cState.ui.navigation.to) {
@@ -473,13 +472,75 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
           newState.controls = cState.keys.alt;
         }
         if (Object.keys(newState).length) {
-          _this6.setState(newState);
+          _this6.setState(newState, function () {
+            console.log("In effect");
+          });
         }
       });
-      var c = setInterval(function () {
-        _this6.node = document.querySelector("#online .papa");
-        if (_this6.node) clearInterval(c);
-      }, 15);
+    }
+  }, {
+    key: "fetchSongs",
+    value: function fetchSongs() {
+      var _this7 = this;
+      var currentCat = this.state.currentCat,
+        fetchStatus = this.fetchStatus,
+        catId = currentCat.id,
+        songFetch = fetchStatus[catId],
+        last,
+        addSong = this.props.addSong,
+        store = this.store,
+        data = {
+          catId: catId
+        },
+        sendData = {
+          url: '/Song?action=getAll&catId=' + catId,
+          type: 'application/json',
+          s: function s(_ref) {
+            var xml = _ref.xml,
+              body = _ref.body,
+              status = _ref.status;
+            songFetch.fetching = false;
+            if (xml.ok) {
+              if (body.last) {
+                songFetch.last = body.last;
+              } else {
+                songFetch.complete = true;
+              }
+              body.data.forEach(function (song, i) {
+                store.dispatch(addSong(i, song.name, song.catId, song.verses, 'online'));
+              });
+              if (!body.data.length) {
+                _this7.forceUpdate();
+              }
+            } else {
+              console.error("Received an not ok response", status, body);
+            }
+          },
+          e: function e(_ref2) {
+            var error = _ref2.error,
+              xml = _ref2.xml,
+              body = _ref2.body;
+            songFetch.fetching = false;
+            console.error("An Error happened while fetching for songs", error);
+          }
+        };
+      if (songFetch) {
+        if (songFetch.complete || songFetch.fetching) {
+          return;
+        } else {
+          songFetch.fetching = true;
+        }
+        if (songFetch.last) {
+          sendData.url += '&last=' + JSON.stringify(songFetch.last);
+        }
+      } else {
+        fetchStatus[catId] = songFetch = {
+          fetching: true,
+          complete: false
+        };
+      }
+      this.forceUpdate();
+      (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)(sendData);
     }
   }, {
     key: "componentWillUnmount",
@@ -489,10 +550,12 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate(prevProps, prevState) {
-      var _this$state2 = this.state,
+      var fetchStatus = this.fetchStatus,
+        _this$state2 = this.state,
         songs = _this$state2.songs,
         report = _this$state2.report,
         catName = _this$state2.catName,
+        currentCat = _this$state2.currentCat,
         songLength = songs.length;
       if (!this.initialSongLength && songLength || prevState.catName != catName) {
         this.initialSongLength = songLength;
@@ -507,6 +570,10 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
           show: true
         });
       }
+      if (this.state.currentCat.name && this.state.currentCat.name != prevState.currentCat.name) {
+        if (fetchStatus[currentCat.id] && fetchStatus[currentCat.id].complete) return;
+        this.fetchSongs();
+      }
       (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.invoqueAfterMount)('online');
     }
   }, {
@@ -515,14 +582,20 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
       var _this$state3 = this.state,
         songs = _this$state3.songs,
         to = _this$state3.to,
+        currentCat = _this$state3.currentCat,
+        fetchStatus = this.fetchStatus,
+        songFetch = fetchStatus[currentCat.id],
         songLength = songs.length,
         updateSongList = this.props.updateSongList,
-        node = this.node,
+        node = this.nodeRef.current,
         nodeHeight = node.getBoundingClientRect().height,
         scrollTop = node.scrollTop,
         scrollHeight = node.scrollHeight,
         percent = (nodeHeight + scrollTop) / node.scrollHeight * 100,
         store = this.store;
+      if (percent >= 60 && !songFetch.fetching) {
+        this.fetchSongs();
+      }
       if (songLength >= to && percent >= 70) {
         store.dispatch(updateSongList(to + 100));
       }
@@ -556,7 +629,7 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "throwReport",
     value: function throwReport() {
-      var _this7 = this;
+      var _this8 = this;
       var addCategorie = this.props.addCategorie,
         state = this.store.getState(),
         currentCat = state.currentCat,
@@ -571,9 +644,9 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
       } else {
         db.insertCategorie(catName, catId)().then(function (id) {
           if (id) {
-            _this7.downloading[catName] = true;
+            _this8.downloading[catName] = true;
             store.dispatch(addCategorie(catName, catId));
-            _this7.setState({
+            _this8.setState({
               report: true
             });
           } else {
@@ -626,8 +699,9 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "render",
     value: function render() {
-      var _this8 = this;
-      var _this$state4 = this.state,
+      var _this9 = this;
+      var fetchStatus = this.fetchStatus,
+        _this$state4 = this.state,
         show = _this$state4.show,
         report = _this$state4.report,
         songs = _this$state4.songs,
@@ -636,7 +710,9 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
         lang = this.props.lang,
         mustReport = report,
         onlineClass = "il ".concat(!currentCat.name || !this.store.getState().onlineSongs[currentCat.id] ? 'whoosh' : '', " ").concat(show ? 'heightHelper' : 'online'),
-        pop = _objectSpread(_objectSpread({}, this.props), this.state);
+        pop = _objectSpread(_objectSpread({}, this.props), this.state),
+        showLoading = fetchStatus[currentCat.id] && fetchStatus[currentCat.id].fetching ? true : false,
+        loadingClass = showLoading ? '' : 'whoosh';
 
       // Report expect to have status, name, parameter
       if (mustReport) {
@@ -656,7 +732,10 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
         id: "onLink",
         href: "#",
         onClick: this.manageShowing
-      }, "Online"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Counter, {
+      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("span", null, "Online"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
+        className: loadingClass,
+        src: "img/loading.gif"
+      })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Counter, {
         i: songs.length
       }), show && songs.length ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Download, _defineProperty({
         additionalClass: "vmid",
@@ -667,12 +746,13 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
         action: [function () {
           return new Promise(function (resolve) {
             resolve(false);
-            _this8.throwReport();
+            _this9.throwReport();
           });
         }]
       }, "additionalClass", "vmid")) : '', /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Liner, {
         additionalClass: "vmid"
       })), show ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
+        ref: this.nodeRef,
         onScroll: this.handleScroll,
         className: "papa"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(SongList, _extends({
@@ -693,17 +773,17 @@ var OfflineSongs = /*#__PURE__*/function (_React$Component4) {
   _inherits(OfflineSongs, _React$Component4);
   var _super5 = _createSuper(OfflineSongs);
   function OfflineSongs(props, context) {
-    var _this9;
+    var _this10;
     _classCallCheck(this, OfflineSongs);
-    _this9 = _super5.call(this, props);
+    _this10 = _super5.call(this, props);
     var state = context.store.getState(),
       currentCat = state.currentCat,
       songs = state.offlineSongs[currentCat.id] || [],
       songLength = songs.length,
       Text = context.Text,
       show = currentCat.name ? true : false;
-    _this9.store = context.store;
-    _this9.state = {
+    _this10.store = context.store;
+    _this10.state = {
       show: show,
       songs: songs,
       songLength: songLength,
@@ -714,10 +794,10 @@ var OfflineSongs = /*#__PURE__*/function (_React$Component4) {
       currentCat: currentCat,
       subscribedToStream: state.subscribedToStream
     };
-    _this9.manageShowing = _this9.manageShowing.bind(_assertThisInitialized(_this9));
-    _this9.initTime = Date.now();
-    _this9.Text = Text.Song;
-    return _this9;
+    _this10.manageShowing = _this10.manageShowing.bind(_assertThisInitialized(_this10));
+    _this10.initTime = Date.now();
+    _this10.Text = Text.Song;
+    return _this10;
   }
   _createClass(OfflineSongs, [{
     key: "componentDidUpdate",
@@ -732,11 +812,11 @@ var OfflineSongs = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this10 = this;
+      var _this11 = this;
       var store = this.store;
       this.unsubscribe = store.subscribe(function () {
         var cState = store.getState(),
-          state = _this10.state,
+          state = _this11.state,
           currentCat = cState.currentCat,
           songs = cState.offlineSongs[currentCat.id] || [],
           songLength = songs.length,
@@ -769,7 +849,7 @@ var OfflineSongs = /*#__PURE__*/function (_React$Component4) {
           newState.currentCat = currentCat;
         }
         if (Object.keys(newState).length) {
-          _this10.setState(newState);
+          _this11.setState(newState);
         }
       });
     }
@@ -802,7 +882,7 @@ var OfflineSongs = /*#__PURE__*/function (_React$Component4) {
         id: "offLink",
         onClick: this.manageShowing,
         href: "#"
-      }, "Local"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Counter, {
+      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("span", null, "Local")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Counter, {
         i: songs.length
       }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Liner, {
         additionalClass: "vmid"
@@ -845,15 +925,15 @@ var Notification = /*#__PURE__*/function (_React$PureComponent3) {
   _inherits(Notification, _React$PureComponent3);
   var _super7 = _createSuper(Notification);
   function Notification(props) {
-    var _this11;
+    var _this12;
     _classCallCheck(this, Notification);
-    _this11 = _super7.call(this, props);
-    _this11.state = {
+    _this12 = _super7.call(this, props);
+    _this12.state = {
       message: "",
       node: null,
       signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.system
     };
-    return _this11;
+    return _this12;
   }
   _createClass(Notification, [{
     key: "componentDidMount",
@@ -886,19 +966,19 @@ var AddCatDiv = /*#__PURE__*/function (_React$Component5) {
   _inherits(AddCatDiv, _React$Component5);
   var _super8 = _createSuper(AddCatDiv);
   function AddCatDiv(props, context) {
-    var _this12;
+    var _this13;
     _classCallCheck(this, AddCatDiv);
-    _this12 = _super8.call(this, props);
+    _this13 = _super8.call(this, props);
     var state = context.store.getState(),
       Text = context.Text,
       current = state.currentCat;
-    _this12.store = context.store;
-    _this12.submit = _this12.submit.bind(_assertThisInitialized(_this12));
-    _this12.updateCat = _this12.updateCat.bind(_assertThisInitialized(_this12));
-    _this12.Text = Text.addCatDiv;
-    _this12.formError = Text.formError;
-    _this12.formText = Text.formError;
-    _this12.state = {
+    _this13.store = context.store;
+    _this13.submit = _this13.submit.bind(_assertThisInitialized(_this13));
+    _this13.updateCat = _this13.updateCat.bind(_assertThisInitialized(_this13));
+    _this13.Text = Text.addCatDiv;
+    _this13.formError = Text.formError;
+    _this13.formText = Text.formError;
+    _this13.state = {
       message: function message() {
         return "";
       },
@@ -911,27 +991,27 @@ var AddCatDiv = /*#__PURE__*/function (_React$Component5) {
       lastCatId: state.Categories.length,
       catNamesString: state.Categories.join(' ')
     };
-    _this12.cleanUp = _this12.cleanUp.bind(_assertThisInitialized(_this12));
-    _this12.handleClick = _this12.handleClick.bind(_assertThisInitialized(_this12));
-    _this12.checker = _this12.checker.bind(_assertThisInitialized(_this12));
-    _this12.adjustHeight = _this12.adjustHeight.bind(_assertThisInitialized(_this12));
-    _this12.badInput = /\W/;
-    return _this12;
+    _this13.cleanUp = _this13.cleanUp.bind(_assertThisInitialized(_this13));
+    _this13.handleClick = _this13.handleClick.bind(_assertThisInitialized(_this13));
+    _this13.checker = _this13.checker.bind(_assertThisInitialized(_this13));
+    _this13.adjustHeight = _this13.adjustHeight.bind(_assertThisInitialized(_this13));
+    _this13.badInput = /\W/;
+    return _this13;
   }
   _createClass(AddCatDiv, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this13 = this;
+      var _this14 = this;
       var _catName = this.refs._catName;
       _catName.onchange = function () {
-        var state = _this13.state;
-        _this13.setState(_objectSpread(_objectSpread({}, state), {}, {
+        var state = _this14.state;
+        _this14.setState(_objectSpread(_objectSpread({}, state), {}, {
           name: _catName.value
         }));
       }, store = this.store;
       this.unsubscribe = store.subscribe(function () {
         var cState = store.getState(),
-          state = _this13.state,
+          state = _this14.state,
           newState = {};
         if (state.controls != cState.keys.alt) {
           newState.controls = cState.keys.alt;
@@ -952,7 +1032,7 @@ var AddCatDiv = /*#__PURE__*/function (_React$Component5) {
           newState.catNamesString = cState.Categories.join(' ');
         }
         if (Object.keys(newState).length) {
-          _this13.setState(newState);
+          _this14.setState(newState);
         }
       });
       this.node = document.getElementById("addCat");
@@ -1006,7 +1086,7 @@ var AddCatDiv = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "checker",
     value: function checker(e) {
-      var _this14 = this;
+      var _this15 = this;
       e.preventDefault();
       var lang = this.props.lang,
         catNames = this.state.catNames.map(function (cat) {
@@ -1020,28 +1100,28 @@ var AddCatDiv = /*#__PURE__*/function (_React$Component5) {
         formError = this.formError;
       if (!Validator.hasSomething(catNameValue)) {
         action = function action() {
-          _this14.setState({
+          _this15.setState({
             message: text.message.nameRequired,
             signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
           });
         };
       } else if (!Validator.isAlphaNumeric(catNameValue)) {
         action = function action() {
-          _this14.setState({
-            message: _this14.formError.notAlphaNumeric(text.nameHolder(lang)),
+          _this15.setState({
+            message: _this15.formError.notAlphaNumeric(text.nameHolder(lang)),
             signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
           });
         };
       } else if (!Validator.isNotIn(catNameValue.toLowerCase(), catNames)) {
         action = function action() {
-          _this14.setState({
+          _this15.setState({
             message: text.message.alreadyExist,
             signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.system
           });
         };
       } else if (Validator.isMoreThan(catNameValue.length, 20)) {
         action = function action() {
-          _this14.setState({
+          _this15.setState({
             message: formError.inputToLong(text.nameHolder(lang), 20),
             signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
           });
@@ -1054,7 +1134,7 @@ var AddCatDiv = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "submit",
     value: function submit(e) {
-      var _this15 = this;
+      var _this16 = this;
       var current = this.state.current,
         _this$props3 = this.props,
         lang = _this$props3.lang,
@@ -1071,14 +1151,14 @@ var AddCatDiv = /*#__PURE__*/function (_React$Component5) {
         db.insertCategorie(catName, id)().then(function (r) {
           if (r) {
             store.dispatch(addCategorie(catName, id));
-            _this15.setState({
-              message: _this15.Text.message.success,
+            _this16.setState({
+              message: _this16.Text.message.success,
               signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.success
             });
             console.log("categorie", catName, "was inserted");
           } else {
-            _this15.setState({
-              message: _this15.Text.message.insertFailure,
+            _this16.setState({
+              message: _this16.Text.message.insertFailure,
               signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
             });
             console.log("something went wrong while trying to insert categorie ", catName);
@@ -1091,7 +1171,7 @@ var AddCatDiv = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "updateCat",
     value: function updateCat(e) {
-      var _this16 = this;
+      var _this17 = this;
       var _catName = this.refs._catName,
         current = this.state.current,
         _this$props4 = this.props,
@@ -1110,8 +1190,8 @@ var AddCatDiv = /*#__PURE__*/function (_React$Component5) {
         if (state.offlineSongs[current.id]) {
           db.updateCategorie(oldName, newName)().then(function (r) {
             if (r) {
-              _this16.setState({
-                message: _this16.Text.message.updated,
+              _this17.setState({
+                message: _this17.Text.message.updated,
                 name: _catName.value,
                 signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.success
               });
@@ -1128,8 +1208,8 @@ var AddCatDiv = /*#__PURE__*/function (_React$Component5) {
                 }));
               });
             } else {
-              _this16.setState({
-                message: _this16.Text.message.updateFailure,
+              _this17.setState({
+                message: _this17.Text.message.updateFailure,
                 name: _catName.value,
                 signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
               });
@@ -1249,22 +1329,22 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
   _inherits(AddSongDiv, _React$Component6);
   var _super9 = _createSuper(AddSongDiv);
   function AddSongDiv(props, context) {
-    var _this17;
+    var _this18;
     _classCallCheck(this, AddSongDiv);
-    _this17 = _super9.call(this, props);
+    _this18 = _super9.call(this, props);
     var state = context.store.getState(),
       current = state.currentSong,
       currentCat = state.currentCat,
       Text = context.Text;
-    _this17.store = context.store;
-    _this17.kak = _this17.kak.bind(_assertThisInitialized(_this17));
-    _this17.changeVerseNumber = _this17.changeVerseNumber.bind(_assertThisInitialized(_this17));
-    _this17.updateSong = _this17.updateSong.bind(_assertThisInitialized(_this17));
-    _this17.deleteVerse = _this17.deleteVerse.bind(_assertThisInitialized(_this17));
-    _this17.hasOverflowed = _this17.hasOverflowed.bind(_assertThisInitialized(_this17));
-    _this17.scrollHandler = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.scrollHandler.bind(_assertThisInitialized(_this17));
-    _this17.lastUpdateOverflowed = false;
-    _this17.state = {
+    _this18.store = context.store;
+    _this18.kak = _this18.kak.bind(_assertThisInitialized(_this18));
+    _this18.changeVerseNumber = _this18.changeVerseNumber.bind(_assertThisInitialized(_this18));
+    _this18.updateSong = _this18.updateSong.bind(_assertThisInitialized(_this18));
+    _this18.deleteVerse = _this18.deleteVerse.bind(_assertThisInitialized(_this18));
+    _this18.hasOverflowed = _this18.hasOverflowed.bind(_assertThisInitialized(_this18));
+    _this18.scrollHandler = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.scrollHandler.bind(_assertThisInitialized(_this18));
+    _this18.lastUpdateOverflowed = false;
+    _this18.state = {
       VerseNumber: "",
       verses: [],
       name: "",
@@ -1279,22 +1359,22 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
       catId: currentCat.id,
       view: state.ui.show.addSongDiv
     };
-    _this17.Text = Text;
-    _this17.formError = Text.formError;
-    _this17.songText = Text.Song;
-    _this17.addSongText = Text.addSongDiv;
-    _this17.handleClick = _this17.handleClick.bind(_assertThisInitialized(_this17));
-    _this17.focusSignal = _this17.focusSignal.bind(_assertThisInitialized(_this17));
-    return _this17;
+    _this18.Text = Text;
+    _this18.formError = Text.formError;
+    _this18.songText = Text.Song;
+    _this18.addSongText = Text.addSongDiv;
+    _this18.handleClick = _this18.handleClick.bind(_assertThisInitialized(_this18));
+    _this18.focusSignal = _this18.focusSignal.bind(_assertThisInitialized(_this18));
+    return _this18;
   }
   _createClass(AddSongDiv, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this18 = this;
+      var _this19 = this;
       var store = this.store;
       this.unsubscribe = store.subscribe(function () {
         var cState = store.getState(),
-          state = _this18.state,
+          state = _this19.state,
           newState = {},
           current = cState.currentSong,
           currentCat = cState.currentCat;
@@ -1320,7 +1400,7 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
           newState.view = cState.ui.show.addSongDiv;
         }
         if (Object.keys(newState).length) {
-          _this18.setState(newState);
+          _this19.setState(newState);
         }
       });
       (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.invoqueAfterMount)('AddSongDiv');
@@ -1355,7 +1435,7 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate(prevProps, prevState) {
-      var _this19 = this;
+      var _this20 = this;
       this.focusSignal();
       try {
         if (this.hasOverflowed()) {
@@ -1367,7 +1447,7 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
             };
             this.listDiv.ontouchmove = function (event) {
               try {
-                _this19.scrollHandler(_this19.listDiv, event, trackedTouchs);
+                _this20.scrollHandler(_this20.listDiv, event, trackedTouchs);
               } catch (e) {
                 console.error(e);
               }
@@ -1391,13 +1471,13 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
           var verses = this.state.verses.length && this.state.verses || this.state.current.verses;
           var _loop = function _loop() {
             var input = ["_Verse".concat(i)];
-            var verse = _this19.refs[input];
+            var verse = _this20.refs[input];
             if (!verse) return "break";else {
               verse.value = VersesText[input] || verses[i - 1] && verses[i - 1].Text || '';
               if (!VersesText[input]) VersesText[input] = verse.value;
               if (!verse.onchange) {
                 verse.onchange = function () {
-                  var localState = _this19.state;
+                  var localState = _this20.state;
                   VersesText[input] = verse.value;
                 };
               }
@@ -1410,20 +1490,20 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
         } else {
           var state = this.state;
           var _loop2 = function _loop2(input) {
-            if (_this19.refs.hasOwnProperty(input)) {
-              if (input != '_name' && input != '_verseNumber' && !_this19.refs[input].onchange) {
-                var verse = _this19.refs[input];
+            if (_this20.refs.hasOwnProperty(input)) {
+              if (input != '_name' && input != '_verseNumber' && !_this20.refs[input].onchange) {
+                var verse = _this20.refs[input];
                 verse.onchange = function () {
-                  var localState = _this19.state;
+                  var localState = _this20.state;
                   state.VersesText[input] = verse.value;
                 };
               }
-              if (_this19.state.VersesText[input]) {
+              if (_this20.state.VersesText[input]) {
                 var tem;
                 var tam;
-                _this19.refs[input].value = _this19.state.VersesText[input];
+                _this20.refs[input].value = _this20.state.VersesText[input];
               } else {
-                _this19.refs[input].value = "";
+                _this20.refs[input].value = "";
               }
             }
           };
@@ -1448,7 +1528,7 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
   }, {
     key: "kak",
     value: function kak(e) {
-      var _this20 = this;
+      var _this21 = this;
       var _this$checker3 = this.checker(e),
         action = _this$checker3.action,
         verses = _this$checker3.verses,
@@ -1471,9 +1551,9 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
               node: 'songList',
               value: true
             }));
-            _this20.setState({
+            _this21.setState({
               name: "",
-              message: _this20.songText.insertion.success(lang, songName),
+              message: _this21.songText.insertion.success(lang, songName),
               VersesText: {},
               verses: [],
               VerseNumber: 0,
@@ -1486,14 +1566,14 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
               }));
             });
           } else {
-            _this20.setState({
-              message: _this20.songText.insertion.failed(lang, songName),
+            _this21.setState({
+              message: _this21.songText.insertion.failed(lang, songName),
               signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
             });
           }
         })["catch"](function (e) {
-          var message = e.name == 'ConstraintError' ? _this20.songText.insertion.duplicate(lang, songName) : _this20.songText.insertion.error(lang);
-          _this20.setState({
+          var message = e.name == 'ConstraintError' ? _this21.songText.insertion.duplicate(lang, songName) : _this21.songText.insertion.error(lang);
+          _this21.setState({
             message: message,
             signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
           });
@@ -1563,7 +1643,7 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
   }, {
     key: "checker",
     value: function checker(e) {
-      var _this21 = this;
+      var _this22 = this;
       e.preventDefault();
       var message = "",
         _name = this.refs._name,
@@ -1579,9 +1659,9 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
       if (!Validator.hasSomething(_name.value)) {
         return {
           action: function action() {
-            _this21.setState({
+            _this22.setState({
               name: "",
-              message: addSongText.message.nameRequired(_this21.props.lang),
+              message: addSongText.message.nameRequired(_this22.props.lang),
               VersesText: VersesText,
               signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
             });
@@ -1591,7 +1671,7 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
       if (!Validator.isAlphaNumeric(_name.value)) {
         return {
           action: function action() {
-            _this21.setState({
+            _this22.setState({
               name: _name.value,
               signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error,
               message: Text.formError.notAlphaNumeric(addSongText.nameHolder(lang))(lang),
@@ -1604,7 +1684,7 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
         message += addSongText.message.verseRequired(this.props.lang);
         return {
           action: function action() {
-            _this21.setState({
+            _this22.setState({
               message: message,
               name: _name.value,
               signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
@@ -1624,7 +1704,7 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
       if (message) {
         return {
           action: function action() {
-            _this21.setState({
+            _this22.setState({
               message: message,
               name: _name.value,
               VersesText: VersesText,
@@ -1641,7 +1721,7 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
   }, {
     key: "updateSong",
     value: function updateSong(e) {
-      var _this22 = this;
+      var _this23 = this;
       var _this$checker4 = this.checker(e),
         action = _this$checker4.action,
         verses = _this$checker4.verses,
@@ -1668,14 +1748,14 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
             _store2.dispatch(updateSong(current.id, catId, newSongName, verses, location, oldName));
             _store2.dispatch(_setCurrentSong(current.id, catId, location));
             _store2.dispatch(setControl(false));
-            _this22.setState({
+            _this23.setState({
               message: songText.updating.success(lang, oldName),
               signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.success,
               name: '',
               VersesText: {}
             });
           } else {
-            _this22.setState({
+            _this23.setState({
               message: songText.updating.failed(lang, oldName),
               signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error,
               name: newSongName,
@@ -1684,7 +1764,7 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
           }
         })["catch"](function (e) {
           var message = e.name == 'ConstraintError' ? songText.updating.duplicate(lang) : songText.updating.error(lang, newSongName);
-          _this22.setState({
+          _this23.setState({
             message: message,
             signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error,
             name: newSongName,
@@ -1761,7 +1841,7 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
   }, {
     key: "render",
     value: function render() {
-      var _this23 = this;
+      var _this24 = this;
       var lang = this.props.lang,
         _this$state12 = this.state,
         verses = _this$state12.verses,
@@ -1810,12 +1890,12 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
         }), verseNumber - 1 == i ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", {
           className: "plus",
           onClick: function onClick() {
-            return _this23.changeVerseNumber(verseNumber + 1);
+            return _this24.changeVerseNumber(verseNumber + 1);
           }
         }, "+") : '', i > 0 ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", {
           className: "minus",
           onClick: function onClick() {
-            return _this23.deleteVerse(i + 1);
+            return _this24.deleteVerse(i + 1);
           }
         }, "-") : '');
       }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
@@ -1840,17 +1920,17 @@ var CreateStream = /*#__PURE__*/function (_React$Component7) {
   _inherits(CreateStream, _React$Component7);
   var _super10 = _createSuper(CreateStream);
   function CreateStream(props, context) {
-    var _this24;
+    var _this25;
     _classCallCheck(this, CreateStream);
-    _this24 = _super10.call(this, props);
+    _this25 = _super10.call(this, props);
     var state = context.store.getState(),
       Text = context.Text,
       currentSong = state.currentSong;
-    _this24.store = context.store;
-    _this24.save = _this24.save.bind(_assertThisInitialized(_this24));
-    _this24.formError = Text.formError;
-    _this24.cleanUp = _this24.cleanUp.bind(_assertThisInitialized(_this24));
-    _this24.state = {
+    _this25.store = context.store;
+    _this25.save = _this25.save.bind(_assertThisInitialized(_this25));
+    _this25.formError = Text.formError;
+    _this25.cleanUp = _this25.cleanUp.bind(_assertThisInitialized(_this25));
+    _this25.state = {
       message: function message() {
         return "";
       },
@@ -1865,18 +1945,18 @@ var CreateStream = /*#__PURE__*/function (_React$Component7) {
       view: state.ui.show.createStreamDiv,
       isStreaming: state.isStreaming
     };
-    _this24.Text = Text.createStreamDiv;
-    _this24.badInput = /\W/;
-    return _this24;
+    _this25.Text = Text.createStreamDiv;
+    _this25.badInput = /\W/;
+    return _this25;
   }
   _createClass(CreateStream, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this25 = this;
+      var _this26 = this;
       var store = this.store;
       this.unsubscribe = store.subscribe(function () {
         var cState = store.getState(),
-          state = _this25.state,
+          state = _this26.state,
           currentSong = cState.currentSong,
           newState = {};
         if (state.appReachable != cState.appReachable) {
@@ -1904,7 +1984,7 @@ var CreateStream = /*#__PURE__*/function (_React$Component7) {
           newState.isStreaming = cState.isStreaming;
         }
         if (Object.keys(newState).length) {
-          _this25.setState(newState);
+          _this26.setState(newState);
         }
       });
       (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.invoqueAfterMount)('createStream');
@@ -1930,7 +2010,7 @@ var CreateStream = /*#__PURE__*/function (_React$Component7) {
   }, {
     key: "save",
     value: function save() {
-      var _this26 = this,
+      var _this27 = this,
         _stF$song,
         _data;
       var _this$state13 = this.state,
@@ -1947,7 +2027,7 @@ var CreateStream = /*#__PURE__*/function (_React$Component7) {
         Text = this.Text,
         formError = this.formError,
         data,
-        store;
+        store = this.store;
       if (!appReachable) return this.setState({
         message: Text.message.networkProblem,
         signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
@@ -1971,7 +2051,7 @@ var CreateStream = /*#__PURE__*/function (_React$Component7) {
           message: formError(Text.nameHolder(lang), 50),
           signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
         });
-      } else if (this.badInput.test(streamName)) {
+      } else if (!Validator.isAlphaNumeric(streamName)) {
         return this.setState({
           message: Text.message.BadCharacter,
           signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
@@ -1979,8 +2059,8 @@ var CreateStream = /*#__PURE__*/function (_React$Component7) {
       }
       var counter = 1;
       var c = setInterval(function () {
-        var _message = _this26.state.message;
-        _this26.setState({
+        var _message = _this27.state.message;
+        _this27.setState({
           message: function message() {
             var adder = 1;
             var dotNumber = 0;
@@ -2000,35 +2080,48 @@ var CreateStream = /*#__PURE__*/function (_React$Component7) {
         url: "/stream?action=add",
         method: 'POST',
         data: JSON.stringify(data),
-        s: function s(_s) {
+        type: 'application/json',
+        s: function s(_ref3) {
+          var xml = _ref3.xml,
+            body = _ref3.body,
+            status = _ref3.status;
           clearInterval(c);
-          _this26.setState({
-            message: Text.message.streamCreated,
-            disabled: true,
-            signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.success
-          });
-          startStream(streamName.toLowerCase(), true);
-        },
-        e: function e(_ref) {
-          var status = _ref.status,
-            error = _ref.error;
-          clearInterval(c);
-          if (error && error.code && error.code == 6) {
-            _stopStream(streamName.toLowerCase());
-            return _this26.setState({
-              message: Text.message.nameDuplication,
-              signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
+          if (xml.ok) {
+            _this27.setState({
+              message: Text.message.streamCreated,
+              disabled: true,
+              signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.success
             });
+            startStream(streamName.toLowerCase(), true);
+          } else if (xml.problems) {
+            if (body.exist) {
+              _this27.setState({
+                message: Text.message.nameDuplication,
+                signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
+              });
+              _stopStream(streamName.toLowerCase());
+            } else {
+              _stopStream(streamName.toLowerCase());
+              _this27.setState({
+                message: Text.message.creationError,
+                signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
+              });
+            }
           }
-          _this26.setState({
+        },
+        e: function e(_ref4) {
+          var status = _ref4.status,
+            error = _ref4.error,
+            xml = _ref4.xml;
+          clearInterval(c);
+          _this27.setState({
             message: Text.message.creationError,
             signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
           });
-          store.dispatch(setAppUnreachable());
+          if (xml.networkDown) {
+            store.dispatch(setAppUnreachable());
+          }
           _stopStream(streamName.toLowerCase());
-        },
-        setter: function setter(xml) {
-          xml.setRequestHeader('content-type', 'application/json');
         }
       });
     }
@@ -2102,28 +2195,28 @@ var CatToggler = /*#__PURE__*/function (_React$Component8) {
   _inherits(CatToggler, _React$Component8);
   var _super11 = _createSuper(CatToggler);
   function CatToggler(props, context) {
-    var _this27;
+    var _this28;
     _classCallCheck(this, CatToggler);
-    _this27 = _super11.call(this, props);
+    _this28 = _super11.call(this, props);
     var store = context.store,
       state = store.getState();
-    _this27.clickHandler = _this27.clickHandler.bind(_assertThisInitialized(_this27));
-    _this27.store = store;
-    _this27.state = {
+    _this28.clickHandler = _this28.clickHandler.bind(_assertThisInitialized(_this28));
+    _this28.store = store;
+    _this28.state = {
       catListView: state.ui.show.catList
     };
-    _this27.image = state.images.categorie;
-    return _this27;
+    _this28.image = state.images.categorie;
+    return _this28;
   }
   _createClass(CatToggler, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this28 = this;
+      var _this29 = this;
       var store = this.store;
       this.unsubscribe = store.subscribe(function () {
         var state = store.getState();
-        if (_this28.state.catListView != state.ui.show.catList) {
-          _this28.setState({
+        if (_this29.state.catListView != state.ui.show.catList) {
+          _this29.setState({
             catListView: state.ui.show.catList
           });
         }
@@ -2170,23 +2263,23 @@ var Input = /*#__PURE__*/function (_React$Component9) {
   _inherits(Input, _React$Component9);
   var _super12 = _createSuper(Input);
   function Input(props, context) {
-    var _this29;
+    var _this30;
     _classCallCheck(this, Input);
-    _this29 = _super12.call(this, props);
+    _this30 = _super12.call(this, props);
     var store = context.store,
       state = store.getState();
-    _this29.inlet = "Josaphat";
-    _this29.initTime = Date.now();
-    _this29.state = {
+    _this30.inlet = "Josaphat";
+    _this30.initTime = Date.now();
+    _this30.state = {
       view: state.ui.show.resultList
     };
-    _this29.store = store;
-    return _this29;
+    _this30.store = store;
+    return _this30;
   }
   _createClass(Input, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this30 = this;
+      var _this31 = this;
       var store = this.store,
         _this$props10 = this.props,
         changeResultListView = _this$props10.changeResultListView,
@@ -2194,8 +2287,8 @@ var Input = /*#__PURE__*/function (_React$Component9) {
       this.node = this.refs['_search'];
       this.unsubscribe = store.subscribe(function () {
         var state = store.getState();
-        if (_this30.state.view != state.ui.show.resultList) {
-          _this30.setState({
+        if (_this31.state.view != state.ui.show.resultList) {
+          _this31.setState({
             view: state.ui.show.resultList
           });
         }
@@ -2204,8 +2297,8 @@ var Input = /*#__PURE__*/function (_React$Component9) {
         console.error("Input componentDidMount this.node is null");
       } else {
         this.node.oninput = function (event) {
-          var value = _this30.node.value,
-            view = _this30.state.view;
+          var value = _this31.node.value,
+            view = _this31.state.view;
           if (value.length > 2) {
             store.dispatch(searchSong(value));
             if (!view) {
@@ -2255,23 +2348,23 @@ var Toggler = /*#__PURE__*/function (_React$Component10) {
   _inherits(Toggler, _React$Component10);
   var _super13 = _createSuper(Toggler);
   function Toggler(props, context) {
-    var _this31;
+    var _this32;
     _classCallCheck(this, Toggler);
-    _this31 = _super13.call(this, props);
+    _this32 = _super13.call(this, props);
     var store = context.store,
       state = store.getState();
-    _this31.store = store;
-    _this31.state = {
+    _this32.store = store;
+    _this32.state = {
       direction: state.ui.direction
     };
-    _this31.mustChangeDirection = _this31.mustChangeDirection.bind(_assertThisInitialized(_this31));
-    _this31.clickHandler = _this31.clickHandler.bind(_assertThisInitialized(_this31));
-    return _this31;
+    _this32.mustChangeDirection = _this32.mustChangeDirection.bind(_assertThisInitialized(_this32));
+    _this32.clickHandler = _this32.clickHandler.bind(_assertThisInitialized(_this32));
+    return _this32;
   }
   _createClass(Toggler, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this32 = this;
+      var _this33 = this;
       var changeDirection = this.props.changeDirection,
         direction = this.state.direction,
         store = this.store;
@@ -2280,8 +2373,8 @@ var Toggler = /*#__PURE__*/function (_React$Component10) {
       }
       this.unsubscribe = store.subscribe(function () {
         var state = store.getState();
-        if (state.ui.direction != _this32.state.direction) {
-          _this32.setState({
+        if (state.ui.direction != _this33.state.direction) {
+          _this33.setState({
             direction: state.ui.direction
           });
         }
@@ -2336,40 +2429,41 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
   _inherits(CatNames, _React$Component11);
   var _super14 = _createSuper(CatNames);
   function CatNames(props, context) {
-    var _this33;
+    var _this34;
     _classCallCheck(this, CatNames);
-    _this33 = _super14.call(this, props);
+    _this34 = _super14.call(this, props);
     var Text = context.Text,
       state = context.store.getState();
-    _this33.text = Text.Categorie;
-    _this33.store = context.store;
-    _this33.clickHandler = _this33.clickHandler.bind(_assertThisInitialized(_this33));
-    _this33.addCatButton = _this33.addCatButton.bind(_assertThisInitialized(_this33));
-    _this33.topClass = "wrap";
-    _this33.modif = _this33.modif.bind(_assertThisInitialized(_this33));
-    _this33.wipe = _this33.wipe.bind(_assertThisInitialized(_this33));
-    _this33.action1 = _this33.action1.bind(_assertThisInitialized(_this33));
-    _this33.action2 = _this33.action2.bind(_assertThisInitialized(_this33));
-    _this33.download = _this33.download.bind(_assertThisInitialized(_this33));
-    _this33.propagationHandler = _this33.propagationHandler.bind(_assertThisInitialized(_this33));
-    _this33.showControl = _this33.showControl.bind(_assertThisInitialized(_this33));
-    _this33.state = _defineProperty({
+    _this34.text = Text.Categorie;
+    _this34.store = context.store;
+    _this34.clickHandler = _this34.clickHandler.bind(_assertThisInitialized(_this34));
+    _this34.addCatButton = _this34.addCatButton.bind(_assertThisInitialized(_this34));
+    _this34.topClass = "wrap";
+    _this34.modif = _this34.modif.bind(_assertThisInitialized(_this34));
+    _this34.wipe = _this34.wipe.bind(_assertThisInitialized(_this34));
+    _this34.action1 = _this34.action1.bind(_assertThisInitialized(_this34));
+    _this34.action2 = _this34.action2.bind(_assertThisInitialized(_this34));
+    _this34.download = _this34.download.bind(_assertThisInitialized(_this34));
+    _this34.propagationHandler = _this34.propagationHandler.bind(_assertThisInitialized(_this34));
+    _this34.showControl = _this34.showControl.bind(_assertThisInitialized(_this34));
+    _this34.state = _defineProperty({
       updateForced: state.updateForced.catNames,
       controls: state.keys.alt,
       view: state.ui.show.catList,
       catNames: state.Categories
     }, "controls", state.keys.alt);
-    _this33.image = state.images.download;
-    return _this33;
+    _this34.image = state.images.download;
+    _this34.fetchCategories = _this34.fetchCategories.bind(_assertThisInitialized(_this34));
+    return _this34;
   }
   _createClass(CatNames, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this34 = this;
+      var _this35 = this;
       var store = this.store;
       this.unsubscribe = store.subscribe(function () {
         var cState = store.getState(),
-          state = _this34.state,
+          state = _this35.state,
           newState = {};
         if (state.updateForced != cState.updateForced.catNames) {
           newState.updateForced = cState.updateForced.catNames;
@@ -2384,7 +2478,7 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
           newState.catNames = cState.Categories;
         }
         if (Object.keys(newState).length) {
-          _this34.setState(newState);
+          _this35.setState(newState);
         }
       });
       this.node = document.querySelector(".catNames");
@@ -2394,6 +2488,51 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
         };
         this.forceUpdate();
       }
+      this.fetchCategories();
+    }
+  }, {
+    key: "fetchCategories",
+    value: function fetchCategories() {
+      var _this36 = this;
+      var store = this.store,
+        addCategorie = this.props.addCategorie,
+        last = this.state.last;
+      var sendData = {
+        url: '/Categorie?action=getAll',
+        type: 'application/json',
+        s: function s(_ref5) {
+          var xml = _ref5.xml,
+            body = _ref5.body;
+          if (xml.ok) {
+            body.data.forEach(function (cat) {
+              store.dispatch(addCategorie(cat.name, cat.id, 'online'));
+            });
+            if (body.last) {
+              _this36.setState({
+                last: body.last
+              });
+            } else {
+              _this36.setState({
+                complete: true
+              });
+            }
+          } else {
+            console.error("Received an not ok status while retrieving categories", xml.status, body);
+          }
+        },
+        e: function e(_ref6) {
+          var error = _ref6.error,
+            xml = _ref6.xml,
+            body = _ref6.body;
+          console.error("Error happening while retrieving categories", error, body);
+        }
+      };
+      if (last) {
+        sendData.data = JSON.stringify({
+          last: last
+        });
+      }
+      (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)(sendData);
     }
   }, {
     key: "componentWillUmount",
@@ -2418,8 +2557,8 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
     }
   }, {
     key: "showControl",
-    value: function showControl(_ref2) {
-      var id = _ref2.id;
+    value: function showControl(_ref7) {
+      var id = _ref7.id;
       var store = this.store;
       return id in store.getState().offlineSongs;
     }
@@ -2479,17 +2618,20 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
         setCurrentCat = _this$props12.setCurrentCat,
         updateSongList = _this$props12.updateSongList,
         changeCatListView = _this$props12.changeCatListView,
-        store = this.store;
-      store.dispatch(changeIndex(0));
-      store.dispatch(setCurrentCat(item.name, item.id, item.location));
-      store.dispatch(updateSongList(100));
+        store = this.store,
+        currentCat = store.getState().currentCat;
+      if (currentCat.id != item.id) {
+        store.dispatch(changeIndex(0));
+        store.dispatch(setCurrentCat(item.name, item.id, item.location));
+        store.dispatch(updateSongList(100));
+      }
       store.dispatch(changeCatListView(false));
     }
   }, {
     key: "action2",
-    value: function action2(_ref3) {
-      var name = _ref3.name,
-        id = _ref3.id;
+    value: function action2(_ref8) {
+      var name = _ref8.name,
+        id = _ref8.id;
       var text = this.text,
         _this$props13 = this.props,
         lang = _this$props13.lang,
@@ -2506,8 +2648,8 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
     }
   }, {
     key: "download",
-    value: function download(_ref4) {
-      var id = _ref4.id;
+    value: function download(_ref9) {
+      var id = _ref9.id;
       return db.getCategorie(id)();
     }
   }, {
@@ -2563,42 +2705,42 @@ var ResultList = /*#__PURE__*/function (_React$Component12) {
   _inherits(ResultList, _React$Component12);
   var _super15 = _createSuper(ResultList);
   function ResultList(prop, context) {
-    var _this35;
+    var _this37;
     _classCallCheck(this, ResultList);
-    _this35 = _super15.call(this, prop);
+    _this37 = _super15.call(this, prop);
     var store = context.store,
       state = store.getState();
-    _this35.scrollHandler = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.scrollHandler;
-    _this35.action = _this35.action.bind(_assertThisInitialized(_this35));
-    _this35.state = {
+    _this37.scrollHandler = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.scrollHandler;
+    _this37.action = _this37.action.bind(_assertThisInitialized(_this37));
+    _this37.state = {
       resultView: state.ui.show.resultList,
       songs: state.searchResult
     };
-    _this35.store = store;
-    return _this35;
+    _this37.store = store;
+    return _this37;
   }
   _createClass(ResultList, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this36 = this;
+      var _this38 = this;
       var trackedTouchs = [],
         store = this.store;
       this.unsubscribe = store.subscribe(function () {
         var state = store.getState(),
           newState = {};
-        if (state.ui.show.resultList != _this36.state.resultView) {
+        if (state.ui.show.resultList != _this38.state.resultView) {
           newState.resultView = state.ui.show.resultList;
         }
-        if (state.searchResult != _this36.state.songs) {
+        if (state.searchResult != _this38.state.songs) {
           newState.songs = state.searchResult;
         }
         if (Object.keys(newState).length) {
-          _this36.setState(newState);
+          _this38.setState(newState);
         }
       });
       this.node = document.querySelector("#first .head .result");
       this.node.ontouchmove = function (event) {
-        _this36.scrollHandler(_this36.node, event, trackedTouchs);
+        _this38.scrollHandler(_this38.node, event, trackedTouchs);
       };
       this.node.ontouchend = function (event) {
         trackedTouchs = [];
@@ -2612,11 +2754,11 @@ var ResultList = /*#__PURE__*/function (_React$Component12) {
     }
   }, {
     key: "action",
-    value: function action(_ref5) {
-      var songId = _ref5.songId,
-        catId = _ref5.catId,
-        location = _ref5.location,
-        catName = _ref5.catName;
+    value: function action(_ref10) {
+      var songId = _ref10.songId,
+        catId = _ref10.catId,
+        location = _ref10.location,
+        catName = _ref10.catName;
       var _this$props14 = this.props,
         setCurrentCat = _this$props14.setCurrentCat,
         setCurrentSong = _this$props14.setCurrentSong,
@@ -2645,29 +2787,29 @@ var ResultList = /*#__PURE__*/function (_React$Component12) {
   return ResultList;
 }(react__WEBPACK_IMPORTED_MODULE_0__.Component);
 ResultList.contextType = (_utilis_context_cjs__WEBPACK_IMPORTED_MODULE_4___default());
-var List = function List(_ref6) {
-  var catName = _ref6.catName,
-    putInLastAccess = _ref6.putInLastAccess,
-    hide = _ref6.hide,
-    updateMyCat = _ref6.updateMyCat,
-    args = _ref6.args,
-    song = _ref6.song,
-    abs = _ref6.abs,
-    src = _ref6.src,
-    _ref6$list = _ref6.list,
-    list = _ref6$list === void 0 ? [] : _ref6$list,
-    action = _ref6.action,
-    action2 = _ref6.action2,
-    _ref6$first = _ref6.first,
-    first = _ref6$first === void 0 ? function () {} : _ref6$first,
-    controls = _ref6.controls,
-    wipe = _ref6.wipe,
-    modif = _ref6.modif,
-    download = _ref6.download,
-    downloadAll = _ref6.downloadAll,
-    topClass = _ref6.topClass,
-    itemClass = _ref6.itemClass,
-    showControl = _ref6.showControl;
+var List = function List(_ref11) {
+  var catName = _ref11.catName,
+    putInLastAccess = _ref11.putInLastAccess,
+    hide = _ref11.hide,
+    updateMyCat = _ref11.updateMyCat,
+    args = _ref11.args,
+    song = _ref11.song,
+    abs = _ref11.abs,
+    src = _ref11.src,
+    _ref11$list = _ref11.list,
+    list = _ref11$list === void 0 ? [] : _ref11$list,
+    action = _ref11.action,
+    action2 = _ref11.action2,
+    _ref11$first = _ref11.first,
+    first = _ref11$first === void 0 ? function () {} : _ref11$first,
+    controls = _ref11.controls,
+    wipe = _ref11.wipe,
+    modif = _ref11.modif,
+    download = _ref11.download,
+    downloadAll = _ref11.downloadAll,
+    topClass = _ref11.topClass,
+    itemClass = _ref11.itemClass,
+    showControl = _ref11.showControl;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
     className: abs ? abs.style : ""
   }, first(), list.map(function (item, i) {
@@ -2697,22 +2839,22 @@ var List = function List(_ref6) {
     }));
   }));
 };
-var Item = function Item(_ref7) {
-  var i = _ref7.i,
-    _hide = _ref7.hide,
-    item = _ref7.item,
-    action = _ref7.action,
-    action2 = _ref7.action2,
-    src = _ref7.src,
-    _wipe = _ref7.wipe,
-    _modif = _ref7.modif,
-    updateMyCat = _ref7.updateMyCat,
-    song = _ref7.song,
-    downloadAll = _ref7.downloadAll,
-    download = _ref7.download,
-    args = _ref7.args,
-    itemClass = _ref7.itemClass,
-    showControl = _ref7.showControl;
+var Item = function Item(_ref12) {
+  var i = _ref12.i,
+    _hide = _ref12.hide,
+    item = _ref12.item,
+    action = _ref12.action,
+    action2 = _ref12.action2,
+    src = _ref12.src,
+    _wipe = _ref12.wipe,
+    _modif = _ref12.modif,
+    updateMyCat = _ref12.updateMyCat,
+    song = _ref12.song,
+    downloadAll = _ref12.downloadAll,
+    download = _ref12.download,
+    args = _ref12.args,
+    itemClass = _ref12.itemClass,
+    showControl = _ref12.showControl;
   var name = item.name || item;
   if (args) {
     if (item.name) args = _objectSpread(_objectSpread(_objectSpread({}, args), item), {}, {
@@ -2736,8 +2878,8 @@ var Item = function Item(_ref7) {
   }, name)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
     className: "il"
   }, item && showControl && showControl(item) ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Controls, {
-    wipe: function wipe(_ref8) {
-      var target = _ref8.target;
+    wipe: function wipe(_ref13) {
+      var target = _ref13.target;
       return _wipe(item, target, i);
     },
     modif: function modif() {
@@ -2783,17 +2925,17 @@ var Download = /*#__PURE__*/function (_React$Component13) {
   _inherits(Download, _React$Component13);
   var _super16 = _createSuper(Download);
   function Download(props) {
-    var _this37;
+    var _this39;
     _classCallCheck(this, Download);
-    _this37 = _super16.call(this, props);
-    _this37.doAction = _this37.doAction.bind(_assertThisInitialized(_this37));
-    _this37.state = {
+    _this39 = _super16.call(this, props);
+    _this39.doAction = _this39.doAction.bind(_assertThisInitialized(_this39));
+    _this39.state = {
       img: true
     };
-    _this37.save = _this37.save.bind(_assertThisInitialized(_this37));
-    _this37.name = _this37.props.name;
-    _this37.checkImageDownload = _this37.checkImageDownload.bind(_assertThisInitialized(_this37));
-    return _this37;
+    _this39.save = _this39.save.bind(_assertThisInitialized(_this39));
+    _this39.name = _this39.props.name;
+    _this39.checkImageDownload = _this39.checkImageDownload.bind(_assertThisInitialized(_this39));
+    return _this39;
   }
   _createClass(Download, [{
     key: "componentDidMount",
@@ -2826,7 +2968,7 @@ var Download = /*#__PURE__*/function (_React$Component13) {
   }, {
     key: "checkImageDownload",
     value: function checkImageDownload() {
-      var _this38 = this;
+      var _this40 = this;
       var _this$props15 = this.props,
         args = _this$props15.args,
         action2 = _this$props15.action2,
@@ -2843,12 +2985,12 @@ var Download = /*#__PURE__*/function (_React$Component13) {
       download(item).then(function (r) {
         if (r.length) {
           if (img) {
-            _this38.setState({
+            _this40.setState({
               img: !img
             });
           }
         } else {
-          if (!img) _this38.setState({
+          if (!img) _this40.setState({
             img: !img
           });
         }
@@ -2859,7 +3001,7 @@ var Download = /*#__PURE__*/function (_React$Component13) {
   }, {
     key: "save",
     value: function save(e) {
-      var _this39 = this;
+      var _this41 = this;
       if (e) e.preventDefault();
       var _this$props16 = this.props,
         action = _this$props16.action,
@@ -2875,7 +3017,7 @@ var Download = /*#__PURE__*/function (_React$Component13) {
           	this.props.updateMyCat();
           }
           else*/
-          _this39.setState({
+          _this41.setState({
             img: false
           });
         } else {
@@ -2915,35 +3057,35 @@ var SongList = /*#__PURE__*/function (_React$Component14) {
   _inherits(SongList, _React$Component14);
   var _super17 = _createSuper(SongList);
   function SongList(props, context) {
-    var _this40;
+    var _this42;
     _classCallCheck(this, SongList);
-    _this40 = _super17.call(this, props);
+    _this42 = _super17.call(this, props);
     var Text = props.Text;
-    _this40.text = Text;
-    _this40.store = props.store;
-    _this40.scrollHandler = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.scrollHandler.bind(_assertThisInitialized(_this40));
-    _this40.addMoreSong = _this40.addMoreSong.bind(_assertThisInitialized(_this40));
-    _this40.shouldAddMoreSong = _this40.shouldAddMoreSong.bind(_assertThisInitialized(_this40));
-    _this40.reportSuccess = _this40.reportSuccess.bind(_assertThisInitialized(_this40));
-    _this40.reportError = _this40.reportError.bind(_assertThisInitialized(_this40));
-    _this40.songInsert = _this40.songInsert.bind(_assertThisInitialized(_this40));
-    _this40.updateMyCat = _this40.updateMyCat.bind(_assertThisInitialized(_this40));
-    _this40.download = _this40.download.bind(_assertThisInitialized(_this40));
-    _this40.action2 = _this40.action2.bind(_assertThisInitialized(_this40));
-    _this40.modif = _this40.modif.bind(_assertThisInitialized(_this40));
-    _this40.wipe = _this40.wipe.bind(_assertThisInitialized(_this40));
-    _this40.action = _this40.action.bind(_assertThisInitialized(_this40));
-    _this40.saveSequence = new _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.seq();
-    _this40.showControl = _this40.showControl.bind(_assertThisInitialized(_this40));
-    _this40.initTime = Date.now();
-    _this40.insertSong = _this40.insertSong.bind(_assertThisInitialized(_this40));
-    _this40.insertCategorie = _this40.insertCategorie.bind(_assertThisInitialized(_this40));
-    return _this40;
+    _this42.text = Text;
+    _this42.store = props.store;
+    _this42.scrollHandler = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.scrollHandler.bind(_assertThisInitialized(_this42));
+    _this42.addMoreSong = _this42.addMoreSong.bind(_assertThisInitialized(_this42));
+    _this42.shouldAddMoreSong = _this42.shouldAddMoreSong.bind(_assertThisInitialized(_this42));
+    _this42.reportSuccess = _this42.reportSuccess.bind(_assertThisInitialized(_this42));
+    _this42.reportError = _this42.reportError.bind(_assertThisInitialized(_this42));
+    _this42.songInsert = _this42.songInsert.bind(_assertThisInitialized(_this42));
+    _this42.updateMyCat = _this42.updateMyCat.bind(_assertThisInitialized(_this42));
+    _this42.download = _this42.download.bind(_assertThisInitialized(_this42));
+    _this42.action2 = _this42.action2.bind(_assertThisInitialized(_this42));
+    _this42.modif = _this42.modif.bind(_assertThisInitialized(_this42));
+    _this42.wipe = _this42.wipe.bind(_assertThisInitialized(_this42));
+    _this42.action = _this42.action.bind(_assertThisInitialized(_this42));
+    _this42.saveSequence = new _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.seq();
+    _this42.showControl = _this42.showControl.bind(_assertThisInitialized(_this42));
+    _this42.initTime = Date.now();
+    _this42.insertSong = _this42.insertSong.bind(_assertThisInitialized(_this42));
+    _this42.insertCategorie = _this42.insertCategorie.bind(_assertThisInitialized(_this42));
+    return _this42;
   }
   _createClass(SongList, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this41 = this;
+      var _this43 = this;
       var location = this.props.location;
       this.node = document.querySelector("#".concat(location, " .list"));
       if (!this.node) {
@@ -2958,7 +3100,7 @@ var SongList = /*#__PURE__*/function (_React$Component14) {
           trackedTouchs = [];
         };
         this.node.ontouchmove = function (event) {
-          _this41.scrollHandler(_this41.listDiv, event, trackedTouchs);
+          _this43.scrollHandler(_this43.listDiv, event, trackedTouchs);
         };
       }
       this.listDiv.onscroll = this.addMoreSong;
@@ -3105,8 +3247,8 @@ var SongList = /*#__PURE__*/function (_React$Component14) {
     }
   }, {
     key: "download",
-    value: function download(_ref9) {
-      var name = _ref9.name;
+    value: function download(_ref14) {
+      var name = _ref14.name;
       var currentCat = this.props.currentCat;
       return db.getSong(name, currentCat.id)();
     }
@@ -3114,7 +3256,7 @@ var SongList = /*#__PURE__*/function (_React$Component14) {
     key: "insertSong",
     value: function () {
       var _insertSong = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(name, verses, cat, index) {
-        var _this42 = this;
+        var _this44 = this;
         var tried,
           _this$props21,
           store,
@@ -3147,7 +3289,7 @@ var SongList = /*#__PURE__*/function (_React$Component14) {
             case 8:
               return _context.abrupt("return", db.insertSong(name, verses, cat)().then(function (r) {
                 if (r) {
-                  _this42.reportSuccess(name, index, verses);
+                  _this44.reportSuccess(name, index, verses);
                   return true;
                 }
                 return r;
@@ -3177,15 +3319,15 @@ var SongList = /*#__PURE__*/function (_React$Component14) {
     }
   }, {
     key: "action2",
-    value: function action2(sequence, _ref10) {
-      var _this43 = this;
-      var name = _ref10.name,
-        verses = _ref10.verses,
-        cat = _ref10.cat,
-        index = _ref10.index;
+    value: function action2(sequence, _ref15) {
+      var _this45 = this;
+      var name = _ref15.name,
+        verses = _ref15.verses,
+        cat = _ref15.cat,
+        index = _ref15.index;
       return new Promise(function (resolve, reject) {
-        var self = _this43,
-          currentCat = _this43.props.currentCat,
+        var self = _this45,
+          currentCat = _this45.props.currentCat,
           catId = currentCat.id;
         sequence.subscribe(sequence.add(function () {
           return self.insertSong(name, verses, catId, index).then(function (r) {
@@ -3224,7 +3366,7 @@ var SongList = /*#__PURE__*/function (_React$Component14) {
   }, {
     key: "wipe",
     value: function wipe(item, target, songId) {
-      var _this44 = this;
+      var _this46 = this;
       var name = item.name || item;
       var _this$props23 = this.props,
         removeSong = _this$props23.removeSong,
@@ -3241,16 +3383,16 @@ var SongList = /*#__PURE__*/function (_React$Component14) {
           if (catName == name) {
             store.dispatch(setCurrentSong(""));
           }
-          notifier.addSpeed(_this44.text.wiping.success(lang, name), undefined, undefined, undefined, _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.success);
+          notifier.addSpeed(_this46.text.wiping.success(lang, name), undefined, undefined, undefined, _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.success);
           while (parent && parent.className.indexOf('wrapper') == -1) {
             parent = parent.parentNode;
           }
           parent.style.display = "none";
         } else {
-          notifier.addSpeed(_this44.text.wiping.failed(lang, name), undefined, undefined, undefined, _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error);
+          notifier.addSpeed(_this46.text.wiping.failed(lang, name), undefined, undefined, undefined, _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error);
         }
       })["catch"](function (e) {
-        notifier.addSpeed(_this44.text.wiping.error(lang, name), undefined, undefined, undefined, _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error);
+        notifier.addSpeed(_this46.text.wiping.error(lang, name), undefined, undefined, undefined, _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error);
         console.log(e);
       });
     }
@@ -3371,36 +3513,36 @@ var Favorite = /*#__PURE__*/function (_React$Component15) {
   _inherits(Favorite, _React$Component15);
   var _super18 = _createSuper(Favorite);
   function Favorite(props, context) {
-    var _this45;
+    var _this47;
     _classCallCheck(this, Favorite);
-    _this45 = _super18.call(this, props);
+    _this47 = _super18.call(this, props);
     var state = context.store.getState();
-    _this45.store = context.store;
-    _this45.state = {
+    _this47.store = context.store;
+    _this47.state = {
       view: state.ui.show.favList,
       favorites: state.favorites
     };
-    _this45.clickHandler = _this45.clickHandler.bind(_assertThisInitialized(_this45));
-    _this45.action = _this45.action.bind(_assertThisInitialized(_this45));
-    _this45.image = state.images.favorite.start;
-    return _this45;
+    _this47.clickHandler = _this47.clickHandler.bind(_assertThisInitialized(_this47));
+    _this47.action = _this47.action.bind(_assertThisInitialized(_this47));
+    _this47.image = state.images.favorite.start;
+    return _this47;
   }
   _createClass(Favorite, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this46 = this;
+      var _this48 = this;
       var store = this.store;
       this.unsubscribe = store.subscribe(function () {
         var state = store.getState(),
           newState = {};
-        if (state.ui.show.favList != _this46.state.view) {
+        if (state.ui.show.favList != _this48.state.view) {
           newState.view = state.ui.show.favList;
         }
-        if (state.favorites != _this46.state.favorites) {
+        if (state.favorites != _this48.state.favorites) {
           newState.favorites = state.favorites;
         }
         if (Object.keys(newState).length) {
-          _this46.setState(newState);
+          _this48.setState(newState);
         }
       });
     }
@@ -3495,22 +3637,22 @@ var StreamCreation = /*#__PURE__*/function (_React$Component16) {
   _inherits(StreamCreation, _React$Component16);
   var _super19 = _createSuper(StreamCreation);
   function StreamCreation(props, context) {
-    var _this47;
+    var _this49;
     _classCallCheck(this, StreamCreation);
-    _this47 = _super19.call(this, props);
+    _this49 = _super19.call(this, props);
     var state = context.store.getState();
-    _this47.store = context.store;
-    _this47.showCreateStream = _this47.showCreateStream.bind(_assertThisInitialized(_this47));
-    _this47.stopStream = _this47.stopStream.bind(_assertThisInitialized(_this47));
-    _this47.text = context.Text;
-    _this47.images = state.images.streamCreate;
-    _this47.state = {
-      img: "img/".concat(_this47.images.start),
+    _this49.store = context.store;
+    _this49.showCreateStream = _this49.showCreateStream.bind(_assertThisInitialized(_this49));
+    _this49.stopStream = _this49.stopStream.bind(_assertThisInitialized(_this49));
+    _this49.text = context.Text;
+    _this49.images = state.images.streamCreate;
+    _this49.state = {
+      img: "img/".concat(_this49.images.start),
       isStreaming: state.isStreaming,
       songName: state.currentSong.name,
       appReachable: state.appReachable
     };
-    return _this47;
+    return _this49;
   }
   _createClass(StreamCreation, [{
     key: "componentDidUpdate",
@@ -3526,22 +3668,22 @@ var StreamCreation = /*#__PURE__*/function (_React$Component16) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this48 = this;
+      var _this50 = this;
       var store = this.store;
       this.unsubscribe = store.subscribe(function () {
         var state = store.getState(),
           newState = {};
-        if (state.isStreaming != _this48.state.isStreaming) {
+        if (state.isStreaming != _this50.state.isStreaming) {
           newState.isStreaming = state.isStreaming;
         }
-        if (state.appReachable != _this48.state.appReachable) {
+        if (state.appReachable != _this50.state.appReachable) {
           newState.appReachable = state.appReachable;
         }
-        if (state.currentSong.name != _this48.state.songName) {
+        if (state.currentSong.name != _this50.state.songName) {
           newState.songName = state.currentSong.name;
         }
         if (Object.keys(newState).length) {
-          _this48.setState(newState);
+          _this50.setState(newState);
         }
       });
       directAccess["streamCreation"] = this;
@@ -3557,7 +3699,7 @@ var StreamCreation = /*#__PURE__*/function (_React$Component16) {
   }, {
     key: "showCreateStream",
     value: function showCreateStream(event) {
-      var _this49 = this;
+      var _this51 = this;
       event.preventDefault();
       event.stopPropagation();
       var songName = this.state.songName,
@@ -3572,39 +3714,46 @@ var StreamCreation = /*#__PURE__*/function (_React$Component16) {
       this.stopStream();
       var c = 0;
       this.counter = setInterval(function () {
-        notifier2.addSpeed(_this49.text.Stream.stopping(_this49.props.lang, S.getName(), ".".repeat(c % 6)));
+        notifier2.addSpeed(_this51.text.Stream.stopping(_this51.props.lang, S.getName(), ".".repeat(c % 6)));
         c++;
       }, 100);
     }
   }, {
     key: "stopStream",
     value: function stopStream() {
-      var _this50 = this;
+      var _this52 = this;
       var streamName = S.getName(),
-        data = _defineProperty({}, stF.name, streamName);
+        data = _defineProperty({}, stF.name, streamName),
+        lang = this.props.lang;
       (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)({
         url: "stream?action=delete",
         method: 'POST',
         data: JSON.stringify(data),
-        s: function s(response) {
-          clearInterval(_this50.counter);
-          notifier2.addSpeed(_this50.text.Stream.stopped(_this50.props.lang, streamName));
+        type: 'application/json',
+        s: function s(_ref16) {
+          var status = _ref16.status,
+            body = _ref16.body,
+            xml = _ref16.xml;
+          if (xml.ok) {
+            clearInterval(_this52.counter);
+            notifier2.addSpeed(_this52.text.Stream.stopped(lang, streamName));
+            _this52.setState({
+              img: "img/".concat(_this52.images.start)
+            });
+          } else {
+            clearInterval(_this52.counter);
+            notifier2.addSpeed(_this52.text.Stream.stopError(lang));
+          }
           _stopStream(streamName);
-          _this50.setState({
-            img: "img/".concat(_this50.images.start)
-          });
         },
         e: function e(_e) {
-          clearInterval(_this50.counter);
-          notifier2.addSpeed(_this50.text.stopError(_this50.props.lang, streamName));
+          clearInterval(_this52.counter);
+          notifier2.addSpeed(_this52.text.Stream.stopError(lang, streamName));
           console.log("Error while trying to stop the stream ".concat(streamName), _e);
           _stopStream(streamName);
-          _this50.setState({
-            img: "img/".concat(_this50.images.start)
+          _this52.setState({
+            img: "img/".concat(_this52.images.start)
           });
-        },
-        setter: function setter(xml) {
-          xml.setRequestHeader('content-type', 'application/json');
         }
       });
     }
@@ -3630,8 +3779,8 @@ var StreamCreation = /*#__PURE__*/function (_React$Component16) {
   return StreamCreation;
 }(react__WEBPACK_IMPORTED_MODULE_0__.Component);
 StreamCreation.contextType = (_utilis_context_cjs__WEBPACK_IMPORTED_MODULE_4___default());
-var Search = function Search(_ref11) {
-  var view = _ref11.view;
+var Search = function Search(_ref17) {
+  var view = _ref17.view;
   var hide = view ? '' : 'whoosh';
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
     className: "search ".concat(hide)
@@ -3647,13 +3796,13 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
   _inherits(StreamList, _React$Component17);
   var _super20 = _createSuper(StreamList);
   function StreamList(props, context) {
-    var _this51;
+    var _this53;
     _classCallCheck(this, StreamList);
-    _this51 = _super20.call(this, props);
+    _this53 = _super20.call(this, props);
     var state = context.store.getState(),
       Text = context.Text;
-    _this51.store = context.store;
-    _this51.state = {
+    _this53.store = context.store;
+    _this53.state = {
       list: [],
       showSearch: false,
       searchResult: [],
@@ -3662,47 +3811,47 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
       view: state.ui.show.streamList,
       newCatId: state.Categories.length
     };
-    _this51.updateStream = _this51.updateStream.bind(_assertThisInitialized(_this51));
-    _this51.updateCurrentStreamInfo = _this51.updateCurrentStreamInfo.bind(_assertThisInitialized(_this51));
-    _this51.downloadSong = _this51.downloadSong.bind(_assertThisInitialized(_this51));
-    _this51.registerToStream = _this51.registerToStream.bind(_assertThisInitialized(_this51));
-    _this51.restartUpdateStream = _this51.restartUpdateStream.bind(_assertThisInitialized(_this51));
-    _this51.downloadSong.inFetch = {};
-    _this51.listText = Text.streamList;
-    _this51.streamText = Text.Stream;
-    _this51.timer = {
+    _this53.updateStream = _this53.updateStream.bind(_assertThisInitialized(_this53));
+    _this53.updateCurrentStreamInfo = _this53.updateCurrentStreamInfo.bind(_assertThisInitialized(_this53));
+    _this53.downloadSong = _this53.downloadSong.bind(_assertThisInitialized(_this53));
+    _this53.registerToStream = _this53.registerToStream.bind(_assertThisInitialized(_this53));
+    _this53.restartUpdateStream = _this53.restartUpdateStream.bind(_assertThisInitialized(_this53));
+    _this53.downloadSong.inFetch = {};
+    _this53.listText = Text.streamList;
+    _this53.streamText = Text.Stream;
+    _this53.timer = {
       normal: 5000,
       error: 10000
     };
-    _this51.lastTimestamp;
-    _this51.hasOverflowed = _this51.hasOverflowed.bind(_assertThisInitialized(_this51));
-    _this51.handleSearchInput = _this51.handleSearchInput.bind(_assertThisInitialized(_this51));
-    _this51.scrollHandler = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.scrollHandler;
-    _this51.createDownloadLink = _this51.createDownloadLink.bind(_assertThisInitialized(_this51));
-    _this51.changeView = _this51.changeView.bind(_assertThisInitialized(_this51));
-    _this51.image = state.images.streamList;
-    return _this51;
+    _this53.lastTimestamp;
+    _this53.hasOverflowed = _this53.hasOverflowed.bind(_assertThisInitialized(_this53));
+    _this53.handleSearchInput = _this53.handleSearchInput.bind(_assertThisInitialized(_this53));
+    _this53.scrollHandler = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.scrollHandler;
+    _this53.createDownloadLink = _this53.createDownloadLink.bind(_assertThisInitialized(_this53));
+    _this53.changeView = _this53.changeView.bind(_assertThisInitialized(_this53));
+    _this53.image = state.images.streamList;
+    return _this53;
   }
   _createClass(StreamList, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this52 = this;
+      var _this54 = this;
       var appReachable = this.state.appReachable,
         store = this.store;
       this.unsubscribe = store.subscribe(function () {
         var state = store.getState(),
           newState = {};
-        if (state.appReachable != _this52.state.appReachable) {
+        if (state.appReachable != _this54.state.appReachable) {
           newState.appReachable = state.appReachable;
         }
-        if (state.ui.show.streamList != _this52.state.view) {
+        if (state.ui.show.streamList != _this54.state.view) {
           newState.view = state.ui.show.streamList;
         }
-        if (state.Categories.length != _this52.state.newCatId) {
+        if (state.Categories.length != _this54.state.newCatId) {
           newState.newCatId = state.Categories.length;
         }
         if (Object.keys(newState).length) {
-          _this52.setState(newState);
+          _this54.setState(newState);
         }
       });
       this.listDiv = document.querySelector(".streamList .list");
@@ -3710,7 +3859,7 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
       this.searchInput.oninput = this.handleSearchInput;
       var trackedTouchs = [];
       this.listDiv.ontouchmove = function (event) {
-        _this52.scrollHandler(_this52.listDiv, event, trackedTouchs);
+        _this54.scrollHandler(_this54.listDiv, event, trackedTouchs);
       };
       this.listDiv.ontouchend = function (event) {
         trackedTouchs = [];
@@ -3797,7 +3946,7 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
   }, {
     key: "updateStream",
     value: function updateStream(t) {
-      var _this53 = this;
+      var _this55 = this;
       var text = this.text,
         _this$props26 = this.props,
         lang = _this$props26.lang,
@@ -3807,82 +3956,93 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
         lastTime = t || 0;
       (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)({
         url: "/stream/?action=getAll&".concat(filters.lastTime, "=").concat(lastTime),
-        s: function s(_ref12) {
-          var action = _ref12.action,
-            streams = _ref12.streams,
-            timestamp = _ref12.timestamp,
-            name = _ref12.name;
-          var myStream = S.getName();
-          if (!timestamp && t) timestamp = t;
-          switch (action) {
-            case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.UPDATE:
-              if (myStream) {
-                _this53.setState({
-                  list: streams.filter(function (stream) {
-                    return stream != myStream;
-                  })
+        s: function s(_ref18) {
+          var body = _ref18.body,
+            status = _ref18.status,
+            xml = _ref18.xml;
+          if (xml.ok) {
+            var action = body.action,
+              streams = body.streams,
+              timestamp = body.timestamp,
+              name = body.name,
+              myStream = S.getName();
+            if (!timestamp && t) timestamp = t;
+            switch (action) {
+              case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.UPDATE:
+                if (myStream) {
+                  _this55.setState({
+                    list: streams.filter(function (stream) {
+                      return stream != myStream;
+                    })
+                  });
+                } else {
+                  _this55.setState({
+                    list: streams
+                  });
+                }
+                _this55.restartUpdateStream(timestamp);
+                break;
+              case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.ADD:
+                if (!myStream || myStream != name) {
+                  _this55.setState({
+                    list: [].concat(_toConsumableArray(_this55.state.list), [name])
+                  });
+                }
+                _this55.restartUpdateStream(timestamp);
+                break;
+              case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.DELETE:
+                var isNotIn = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.is.Array(name) ? function (x) {
+                    return name.indexOf(x) == -1;
+                  } : function (x) {
+                    return x != name;
+                  },
+                  currentStreamName = S.getName(),
+                  currentRegistration = _this55.subscribe.registration;
+                var list = _this55.state.list.filter(isNotIn);
+                if (currentStreamName && !isNotIn(currentStreamName)) {
+                  _stopStream(S.getName());
+                }
+                if (currentRegistration && !isNotIn(currentRegistration)) {
+                  notifier2.addSpeed(_this55.streamText.subscription.end(_this55.props.lang, currentRegistration));
+                  delete _this55.subscribe.registration;
+                  store.dispatch(subscribeToStream(false));
+                  _this55.updateCurrentStreamInfo();
+                  (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.abortSubscription)(_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher);
+                }
+                _this55.setState({
+                  list: list
                 });
-              } else {
-                _this53.setState({
-                  list: streams
-                });
-              }
-              _this53.restartUpdateStream(timestamp);
-              break;
-            case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.ADD:
-              if (!myStream || myStream != name) {
-                _this53.setState({
-                  list: [].concat(_toConsumableArray(_this53.state.list), [name])
-                });
-              }
-              _this53.restartUpdateStream(timestamp);
-              break;
-            case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.DELETE:
-              var isNotIn = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.is.Array(name) ? function (x) {
-                  return name.indexOf(x) == -1;
-                } : function (x) {
-                  return x != name;
-                },
-                currentStreamName = S.getName(),
-                currentRegistration = _this53.subscribe.registration;
-              var list = _this53.state.list.filter(isNotIn);
-              if (currentStreamName && !isNotIn(currentStreamName)) {
-                _stopStream(S.getName());
-              }
-              if (currentRegistration && !isNotIn(currentRegistration)) {
-                notifier2.addSpeed(_this53.streamText.subscription.end(_this53.props.lang, currentRegistration));
-                delete _this53.subscribe.registration;
-                store.dispatch(subscribeToStream(false));
-                _this53.updateCurrentStreamInfo();
-                (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.abortSubscription)(_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher);
-              }
-              _this53.setState({
-                list: list
-              });
-              _this53.restartUpdateStream(timestamp);
-              break;
-            case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.NOTHING:
-              _this53.restartUpdateStream(timestamp);
-              break;
-            default:
-              console.log("Incomprehensible action", action, streams);
-              _this53.restartUpdateStream(timestamp);
+                _this55.restartUpdateStream(timestamp);
+                break;
+              case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.NOTHING:
+                _this55.restartUpdateStream(timestamp);
+                break;
+              default:
+                console.log("Incomprehensible action", action, streams);
+                _this55.restartUpdateStream(timestamp);
+            }
+          } else {
+            console.og("Error updating the stream");
           }
         },
-        e: function e(_e2, xml) {
-          store.dispatch(setAppUnreachable());
-          notifier2.addSpeed(_this53.listText.updateStreamError(lang));
-          console.log("Error while retriving the stream", _e2);
+        e: function e(_ref19) {
+          var error = _ref19.error,
+            xml = _ref19.xml;
+          if (xml.networkDown) {
+            store.dispatch(setAppUnreachable());
+          }
+          notifier2.addSpeed(_this55.listText.updateStreamError(lang));
+          console.log("Error while retriving the stream", error);
         }
       });
     }
   }, {
     key: "createDownloadLink",
     value: function createDownloadLink(catName, songName, streamName) {
-      var _this54 = this;
+      var _this56 = this;
       var a = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("a", {
         onClick: function onClick() {
-          return _this54.downloadSong(catName, songName, streamName);
+          return _this56.downloadSong(catName, songName, streamName);
         }
       }, "Download The Song");
       return a;
@@ -3890,7 +4050,7 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
   }, {
     key: "downloadSong",
     value: function downloadSong(catName, songName, streamName) {
-      var _this55 = this;
+      var _this57 = this;
       var downloadSong = this.downloadSong;
       var url = "stream/song?action=download&".concat(stF.name, "=").concat(streamName);
       if (downloadSong.inFetch[url]) return;
@@ -3907,48 +4067,56 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
       notifier2.addSpeed(downloadText.start(lang, songName));
       (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)({
         url: url,
-        s: function s(response) {
-          var action = response.action,
-            songName = response.songName,
-            catName = response.catName,
-            verses = response.verses;
-          delete downloadSong.inFetch[url];
-          switch (action) {
-            case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.DELETE:
-              notifier2.addSpeed(_this55.listText.songDeleted(lang, songName));
-              break;
-            case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.ADD:
-              var _newCatId = null;
-              if (!fastAccess[catName]) {
-                _newCatId = Date.now();
-                store.dispatch(addCategorie(catName, _newCatId, 'online'));
-                notifier2.addSpeed(_this55.listText.categorieInserted(lang, catName));
-              } else {
-                _newCatId = fastAccess[catName].id;
-              }
-              store.dispatch(addSong(0, songName, _newCatId, verses, 'online'));
-              notifier2.addSpeed(_this55.listText.songInserted(lang, catName, songName));
-              if (_this55.streamCatName.toLowerCase() == catName.toLowerCase() && _this55.streamSongName.toLowerCase() == songName.toLowerCase()) {
-                store.dispatch(setCurrentCat(catName, _newCatId, 'online'));
-                var songId = fastAccess[catName]['online'][songName.toUpperCase()];
-                store.dispatch(setCurrentSong(songId, _newCatId, 'online', _this55.streamPosition));
-              }
-              break;
-            case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.STREAMDELETED:
-              notifier2.addSpeed(_this55.streamText.stopped(lang, streamName));
-              break;
-            case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.CHANGED_SONG:
-              notifier2.addSpeed(downloadText.error(lang, songName));
-              break;
-            default:
-              console.error("Inregognized response from downloadSong fetcher", action, response);
+        s: function s(_ref20) {
+          var xml = _ref20.xml,
+            body = _ref20.body;
+          if (xml.ok) {
+            var action = body.action,
+              _songName = body.songName,
+              _catName2 = body.catName,
+              verses = body.verses;
+            delete downloadSong.inFetch[url];
+            switch (action) {
+              case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.DELETE:
+                notifier2.addSpeed(_this57.listText.songDeleted(lang, _songName));
+                break;
+              case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.ADD:
+                var _newCatId = null;
+                if (!fastAccess[_catName2]) {
+                  _newCatId = Date.now();
+                  store.dispatch(addCategorie(_catName2, _newCatId, 'online'));
+                  notifier2.addSpeed(_this57.listText.categorieInserted(lang, _catName2));
+                } else {
+                  _newCatId = fastAccess[_catName2].id;
+                }
+                store.dispatch(addSong(0, _songName, _newCatId, verses, 'online'));
+                notifier2.addSpeed(_this57.listText.songInserted(lang, _catName2, _songName));
+                if (_this57.streamCatName.toLowerCase() == _catName2.toLowerCase() && _this57.streamSongName.toLowerCase() == _songName.toLowerCase()) {
+                  store.dispatch(setCurrentCat(_catName2, _newCatId, 'online'));
+                  var songId = fastAccess[_catName2]['online'][_songName.toUpperCase()];
+                  store.dispatch(setCurrentSong(songId, _newCatId, 'online', _this57.streamPosition));
+                }
+                break;
+              case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.STREAMDELETED:
+                notifier2.addSpeed(_this57.streamText.stopped(lang, streamName));
+                break;
+              case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.CHANGED_SONG:
+                notifier2.addSpeed(downloadText.error(lang, _songName));
+                break;
+              default:
+                console.error("Inregognized response from downloadSong fetcher", action, body);
+            }
+          } else {
+            notifier2.addSpeed(text.downloadError(lang, songName));
+            delete downloadSong.inFetch[url];
           }
         },
-        e: function e(_ref13) {
-          var status = _ref13.status,
-            response = _ref13.response;
+        e: function e(_ref21) {
+          var xml = _ref21.xml,
+            error = _ref21.error;
           delete downloadSong.inFetch[url];
           notifier2.addSpeed(text.downloadError(lang, songName));
+          console.error(error);
         }
       });
     }
@@ -3968,7 +4136,7 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
   }, {
     key: "subscribe",
     value: function subscribe(streamName, update) {
-      var _this56 = this;
+      var _this58 = this;
       var past = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       var _this$props28 = this.props,
         subscribeToStream = _this$props28.subscribeToStream,
@@ -3979,91 +4147,102 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
         store = this.store;
       (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)({
         url: url,
+        s: function s(_ref22) {
+          var _this58$subscribe;
+          var xml = _ref22.xml,
+            body = _ref22.body;
+          if (xml.ok) {
+            var response = body;
+            if (response) {
+              try {
+                var catName = response[stF.catName] || past[stF.catName],
+                  songName = response[stF.songName] || past[stF.songName],
+                  position = response[stF.index],
+                  songNameL = songName && songName.toUpperCase(),
+                  subscribeMethod = _this58.subscribe,
+                  registration = subscribeMethod.registration,
+                  fastAccessCatName = null,
+                  fastAccessCatNameOnline = null,
+                  fastAccessCatNameOffline = null,
+                  catId = null,
+                  songNotInOnlineCat = undefined,
+                  songNotInOfflineCat = undefined,
+                  songId = null,
+                  textStream = _this58.streamText,
+                  textSubscription = textStream.subscription,
+                  subscriptionSuccess = textSubscription.success,
+                  subscriptionError = textSubscription.error,
+                  dontHaveSong = textSubscription.dontHaveSong,
+                  endSubscription = textSubscription.end;
+                if (catName && songName) {
+                  fastAccessCatName = fastAccess[catName], catId = fastAccessCatName && fastAccessCatName.id;
+                  fastAccessCatNameOnline = fastAccessCatName && fastAccessCatName.online[songNameL], fastAccessCatNameOffline = fastAccessCatName && fastAccessCatName.offline[songNameL], songNotInOnlineCat = fastAccessCatNameOnline === false || fastAccessCatNameOnline === undefined, songNotInOfflineCat = fastAccessCatNameOffline === false || fastAccessCatNameOffline === undefined;
+                  if (!songNotInOnlineCat || !songNotInOfflineCat) {
+                    if (songNotInOnlineCat) songId = fastAccessCatNameOffline;else songId = fastAccessCatNameOnline;
+                  }
+                }
+                if (!registration) {
+                  subscribeMethod.registration = streamName;
+                } else if (registration != streamName) {
+                  subscribeMethod.registration = streamName;
+                }
+                switch (response.action) {
+                  case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.UPDATE:
+                    if (!update) {
+                      notifier2.addSpeed(subscriptionSuccess(lang, streamName));
+                    }
+                    if (!songName || !catName) {} else if (!fastAccessCatName || songNotInOnlineCat && songNotInOfflineCat) {
+                      _this58.downloadSong(catName, songName, streamName);
+                    } else {
+                      var location = songNotInOfflineCat ? 'online' : 'offline';
+                      store.dispatch(setCurrentCat(catName, fastAccessCatName.id, location));
+                      store.dispatch(setCurrentSong(songId, catId, location, parseInt(position, 10)));
+                    }
+                    _this58.updateCurrentStreamInfo(catName, songName, position);
+                    _this58.subscribe(streamName, true, (_this58$subscribe = {}, _defineProperty(_this58$subscribe, stF.songName, songName), _defineProperty(_this58$subscribe, stF.catName, catName), _this58$subscribe));
+                    break;
+                  case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.UNSUBSCRIBE:
+                    notifier2.addSpeed(endSubscription(lang, streamName));
+                    delete subscribeMethod.registration;
+                    store.dispatch(subscribeToStream(false));
+                    _this58.updateCurrentStreamInfo();
+                    break;
+                  case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.NOTHING:
+                    notifier2.addSpeed(textSubscription.nothing(_this58.props.lang, streamName));
+                    store.dispatch(subscribeToStream(false));
+                    break;
+                  default:
+                    notifier2.addSpeed(subscriptionError(lang, streamName));
+                    console.log("fetcher Odd response", response);
+                    store.dispatch(subscribeToStream(false));
+                    _this58.updateCurrentStreamInfo();
+                }
+              } catch (e) {
+                console.log(e);
+              }
+            }
+          } else {
+            notifier2.addSpeed(_this58.text.Stream.subscription.error(_this58.props.lang, streamName));
+            store.dispatch(subscribeToStream(false));
+          }
+        },
+        e: function e(_ref23) {
+          var xml = _ref23.xml,
+            body = _ref23.body,
+            error = _ref23.error;
+          notifier2.addSpeed(_this58.text.Stream.subscription.error(_this58.props.lang, streamName));
+          store.dispatch(subscribeToStream(false));
+          if (body) {
+            console.log("Error while trying to subscribe to stream", streamName, status, body);
+          }
+        },
         setter: function setter(xml) {
           _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher.subscription = {
             abort: function abort() {
               xml.abort();
-              delete _this56.subscribe.registration;
+              delete _this58.subscribe.registration;
             }
           };
-        },
-        s: function s(response) {
-          var _this56$subscribe;
-          if (response) {
-            try {
-              var catName = response[stF.catName] || past[stF.catName],
-                songName = response[stF.songName] || past[stF.songName],
-                position = response[stF.index],
-                songNameL = songName && songName.toUpperCase(),
-                subscribeMethod = _this56.subscribe,
-                registration = subscribeMethod.registration,
-                fastAccessCatName = null,
-                fastAccessCatNameOnline = null,
-                fastAccessCatNameOffline = null,
-                catId = null,
-                songNotInOnlineCat = undefined,
-                songNotInOfflineCat = undefined,
-                songId = null,
-                textStream = _this56.streamText,
-                textSubscription = textStream.subscription,
-                subscriptionSuccess = textSubscription.success,
-                subscriptionError = textSubscription.error,
-                dontHaveSong = textSubscription.dontHaveSong,
-                endSubscription = textSubscription.end;
-              if (catName && songName) {
-                fastAccessCatName = fastAccess[catName], catId = fastAccessCatName && fastAccessCatName.id;
-                fastAccessCatNameOnline = fastAccessCatName && fastAccessCatName.online[songNameL], fastAccessCatNameOffline = fastAccessCatName && fastAccessCatName.offline[songNameL], songNotInOnlineCat = fastAccessCatNameOnline === false || fastAccessCatNameOnline === undefined, songNotInOfflineCat = fastAccessCatNameOffline === false || fastAccessCatNameOffline === undefined;
-                if (!songNotInOnlineCat || !songNotInOfflineCat) {
-                  if (songNotInOnlineCat) songId = fastAccessCatNameOffline;else songId = fastAccessCatNameOnline;
-                }
-              }
-              if (!registration) {
-                subscribeMethod.registration = streamName;
-              } else if (registration != streamName) {
-                subscribeMethod.registration = streamName;
-              }
-              switch (response.action) {
-                case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.UPDATE:
-                  if (!update) {
-                    notifier2.addSpeed(subscriptionSuccess(lang, streamName));
-                  }
-                  if (!songName || !catName) {} else if (!fastAccessCatName || songNotInOnlineCat && songNotInOfflineCat) {
-                    _this56.downloadSong(catName, songName, streamName);
-                  } else {
-                    var location = songNotInOfflineCat ? 'online' : 'offline';
-                    store.dispatch(setCurrentCat(catName, fastAccessCatName.id, location));
-                    store.dispatch(setCurrentSong(songId, catId, location, parseInt(position, 10)));
-                  }
-                  _this56.updateCurrentStreamInfo(catName, songName, position);
-                  _this56.subscribe(streamName, true, (_this56$subscribe = {}, _defineProperty(_this56$subscribe, stF.songName, songName), _defineProperty(_this56$subscribe, stF.catName, catName), _this56$subscribe));
-                  break;
-                case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.UNSUBSCRIBE:
-                  notifier2.addSpeed(endSubscription(lang, streamName));
-                  delete subscribeMethod.registration;
-                  store.dispatch(subscribeToStream(false));
-                  _this56.updateCurrentStreamInfo();
-                  break;
-                case _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.SUB.NOTHING:
-                  notifier2.addSpeed(textSubscription.nothing(_this56.props.lang, streamName));
-                  store.dispatch(subscribeToStream(false));
-                  break;
-                default:
-                  notifier2.addSpeed(subscriptionError(lang, streamName));
-                  console.log("fetcher Odd response", response);
-                  store.dispatch(subscribeToStream(false));
-                  _this56.updateCurrentStreamInfo();
-              }
-            } catch (e) {
-              console.log(e);
-            }
-          }
-        },
-        e: function e(_ref14) {
-          var status = _ref14.status,
-            response = _ref14.response;
-          notifier2.addSpeed(_this56.text.Stream.subscription.error(_this56.props.lang, streamName));
-          store.dispatch(subscribeToStream(false));
-          console.log("Error while trying to subscribe to stream", streamName, status, response);
         }
       });
     }
@@ -4089,7 +4268,7 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
   }, {
     key: "render",
     value: function render() {
-      var _this57 = this;
+      var _this59 = this;
       var _this$state21 = this.state,
         view = _this$state21.view,
         appReachable = _this$state21.appReachable,
@@ -4131,7 +4310,7 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
           className: "il"
         }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("span", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("a", {
           onClick: function onClick() {
-            return _this57.registerToStream(streamName);
+            return _this59.registerToStream(streamName);
           }
         }, streamName)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
           src: "img/".concat(open)
@@ -4151,19 +4330,19 @@ var Content = /*#__PURE__*/function (_React$Component18) {
   _inherits(Content, _React$Component18);
   var _super21 = _createSuper(Content);
   function Content(props, context) {
-    var _this58;
+    var _this60;
     _classCallCheck(this, Content);
-    _this58 = _super21.call(this, props);
+    _this60 = _super21.call(this, props);
     var state = context.store.getState(),
       Text = context.Text,
       currentCat = state.currentCat,
       currentSong = state.currentSong,
       isFavorite = currentCat.name && state.favorites[currentCat.name] && state.favorites[currentCat.name][currentSong.name] && true || false;
-    _this58.store = context.store;
-    _this58.Text = Text.Favorite;
-    _this58.storageHandler = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.storageHandler)();
-    _this58.scrollHandler = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.scrollHandler.bind(_assertThisInitialized(_this58));
-    _this58.state = _defineProperty({
+    _this60.store = context.store;
+    _this60.Text = Text.Favorite;
+    _this60.storageHandler = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.storageHandler)();
+    _this60.scrollHandler = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.scrollHandler.bind(_assertThisInitialized(_this60));
+    _this60.state = _defineProperty({
       verses: currentSong.verses,
       currentCatName: "",
       index: 0,
@@ -4172,20 +4351,20 @@ var Content = /*#__PURE__*/function (_React$Component18) {
       song: currentSong,
       isFavorite: isFavorite
     }, "currentSongName", currentSong.name);
-    _this58.goToVerse = _this58.goToVerse.bind(_assertThisInitialized(_this58));
-    _this58.clickHandler = _this58.clickHandler.bind(_assertThisInitialized(_this58));
-    _this58.propIndex;
-    _this58.images = state.images;
-    return _this58;
+    _this60.goToVerse = _this60.goToVerse.bind(_assertThisInitialized(_this60));
+    _this60.clickHandler = _this60.clickHandler.bind(_assertThisInitialized(_this60));
+    _this60.propIndex;
+    _this60.images = state.images;
+    return _this60;
   }
   _createClass(Content, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this59 = this;
+      var _this61 = this;
       var store = this.store;
       this.unsubscribe = store.subscribe(function () {
         var cState = store.getState(),
-          state = _this59.state,
+          state = _this61.state,
           currentCat = cState.currentCat,
           currentSong = cState.currentSong,
           isFavorite = currentCat.name && cState.favorites[currentCat.name] && cState.favorites[currentCat.name][currentSong.name] && true || false,
@@ -4214,7 +4393,7 @@ var Content = /*#__PURE__*/function (_React$Component18) {
           newState.index = cState.ui.navigation.verseIndex;
         }
         if (Object.keys(newState).length) {
-          _this59.setState(newState);
+          _this61.setState(newState);
         }
       });
       this.listDiv = document.getElementById("content");
@@ -4230,7 +4409,7 @@ var Content = /*#__PURE__*/function (_React$Component18) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate(prevProps) {
-      var _this60 = this;
+      var _this62 = this;
       (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.invoqueAfterMount)('content');
       var listDiv = this.listDiv;
       var listHeight = listDiv.getBoundingClientRect().height;
@@ -4238,7 +4417,7 @@ var Content = /*#__PURE__*/function (_React$Component18) {
       if (listHeight < papaHeight && !listDiv.ontouchmove) {
         var trackedTouchs = [];
         listDiv.ontouchmove = function (event) {
-          _this60.scrollHandler(listDiv, event, trackedTouchs);
+          _this62.scrollHandler(listDiv, event, trackedTouchs);
         };
       } else if (listHeight > papaHeight && listDiv.ontouchmove) {
         delete listDiv.ontouchmove;
@@ -4366,12 +4545,12 @@ var ArrowNav = /*#__PURE__*/function (_React$Component19) {
   _inherits(ArrowNav, _React$Component19);
   var _super22 = _createSuper(ArrowNav);
   function ArrowNav(props) {
-    var _this61;
+    var _this63;
     _classCallCheck(this, ArrowNav);
-    _this61 = _super22.call(this, props);
-    _this61.backArrowHandler = _this61.backArrowHandler.bind(_assertThisInitialized(_this61));
-    _this61.nextArrowHandler = _this61.nextArrowHandler.bind(_assertThisInitialized(_this61));
-    return _this61;
+    _this63 = _super22.call(this, props);
+    _this63.backArrowHandler = _this63.backArrowHandler.bind(_assertThisInitialized(_this63));
+    _this63.nextArrowHandler = _this63.nextArrowHandler.bind(_assertThisInitialized(_this63));
+    return _this63;
   }
   _createClass(ArrowNav, [{
     key: "shouldComponentUpdate",
@@ -4449,12 +4628,12 @@ var ArrowNav = /*#__PURE__*/function (_React$Component19) {
   }]);
   return ArrowNav;
 }(react__WEBPACK_IMPORTED_MODULE_0__.Component);
-var NavHelper = function NavHelper(_ref15) {
-  var length = _ref15.length,
-    currentIndex = _ref15.currentIndex,
-    goToVerse = _ref15.goToVerse,
-    catName = _ref15.catName,
-    songName = _ref15.songName;
+var NavHelper = function NavHelper(_ref24) {
+  var length = _ref24.length,
+    currentIndex = _ref24.currentIndex,
+    goToVerse = _ref24.goToVerse,
+    catName = _ref24.catName,
+    songName = _ref24.songName;
   function clickHandler(event, i) {
     event.preventDefault();
     event.stopPropagation();
@@ -4480,23 +4659,23 @@ var PopUp = /*#__PURE__*/function (_React$Component20) {
   _inherits(PopUp, _React$Component20);
   var _super23 = _createSuper(PopUp);
   function PopUp(props, context) {
-    var _this62;
+    var _this64;
     _classCallCheck(this, PopUp);
-    _this62 = _super23.call(this, props);
-    _this62.store = context.store;
-    _this62.adjustHeight = _this62.adjustHeight.bind(_assertThisInitialized(_this62));
-    _this62.getDimensions = _this62.getDimensions.bind(_assertThisInitialized(_this62));
-    _this62.isInTheMiddle = _this62.isInTheMiddle.bind(_assertThisInitialized(_this62));
-    _this62.putInTheMiddle = _this62.putInTheMiddle.bind(_assertThisInitialized(_this62));
-    _this62.state = {
+    _this64 = _super23.call(this, props);
+    _this64.store = context.store;
+    _this64.adjustHeight = _this64.adjustHeight.bind(_assertThisInitialized(_this64));
+    _this64.getDimensions = _this64.getDimensions.bind(_assertThisInitialized(_this64));
+    _this64.isInTheMiddle = _this64.isInTheMiddle.bind(_assertThisInitialized(_this64));
+    _this64.putInTheMiddle = _this64.putInTheMiddle.bind(_assertThisInitialized(_this64));
+    _this64.state = {
       view: false
     };
-    return _this62;
+    return _this64;
   }
   _createClass(PopUp, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this63 = this;
+      var _this65 = this;
       var store = this.store;
       this.wHeight = window.innerHeight;
       this.node = document.querySelector(".popUp");
@@ -4512,21 +4691,21 @@ var PopUp = /*#__PURE__*/function (_React$Component20) {
           createStreamView = _state$ui$show.createStreamDiv,
           newState = {};
         if (addCatView || addSongView || createStreamView) {
-          if (!_this63.state.view) {
-            _this63.adjustHeight();
+          if (!_this65.state.view) {
+            _this65.adjustHeight();
             newState.view = true;
           }
-        } else if (_this63.state.view) {
+        } else if (_this65.state.view) {
           newState.view = false;
         }
         if (Object.keys(newState).length) {
-          _this63.setState(newState);
+          _this65.setState(newState);
         }
       });
       window.onresize = function () {
-        _this63.height = _this63.node.getBoundingClientRect().height;
-        if (window.innerHeight != _this63.wHeight) _this63.wHeight = window.innerHeight;
-        _this63.adjustHeight();
+        _this65.height = _this65.node.getBoundingClientRect().height;
+        if (window.innerHeight != _this65.wHeight) _this65.wHeight = window.innerHeight;
+        _this65.adjustHeight();
       };
     }
   }, {
@@ -4612,11 +4791,11 @@ var SetupPopUp = /*#__PURE__*/function (_React$Component21) {
   _inherits(SetupPopUp, _React$Component21);
   var _super24 = _createSuper(SetupPopUp);
   function SetupPopUp(props) {
-    var _this64;
+    var _this66;
     _classCallCheck(this, SetupPopUp);
-    _this64 = _super24.call(this, props);
-    _this64.popUpVisible = false;
-    return _this64;
+    _this66 = _super24.call(this, props);
+    _this66.popUpVisible = false;
+    return _this66;
   }
   _createClass(SetupPopUp, [{
     key: "componentDidUpdate",
@@ -4646,16 +4825,16 @@ var Settings = /*#__PURE__*/function (_React$PureComponent4) {
   _inherits(Settings, _React$PureComponent4);
   var _super25 = _createSuper(Settings);
   function Settings(props, context) {
-    var _this65;
+    var _this67;
     _classCallCheck(this, Settings);
-    _this65 = _super25.call(this, props);
+    _this67 = _super25.call(this, props);
     var state = context.store.getState();
-    _this65.store = context.store;
-    _this65.state = {
+    _this67.store = context.store;
+    _this67.state = {
       view: state.ui.show.settingList
     };
-    _this65.changeView = _this65.changeView.bind(_assertThisInitialized(_this65));
-    return _this65;
+    _this67.changeView = _this67.changeView.bind(_assertThisInitialized(_this67));
+    return _this67;
   }
   _createClass(Settings, [{
     key: "componentDidUpdate",
@@ -4665,12 +4844,12 @@ var Settings = /*#__PURE__*/function (_React$PureComponent4) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this66 = this;
+      var _this68 = this;
       var store = this.store;
       this.unsubscribe = store.subscribe(function () {
         var state = store.getState();
-        if (state.ui.show.settingList != _this66.state.view) {
-          _this66.setState({
+        if (state.ui.show.settingList != _this68.state.view) {
+          _this68.setState({
             view: state.ui.show.settingList
           });
         }
@@ -4719,30 +4898,30 @@ var DayMode = /*#__PURE__*/function (_React$PureComponent5) {
   _inherits(DayMode, _React$PureComponent5);
   var _super26 = _createSuper(DayMode);
   function DayMode(props, context) {
-    var _this67;
+    var _this69;
     _classCallCheck(this, DayMode);
-    _this67 = _super26.call(this, props);
+    _this69 = _super26.call(this, props);
     var store = context.store,
       state = store.getState();
-    _this67.store = store;
-    _this67.state = {
+    _this69.store = store;
+    _this69.state = {
       night: state.ui.nightMode
     };
-    _this67.changeMode = _this67.changeMode.bind(_assertThisInitialized(_this67));
-    _this67.initTime = Date.now();
-    return _this67;
+    _this69.changeMode = _this69.changeMode.bind(_assertThisInitialized(_this69));
+    _this69.initTime = Date.now();
+    return _this69;
   }
   _createClass(DayMode, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this68 = this;
+      var _this70 = this;
       var night = this.state.night,
         react_container = document.getElementById("react-container"),
         store = this.store;
       this.unsubscribe = store.subscribe(function () {
         var state = store.getState();
-        if (state.ui.nightMode != _this68.state.night) {
-          _this68.setState({
+        if (state.ui.nightMode != _this70.state.night) {
+          _this70.setState({
             night: state.ui.nightMode
           });
         }
@@ -4795,17 +4974,17 @@ var Language = /*#__PURE__*/function (_React$Component22) {
   _inherits(Language, _React$Component22);
   var _super27 = _createSuper(Language);
   function Language(props, context) {
-    var _this69;
+    var _this71;
     _classCallCheck(this, Language);
-    _this69 = _super27.call(this, props);
+    _this71 = _super27.call(this, props);
     var store = context.store;
-    _this69.state = {
+    _this71.state = {
       show: false
     };
-    _this69.store = store;
-    _this69.changeView = _this69.changeView.bind(_assertThisInitialized(_this69));
-    _this69.initTime = Date.now();
-    return _this69;
+    _this71.store = store;
+    _this71.changeView = _this71.changeView.bind(_assertThisInitialized(_this71));
+    _this71.initTime = Date.now();
+    return _this71;
   }
   _createClass(Language, [{
     key: "componentDidMount",
@@ -4828,7 +5007,7 @@ var Language = /*#__PURE__*/function (_React$Component22) {
   }, {
     key: "render",
     value: function render() {
-      var _this70 = this;
+      var _this72 = this;
       var _this$props33 = this.props,
         changeLanguage = _this$props33.changeLanguage,
         lang = _this$props33.lang;
@@ -4850,7 +5029,7 @@ var Language = /*#__PURE__*/function (_React$Component22) {
           key: i,
           href: "#",
           onClick: function onClick() {
-            return _this70.store.dispatch(changeLanguage(lang2));
+            return _this72.store.dispatch(changeLanguage(lang2));
           }
         }, lang2);
       })));
@@ -4863,30 +5042,30 @@ var Guider = /*#__PURE__*/function (_React$PureComponent6) {
   _inherits(Guider, _React$PureComponent6);
   var _super28 = _createSuper(Guider);
   function Guider(props) {
-    var _this71;
+    var _this73;
     _classCallCheck(this, Guider);
-    _this71 = _super28.call(this, props);
-    _this71.state = {
+    _this73 = _super28.call(this, props);
+    _this73.state = {
       step: props.step,
       section: props.step.section,
       action: props.step.section.action,
       style: {},
       lang: props.lang
     };
-    _this71.toStep = _this71.toStep.bind(_assertThisInitialized(_this71));
-    _this71.toSection = _this71.toSection.bind(_assertThisInitialized(_this71));
-    _this71.animate = _this71.animate.bind(_assertThisInitialized(_this71));
-    _this71.goToStep = _this71.goToStep.bind(_assertThisInitialized(_this71));
-    _this71.goToSection = _this71.goToSection.bind(_assertThisInitialized(_this71));
-    _this71.clear = _this71.clear.bind(_assertThisInitialized(_this71));
-    _this71.adjustHeight = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.adjustHeight.bind(_assertThisInitialized(_this71));
-    _this71.isInTheMiddle = _this71.isInTheMiddle.bind(_assertThisInitialized(_this71));
-    _this71.putInTheMiddle = _this71.putInTheMiddle.bind(_assertThisInitialized(_this71));
-    _this71.setDimensions = _this71.setDimensions.bind(_assertThisInitialized(_this71));
-    _this71.moveHandler = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.compose)(function () {
-      return _this71.putInTheMiddle(_this71.isInTheMiddle);
-    }, _this71.setDimensions, _this71.adjustHeight);
-    return _this71;
+    _this73.toStep = _this73.toStep.bind(_assertThisInitialized(_this73));
+    _this73.toSection = _this73.toSection.bind(_assertThisInitialized(_this73));
+    _this73.animate = _this73.animate.bind(_assertThisInitialized(_this73));
+    _this73.goToStep = _this73.goToStep.bind(_assertThisInitialized(_this73));
+    _this73.goToSection = _this73.goToSection.bind(_assertThisInitialized(_this73));
+    _this73.clear = _this73.clear.bind(_assertThisInitialized(_this73));
+    _this73.adjustHeight = _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.adjustHeight.bind(_assertThisInitialized(_this73));
+    _this73.isInTheMiddle = _this73.isInTheMiddle.bind(_assertThisInitialized(_this73));
+    _this73.putInTheMiddle = _this73.putInTheMiddle.bind(_assertThisInitialized(_this73));
+    _this73.setDimensions = _this73.setDimensions.bind(_assertThisInitialized(_this73));
+    _this73.moveHandler = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.compose)(function () {
+      return _this73.putInTheMiddle(_this73.isInTheMiddle);
+    }, _this73.setDimensions, _this73.adjustHeight);
+    return _this73;
   }
   _createClass(Guider, [{
     key: "componentDidMount",
@@ -4934,15 +5113,15 @@ var Guider = /*#__PURE__*/function (_React$PureComponent6) {
   }, {
     key: "toStep",
     value: function toStep(step) {
-      var _this72 = this;
+      var _this74 = this;
       this.animate(false).then(function () {
-        _this72.setState(_objectSpread(_objectSpread({}, _this72.state), {}, {
+        _this74.setState(_objectSpread(_objectSpread({}, _this74.state), {}, {
           section: step.section,
           step: step,
           action: step.section.action
         }));
       }).then(function () {
-        _this72.animate(true);
+        _this74.animate(true);
       })["catch"](function (e) {
         console.error("Guider toStep catch Error", e);
       });
@@ -4950,15 +5129,15 @@ var Guider = /*#__PURE__*/function (_React$PureComponent6) {
   }, {
     key: "toSection",
     value: function toSection(section) {
-      var _this73 = this;
+      var _this75 = this;
       var state = this.state;
       this.animate(false).then(function () {
-        _this73.setState(_objectSpread(_objectSpread({}, state), {}, {
+        _this75.setState(_objectSpread(_objectSpread({}, state), {}, {
           section: section,
           action: section.action
         }));
       }).then(function () {
-        _this73.animate(true);
+        _this75.animate(true);
       })["catch"](function (e) {
         console.error("Guide toSection catch error", e);
       });
@@ -4966,12 +5145,12 @@ var Guider = /*#__PURE__*/function (_React$PureComponent6) {
   }, {
     key: "toAction",
     value: function toAction(doAction) {
-      var _this74 = this;
+      var _this76 = this;
       var state = this.state;
       var currentAction = state.action;
-      doAction.then(function (_ref16) {
-        var updateText = _ref16.updateText;
-        if (updateText) _this74.forceUpdate();else if (!currentAction.nextAction && state.section.nextSection) _this74.toSection(state.section.nextSection);else _this74.setState(_objectSpread(_objectSpread({}, state), {}, {
+      doAction.then(function (_ref25) {
+        var updateText = _ref25.updateText;
+        if (updateText) _this76.forceUpdate();else if (!currentAction.nextAction && state.section.nextSection) _this76.toSection(state.section.nextSection);else _this76.setState(_objectSpread(_objectSpread({}, state), {}, {
           action: currentAction.nextAction
         }));
       })["catch"](function (e) {
@@ -4981,10 +5160,10 @@ var Guider = /*#__PURE__*/function (_React$PureComponent6) {
   }, {
     key: "animate",
     value: function animate(add) {
-      var _this75 = this;
+      var _this77 = this;
       return new Promise(function (resolve, reject) {
-        var main = _this75.refs.main;
-        var state = _this75.state;
+        var main = _this77.refs.main;
+        var state = _this77.state;
         var op = Number(getComputedStyle(main).opacity);
         var c = setInterval(function () {
           if (add && op < 1.0) {
@@ -5015,12 +5194,12 @@ var Guider = /*#__PURE__*/function (_React$PureComponent6) {
   }, {
     key: "goToSection",
     value: function goToSection() {
-      var _this76 = this;
+      var _this78 = this;
       var next = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
       var section = this.state.section;
       var clear = this.clear();
       clear().then(function () {
-        return _this76.toSection(next ? section.nextSection : section.prevSection);
+        return _this78.toSection(next ? section.nextSection : section.prevSection);
       })["catch"](function (e) {
         console.error("Couldn't clear to go to ", next ? 'next' : 'prev', 'step');
       });
@@ -5028,12 +5207,12 @@ var Guider = /*#__PURE__*/function (_React$PureComponent6) {
   }, {
     key: "goToStep",
     value: function goToStep() {
-      var _this77 = this;
+      var _this79 = this;
       var next = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
       var step = this.state.step;
       var clear = this.clear();
       clear().then(function () {
-        return _this77.toStep(next ? step.nextStep : step.prevStep);
+        return _this79.toStep(next ? step.nextStep : step.prevStep);
       })["catch"](function (e) {
         console.error("Couldn't clear to go to ", next ? 'next' : 'prev', 'step');
       });
@@ -5156,8 +5335,8 @@ var Guider = /*#__PURE__*/function (_React$PureComponent6) {
   }]);
   return Guider;
 }(react__WEBPACK_IMPORTED_MODULE_0__.PureComponent);
-var Styles = function Styles(_ref17) {
-  var lists = _ref17.lists;
+var Styles = function Styles(_ref26) {
+  var lists = _ref26.lists;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, lists.map(function (list, i) {
     var l2 = _objectSpread({}, list);
     var data = l2.data;
@@ -5167,25 +5346,25 @@ var Styles = function Styles(_ref17) {
     }, l2), data ? data : '');
   }));
 };
-var Metas = function Metas(_ref18) {
-  var lists = _ref18.lists;
+var Metas = function Metas(_ref27) {
+  var lists = _ref27.lists;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, lists.map(function (list, i) {
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("meta", _extends({
       key: i
     }, list));
   }));
 };
-var Links = function Links(_ref19) {
-  var lists = _ref19.lists,
-    i = _ref19.i;
+var Links = function Links(_ref28) {
+  var lists = _ref28.lists,
+    i = _ref28.i;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, lists.map(function (list, i) {
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("link", _extends({
       key: i
     }, list));
   }));
 };
-var Scripts = function Scripts(_ref20) {
-  var lists = _ref20.lists;
+var Scripts = function Scripts(_ref29) {
+  var lists = _ref29.lists;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, lists.map(function (list, i) {
     var l2 = _objectSpread({}, list);
     var data = l2.data;
@@ -5198,16 +5377,16 @@ var Scripts = function Scripts(_ref20) {
     }, l2));
   }));
 };
-var HTML = function HTML(_ref21) {
-  var data = _ref21.data,
-    styles = _ref21.styles,
-    metas = _ref21.metas,
-    links = _ref21.links,
-    scripts = _ref21.scripts,
-    title = _ref21.title,
-    store = _ref21.store,
-    nodeJs = _ref21.nodeJs,
-    manifest = _ref21.manifest;
+var HTML = function HTML(_ref30) {
+  var data = _ref30.data,
+    styles = _ref30.styles,
+    metas = _ref30.metas,
+    links = _ref30.links,
+    scripts = _ref30.scripts,
+    title = _ref30.title,
+    store = _ref30.store,
+    nodeJs = _ref30.nodeJs,
+    manifest = _ref30.manifest;
   function ap(t) {
     var a = document.body;
     var c = document.createElement("p");
@@ -5236,22 +5415,22 @@ var App = /*#__PURE__*/function (_React$Component23) {
   _inherits(App, _React$Component23);
   var _super29 = _createSuper(App);
   function App(props, context) {
-    var _this78;
+    var _this80;
     _classCallCheck(this, App);
-    _this78 = _super29.call(this, props);
+    _this80 = _super29.call(this, props);
     var guider = localStorage.guider,
       store = context.store,
       state = store.getState();
-    _this78.state = {
+    _this80.state = {
       showGuide: props.step ? true : false,
       lang: state.language,
       direction: state.ui.direction
     };
-    _this78.store = store;
-    _this78.store = context.store;
-    _this78.endGuide = _this78.endGuide.bind(_assertThisInitialized(_this78));
-    _this78.keyRecorder = _this78.keyRecorder.bind(_assertThisInitialized(_this78));
-    _this78.initTime = Date.now();
+    _this80.store = store;
+    _this80.store = context.store;
+    _this80.endGuide = _this80.endGuide.bind(_assertThisInitialized(_this80));
+    _this80.keyRecorder = _this80.keyRecorder.bind(_assertThisInitialized(_this80));
+    _this80.initTime = Date.now();
     if (props.db) {
       db = props.db;
       Validator = new props.validator();
@@ -5267,7 +5446,7 @@ var App = /*#__PURE__*/function (_React$Component23) {
       });
       Pseq = new props.seq();
     }
-    return _this78;
+    return _this80;
   }
   _createClass(App, [{
     key: "endGuide",
@@ -5281,14 +5460,14 @@ var App = /*#__PURE__*/function (_React$Component23) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this79 = this;
+      var _this81 = this;
       var store = this.store,
         props = this.props;
       this.unsubscribe = store.subscribe(function () {
         var cState = store.getState(),
-          state = _this79.state;
+          state = _this81.state;
         if (state.lang != cState.language) {
-          _this79.setState({
+          _this81.setState({
             lang: cState.language
           });
         }
@@ -5345,9 +5524,9 @@ var App = /*#__PURE__*/function (_React$Component23) {
   return App;
 }(react__WEBPACK_IMPORTED_MODULE_0__.Component);
 App.contextType = (_utilis_context_cjs__WEBPACK_IMPORTED_MODULE_4___default());
-var Liner = function Liner(_ref22) {
-  var _ref22$additionalClas = _ref22.additionalClass,
-    additionalClass = _ref22$additionalClas === void 0 ? '' : _ref22$additionalClas;
+var Liner = function Liner(_ref31) {
+  var _ref31$additionalClas = _ref31.additionalClass,
+    additionalClass = _ref31$additionalClas === void 0 ? '' : _ref31$additionalClas;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
     className: "tight ".concat(additionalClass)
   }, " ");
@@ -35935,7 +36114,7 @@ function storageHandler(CONSTANT) {
               data = fn(data);
               lists[name] = data;
             } catch (e) {
-              console.log("Error while applying function", fn.name, " to data ", data);
+              console.error("Error while applying function", fn.name, " to data ", data);
             }
           }
         }
@@ -36097,7 +36276,6 @@ var P = function P() {
       var topic = _arguments[i];
       if (_this2.subscribers[topic]) {
         delete _this2.subscribers[topic];
-        console.log("Topic ".concat(topic, " deleted"));
       }
     }
     return true;
@@ -36109,9 +36287,6 @@ function registerWorker(src) {
   if (serviceWorker) {
     return serviceWorker.register(src).then(function (registration) {
       if (registration) {
-        if (registration.scope) {
-          console.log("Registration scope is", registration.scope);
-        }
         var installing = registration.installing,
           active = registration.active;
         if (installing) {
@@ -36141,7 +36316,6 @@ function registerWorker(src) {
       }
     });
   } else {
-    console.log("No service worker dude. Cry");
     return false;
   }
 }
@@ -36170,7 +36344,6 @@ function getLocalData(dbLoader, store, _ref) {
                 catId = cat.id;
               store.dispatch(addCategorie(catName, catId));
               fastLookUp[catName] = {};
-              console.log("cat", cat);
               db.getAllSongs(catId)().then(function (songs) {
                 songs = songs.map(function (song) {
                   delete song.cat;
@@ -36187,11 +36360,11 @@ function getLocalData(dbLoader, store, _ref) {
                   db: db
                 });
               })["catch"](function (e) {
-                console.log("getLocalData getAllSong cath error", e);
+                console.error("getLocalData getAllSong cath error", e);
                 alert("getLocalData:getAllSong Error" + e.message);
               });
             } catch (e) {
-              console.log("getLocalData catch error", e);
+              console.error("getLocalData catch error", e);
             }
           });
         });
@@ -36328,7 +36501,6 @@ exports.streamer = function (fetcher, store, table) {
         payload[stF.catName] = catName;
       }
       var url = "stream?action=update";
-      console.log("The url is", url);
       fetcher({
         url: url,
         method: 'POST',
@@ -36339,10 +36511,9 @@ exports.streamer = function (fetcher, store, table) {
         e: function e(_ref2) {
           var status = _ref2.status,
             response = _ref2.response;
-          console.log("Error trying to update the stream with url", url, status, response);
+          console.error("Error trying to update the stream with url", url, status, response);
         },
         s: function s(response) {
-          console.log("streamUpdated", response);
           var waitingDownload = response.waitingDownload,
             catId = null;
           if (waitingDownload) {
@@ -36351,7 +36522,6 @@ exports.streamer = function (fetcher, store, table) {
               onlineSongs = state.onlineSongs,
               offlineSongs = state.offlineSongs,
               r = {};
-            console.log("Oups, some people don't have my song");
             for (var _catName in waitingDownload) {
               if ((catId = Categories.indexOf(_catName.toLowerCase())) == -1) {
                 r[_catName] = {
@@ -36442,7 +36612,6 @@ function PSeq() {
               return client[0](d);
             });
           }))["catch"](function (e) {
-            //console.log("Error",e);
             _this4.sequence[0].clients.forEach(function (client) {
               client[1](e);
             });
@@ -36470,11 +36639,8 @@ function PSeq() {
         _this4.sequence[0].clients.forEach(function (client) {
           client[1](e);
         });
-        //console.log("Error",e);
         _this4.executeNext();
       });
-    } else {
-      //console.log("No more sequence");
     }
   };
   this.subscribe = function (id, f, e) {
@@ -36486,31 +36652,78 @@ function PSeq() {
     }
   };
 }
+function parseHeader(data) {
+  var start = 0,
+    next,
+    headers = {},
+    i = 0;
+  while ((next = data.indexOf(':', start)) != -1) {
+    var name = data.slice(start, next),
+      value = void 0;
+    start = next + 1;
+    next = data.indexOf('\n', start);
+    value = data.slice(start, next);
+    start = next + 1;
+    headers[name] = value;
+  }
+  return headers;
+}
+function parseResponse(xml) {
+  var body = xml.response || xml.responseText,
+    status = xml.status,
+    headers = parseHeader(xml.getAllResponseHeaders());
+  if (headers['content-type'] && headers['content-type'].indexOf('application/json') != -1) {
+    body = JSON.parse(body);
+  }
+  if (!status) {
+    xml.networkDown = true;
+  }
+  if (status >= 200 && status < 300) {
+    xml.ok = true;
+  }
+  if (status >= 300 && status < 400) {
+    xml.redirected = true;
+  }
+  if (status >= 400 && status < 500) {
+    xml.problems = true;
+  }
+  if (status >= 500) {
+    xml.serverError = true;
+  }
+  return {
+    body: body,
+    headers: headers,
+    status: status,
+    xml: xml
+  };
+}
 exports.fetcher = function fetcher(a) {
   var xml = new XMLHttpRequest();
   xml.open(a.method || 'GET', a.url, true);
   if (a.setter) {
     a.setter(xml);
   }
+  if (a.type) {
+    xml.setRequestHeader('content-type', a.type);
+  }
   xml.onload = function () {
-    var response = xml.response;
-    if (/application\/json/.test(xml.getResponseHeader('Content-Type'))) {
-      response = JSON.parse(xml.response || xml.responseText);
-    }
-    if (xml.status < 300 && xml.status >= 200) {
-      a.s(response);
-    } else {
-      a.e({
-        status: xml.status,
-        error: response
-      }, xml);
+    try {
+      a.s(parseResponse(xml));
+    } catch (e) {
+      a.e(e);
     }
   };
   xml.onerror = function (e) {
-    a.e({
-      status: xml.status,
-      error: e
-    }, xml);
+    try {
+      a.e(_objectSpread(_objectSpread({}, parseResponse(xml)), {}, {
+        error: e
+      }));
+    } catch (e) {
+      a.e({
+        error: e,
+        xml: xml
+      });
+    }
   };
   xml.send(a.data);
 };
@@ -36656,14 +36869,14 @@ function helpWithCoordinate(div1, div2) {
 }
 function errorLogger() {
   var oldConsole = window.console,
-    error = oldConsole.error,
-    xml = new XMLHttpRequest(),
-    url = '/reportError';
+    error = oldConsole.error;
   return function () {
     for (var _len = arguments.length, p = new Array(_len), _key = 0; _key < _len; _key++) {
       p[_key] = arguments[_key];
     }
     error.apply(oldConsole, arguments);
+    var xml = new XMLHttpRequest(),
+      url = '/reportError';
     xml.open('POST', url, true);
     xml.setRequestHeader('content-type', 'application/json');
     xml.send(JSON.stringify(p));
@@ -36935,6 +37148,14 @@ module.exports = {
       var name = arguments.length > 1 ? arguments[1] : undefined;
       return lang.toLowerCase() == "en" ? "Error while trying to stop stream ".concat(name) : "Une Erreur est survenue lors de l'arrete du stream ".concat(name);
     },
+    creationError: function creationError() {
+      var lang = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "En";
+      return lang.toLowerCase() == "en" ? "We couldn't create the stream, Please try again" : "Le stream n'a pas pu etre cr\xE9e, veuillez reessayer";
+    },
+    Error: function Error() {
+      var lang = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "En";
+      return lang.toLowerCase() == "en" ? "An Error happened while creating the stream. Please try again" : "Une Erreur est survenu lors de la creation du stream. Veuillez reessayer";
+    },
     download: {
       start: function start() {
         var lang = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "En";
@@ -37196,7 +37417,7 @@ exports.startStreamFromLocal = function (name, fetcher) {
   return function () {
     return new Promise(function (resolve, reject) {
       fetcher({
-        url: "/stream/".concat(name, "?q=Exist"),
+        url: "/stream?name=".concat(name, "&action=checkExist"),
         s: function s(response) {
           resolve(true);
         },
@@ -37695,7 +37916,7 @@ var config = function () {
     },
     filters = {
       limit: 'limit',
-      next: 'next',
+      last: 'last',
       lastTime: 'lastTime'
     },
     streamdef = {
@@ -37810,8 +38031,9 @@ var config = function () {
       userdef: userdef
     },
     constrains: (_constrains = {}, _defineProperty(_constrains, cat.name, function (errorMessage) {
+      var _ref;
       var required = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-      return _defineProperty({}, cF.name, {
+      return _ref = {}, _defineProperty(_ref, cF.name, {
         validate: {
           names: [[S, {
             error: errorMessage.type(cF.name, S)
@@ -37822,7 +38044,13 @@ var config = function () {
           }]]
         },
         required: required ? errorMessage.required(cF.name) : false
-      });
+      }), _defineProperty(_ref, 'last', {
+        validate: {
+          names: [[O, {
+            error: errorMessage.type('last', O)
+          }]]
+        }
+      }), _ref;
     }), _defineProperty(_constrains, song.name, function (errorMessage) {
       var _ref2;
       var required = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
@@ -37840,14 +38068,12 @@ var config = function () {
       }), _defineProperty(_ref2, sF.catId, {
         validate: {
           names: [[S, {
-            error: errorMessage.type(sF.name, S)
+            error: errorMessage.type(sF.catId, S)
           }], [Ne, {
-            error: errorMessage.empty(sF.name)
-          }], [Ia, {
-            error: errorMessage.notAlphaNumeric(sF.name)
+            error: errorMessage.empty(sF.catId)
           }]]
         },
-        required: required ? errorMessage.required(sF.name) : false
+        required: required ? errorMessage.required(sF.catId) : false
       }), _defineProperty(_ref2, sF.verses, {
         validate: {
           names: [[AIa, {
@@ -37855,6 +38081,12 @@ var config = function () {
           }]]
         },
         required: required ? errorMessage.required(sF.verses) : false
+      }), _defineProperty(_ref2, 'last', {
+        validate: {
+          names: [[O, {
+            error: errorMessage.type('last', O)
+          }]]
+        }
       }), _ref2;
     }), _defineProperty(_constrains, stream.name, function (errorMessage) {
       var _ref3;
@@ -38077,8 +38309,7 @@ function rSong(state, action) {
 function rSongs(states, action) {
   switch (action.type) {
     case C.ADD_SONG:
-      states.push(rSong({}, action));
-      return states;
+      return [].concat(_toConsumableArray(states), [rSong({}, action)]);
     case C.ADD_SONGS:
       states = states.concat(action.songs);
       return states;
@@ -38218,10 +38449,16 @@ function curCat(states, action) {
     Categories = states.Categories;
   switch (type) {
     case C.SET_CURRENT_CAT:
-      return {
-        name: name,
-        id: id
-      };
+      for (var i = 0; i < Categories.length; i++) {
+        if (Categories[i].name == name) {
+          return {
+            name: name,
+            id: id
+          };
+        }
+      }
+      console.error("categorie not in store", name, id);
+      return states.currentCat;
     case C.UPDATE_CAT:
       var currentCat = states.currentCat,
         currentCatName = currentCat.name,
@@ -38254,11 +38491,15 @@ function curSong(states, action) {
     song = catSongs && catSongs[id];
   switch (type) {
     case C.SET_CURRENT_SONG:
-      return _objectSpread(_objectSpread({}, song), {}, {
-        id: id,
-        location: location,
-        catId: catId
-      });
+      if (catSongs) {
+        return _objectSpread(_objectSpread({}, song), {}, {
+          id: id,
+          location: location,
+          catId: catId
+        });
+      }
+      console.error("catId not in store", catId);
+      return states.currentSong;
     case C.REMOVE_CATEGORIE:
       if (states.currentSong.catId == id) {
         return {
@@ -38926,9 +39167,9 @@ function _objectSpread2(target) {
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "ManageFastAccess": function() { return /* binding */ ManageFastAccess; },
 /* harmony export */   "checkReachability": function() { return /* binding */ checkReachability; },
-/* harmony export */   "saveUiInfo": function() { return /* binding */ saveUiInfo; },
+/* harmony export */   "logAction": function() { return /* binding */ logAction; },
 /* harmony export */   "myThunk": function() { return /* binding */ myThunk; },
-/* harmony export */   "logAction": function() { return /* binding */ logAction; }
+/* harmony export */   "saveUiInfo": function() { return /* binding */ saveUiInfo; }
 /* harmony export */ });
 /* unused harmony export timeAction */
 /* harmony import */ var _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utilis/BrowserDb.cjs */ "./utilis/BrowserDb.cjs");
@@ -39133,101 +39374,6 @@ function logAction(_ref8) {
 
 /***/ }),
 
-/***/ "./utilis/songLoader.js":
-/*!******************************!*\
-  !*** ./utilis/songLoader.js ***!
-  \******************************/
-/***/ (function(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var _aCreator_cjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./aCreator.cjs */ "./utilis/aCreator.cjs");
-
-var totalReceived = 0;
-function songLoader(cat, songNumber, store, local) {
-  var state = store.getState(),
-    catId = cat.id,
-    catName = cat.name,
-    currentCat = cat,
-    rSongs = 0;
-  return new Promise(function (resolve, reject) {
-    var xml = new XMLHttpRequest();
-    xml.open('GET', "songAdder.js?catId=".concat(catId, "&l=").concat(songNumber));
-    xml.onload = function () {
-      if (xml.status < 100) {
-        resolve({
-          status: xml.status,
-          error: 'No internet connection',
-          message: xml.response
-        });
-      } else if (xml.status >= 300) {
-        var txt = "A problem occured while trying to add Additionnal songs";
-        alert(txt);
-        alert(xml.status);
-        resolve({
-          success: false,
-          status: xml.status,
-          message: xml.response,
-          data: store.getState().Categories
-        });
-      } else {
-        var response = JSON.parse(xml.responseText);
-        rSongs = response.songs;
-        if (!response.full) {
-          totalReceived += response.songs.length;
-          getNotInLocalStore(local, catName, rSongs).then(function (songs) {
-            dispatchSong(store, cat, catId, songs, local);
-          });
-        } else {
-          if (response.songs) {
-            getNotInLocalStore(local, cat, rSongs).then(function (songs) {
-              store.dispatch((0,_aCreator_cjs__WEBPACK_IMPORTED_MODULE_0__.addSongs)(songs, catId));
-              resolve({
-                success: true,
-                data: store.getState()
-              });
-            });
-          } else resolve({
-            success: true,
-            data: store.getState()
-          });
-        }
-      }
-    };
-    xml.onerror = function (e) {
-      resolve({
-        success: false,
-        status: 0,
-        error: e,
-        data: xml.response
-      });
-    };
-    xml.send();
-  });
-}
-function getNotInLocalStore(local, cat, songs) {
-  cat = cat.toLowerCase();
-  return local.then(function (_ref) {
-    var data = _ref.data,
-      fastLookUp = _ref.fastLookUp;
-    var catId = data.Categories.indexOf(cat);
-    var storedSongs = data.offlineSongs[catId];
-    var localSongs = fastLookUp[cat.toLowerCase()] || {};
-    if (catId == -1) throw Error("categorie not in Store");
-    if (!storedSongs.length) return songs;
-    return songs.filter(function (song) {
-      var truth = !localSongs[song.name.toUpperCase()];
-      return truth;
-    });
-  });
-}
-function dispatchSong(store, cat, catId, songs, local) {
-  store.dispatch((0,_aCreator_cjs__WEBPACK_IMPORTED_MODULE_0__.addSongs)(songs, catId));
-  songLoader(cat, totalReceived, store, local);
-}
-/* harmony default export */ __webpack_exports__["default"] = (songLoader);
-
-/***/ }),
-
 /***/ "./utilis/store.js":
 /*!*************************!*\
   !*** ./utilis/store.js ***!
@@ -39236,8 +39382,8 @@ function dispatchSong(store, cat, catId, songs, local) {
 
 "use strict";
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "store": function() { return /* binding */ store; },
-/* harmony export */   "fAccess": function() { return /* binding */ fAccess; }
+/* harmony export */   "fAccess": function() { return /* binding */ fAccess; },
+/* harmony export */   "store": function() { return /* binding */ store; }
 /* harmony export */ });
 /* harmony import */ var redux__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! redux */ "./node_modules/redux/es/redux.js");
 /* harmony import */ var _newReducer_cjs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./newReducer.cjs */ "./utilis/newReducer.cjs");
@@ -39390,7 +39536,6 @@ var fAccess = fastAccess;
 /******/ 				doneFns && doneFns.forEach(function(fn) { return fn(event); });
 /******/ 				if(prev) return prev(event);
 /******/ 			}
-/******/ 			;
 /******/ 			var timeout = setTimeout(onScriptComplete.bind(null, undefined, { type: 'timeout', target: script }), 120000);
 /******/ 			script.onerror = onScriptComplete.bind(null, script.onerror);
 /******/ 			script.onload = onScriptComplete.bind(null, script.onload);
@@ -39416,7 +39561,7 @@ var fAccess = fastAccess;
 /******/ 		var document = __webpack_require__.g.document;
 /******/ 		if (!scriptUrl && document) {
 /******/ 			if (document.currentScript)
-/******/ 				scriptUrl = document.currentScript.src
+/******/ 				scriptUrl = document.currentScript.src;
 /******/ 			if (!scriptUrl) {
 /******/ 				var scripts = document.getElementsByTagName("script");
 /******/ 				if(scripts.length) scriptUrl = scripts[scripts.length - 1].src
@@ -39511,7 +39656,7 @@ var fAccess = fastAccess;
 /******/ 				if(__webpack_require__.o(installedChunks, chunkId) && installedChunks[chunkId]) {
 /******/ 					installedChunks[chunkId][0]();
 /******/ 				}
-/******/ 				installedChunks[chunkIds[i]] = 0;
+/******/ 				installedChunks[chunkId] = 0;
 /******/ 			}
 /******/ 		
 /******/ 		}
@@ -39530,20 +39675,19 @@ var __webpack_exports__ = {};
   !*** ./client/index.jsx ***!
   \**************************/
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var _utilis_Text_cjs__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../utilis/Text.cjs */ "./utilis/Text.cjs");
-/* harmony import */ var _utilis_Text_cjs__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_utilis_Text_cjs__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var _utilis_Text_cjs__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../utilis/Text.cjs */ "./utilis/Text.cjs");
+/* harmony import */ var _utilis_Text_cjs__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_utilis_Text_cjs__WEBPACK_IMPORTED_MODULE_8__);
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
 /* harmony import */ var _utilis_aCreator_cjs__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../utilis/aCreator.cjs */ "./utilis/aCreator.cjs");
-/* harmony import */ var _utilis_songLoader_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../utilis/songLoader.js */ "./utilis/songLoader.js");
 /* harmony import */ var _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utilis/BrowserDb.cjs */ "./utilis/BrowserDb.cjs");
-/* harmony import */ var _views_components_jsx__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../views/components.jsx */ "./views/components.jsx");
+/* harmony import */ var _views_components_jsx__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../views/components.jsx */ "./views/components.jsx");
 /* harmony import */ var _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../utilis/constant.cjs */ "./utilis/constant.cjs");
-/* harmony import */ var _utilis_db_config_cjs__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../utilis/db.config.cjs */ "./utilis/db.config.cjs");
-/* harmony import */ var _utilis_db_config_cjs__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_utilis_db_config_cjs__WEBPACK_IMPORTED_MODULE_8__);
-/* harmony import */ var _utilis_context_cjs__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../utilis/context.cjs */ "./utilis/context.cjs");
-/* harmony import */ var _utilis_context_cjs__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_utilis_context_cjs__WEBPACK_IMPORTED_MODULE_10__);
+/* harmony import */ var _utilis_db_config_cjs__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../utilis/db.config.cjs */ "./utilis/db.config.cjs");
+/* harmony import */ var _utilis_db_config_cjs__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_utilis_db_config_cjs__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _utilis_context_cjs__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../utilis/context.cjs */ "./utilis/context.cjs");
+/* harmony import */ var _utilis_context_cjs__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_utilis_context_cjs__WEBPACK_IMPORTED_MODULE_9__);
 /* harmony import */ var _utilis_store_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../utilis/store.js */ "./utilis/store.js");
-/* harmony import */ var _utilis_utilities_cjs__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../utilis/utilities.cjs */ "./utilis/utilities.cjs");
+/* harmony import */ var _utilis_utilities_cjs__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../utilis/utilities.cjs */ "./utilis/utilities.cjs");
 /* harmony import */ var _utilis_guiderLazy_cjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utilis/guiderLazy.cjs */ "./utilis/guiderLazy.cjs");
 /* harmony import */ var _utilis_guiderLazy_cjs__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_utilis_guiderLazy_cjs__WEBPACK_IMPORTED_MODULE_3__);
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
@@ -39574,16 +39718,10 @@ var dbLoader = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.dbChooser)(
 _utilis_guiderLazy_cjs__WEBPACK_IMPORTED_MODULE_3___default()();
 var localStorageData = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.loadFromLocalStorage)(_utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_4__.System.LOCALSTORAGE),
   localData = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.getLocalData)(dbLoader, _utilis_store_js__WEBPACK_IMPORTED_MODULE_5__.store, _utilis_aCreator_cjs__WEBPACK_IMPORTED_MODULE_6__),
-  fastAccess = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.getRemoteData)(_utilis_store_js__WEBPACK_IMPORTED_MODULE_5__.store, _utilis_songLoader_js__WEBPACK_IMPORTED_MODULE_7__["default"], localData),
-  streamManager = new _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.streamer(_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.fetcher, _utilis_store_js__WEBPACK_IMPORTED_MODULE_5__.store, (_utilis_db_config_cjs__WEBPACK_IMPORTED_MODULE_8___default().table)),
+  streamManager = new _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.streamer(_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.fetcher, _utilis_store_js__WEBPACK_IMPORTED_MODULE_5__.store, (_utilis_db_config_cjs__WEBPACK_IMPORTED_MODULE_7___default().table)),
   Msteps,
   MStepLoader;
-fastAccess.then(function () {
-  console.log("Okay fastAccess");
-})["catch"](function (e) {
-  console.error("fastAccess catch Error", e);
-});
-Promise.all([localData, fastAccess]).then(function () {
+Promise.all([localData]).then(function () {
   var state = _utilis_store_js__WEBPACK_IMPORTED_MODULE_5__.store.getState(),
     categories = state.Categories,
     favorites = localStorageData.favorites,
@@ -39674,18 +39812,17 @@ Promise.all([localData, MStepLoader]).then(function (r) {
   }, 15);
   var pan = {
     store: _utilis_store_js__WEBPACK_IMPORTED_MODULE_5__.store,
-    Text: (_utilis_Text_cjs__WEBPACK_IMPORTED_MODULE_9___default())
+    Text: (_utilis_Text_cjs__WEBPACK_IMPORTED_MODULE_8___default())
   };
-  (0,react_dom__WEBPACK_IMPORTED_MODULE_1__.render)( /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement((_utilis_context_cjs__WEBPACK_IMPORTED_MODULE_10___default().Provider), {
+  (0,react_dom__WEBPACK_IMPORTED_MODULE_1__.render)( /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement((_utilis_context_cjs__WEBPACK_IMPORTED_MODULE_9___default().Provider), {
     value: pan
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(_views_components_jsx__WEBPACK_IMPORTED_MODULE_11__.App, _extends({
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(_views_components_jsx__WEBPACK_IMPORTED_MODULE_10__.App, _extends({
     step: Msteps,
     fAccess: _utilis_store_js__WEBPACK_IMPORTED_MODULE_5__.fAccess,
-    fastAccess: fastAccess,
     streamManager: streamManager
   }, _utilis_aCreator_cjs__WEBPACK_IMPORTED_MODULE_6__, {
-    validator: _utilis_utilities_cjs__WEBPACK_IMPORTED_MODULE_12__.validator,
-    note: _utilis_utilities_cjs__WEBPACK_IMPORTED_MODULE_12__.note,
+    validator: _utilis_utilities_cjs__WEBPACK_IMPORTED_MODULE_11__.validator,
+    note: _utilis_utilities_cjs__WEBPACK_IMPORTED_MODULE_11__.note,
     seq: _utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.seq,
     db: db
   }))), document.getElementById('react-container'));
