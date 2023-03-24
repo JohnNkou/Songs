@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { EventEmitter } from 'events';
+import { songPattern } from './pattern.js'
 import http from 'http';
 
 export async function addSongs(db,songs){
@@ -39,7 +40,7 @@ export async function addCatId(cats,songs){
 }
 export function validator(is){
 	let alfaNumPattern = /^[a-z0-9\sàèéôö'"-_]+$/i,
-	songNamePattern = /^[a-z0-9\s'"_èéàô!îï:ç(),\-?#.Œ–]+$/i,
+	songNamePattern = new RegExp(`^[${songPattern}]+$`,'i'),
 	mailPattern = /^[a-zA-Z][\d\w_]*@[\d\w_-]+(\.[^.\W]+)+$/i,
 	toString = (x)=> Object.prototype.toString.call(x);
 

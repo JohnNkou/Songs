@@ -3,6 +3,7 @@ import { CreateTableCommand, DeleteTableCommand, DescribeTableCommand } from '@a
 import { nanoid } from 'nanoid';
 import { PutCommand, UpdateCommand, DeleteCommand, GetCommand, ScanCommand, TransactWriteCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import config from './db.config.cjs';
+import { songPattern } from './pattern.js';
 
 const { song,cat,stream,catdef,songdef,streamdef } = config.table,
 cF = cat.fields,
@@ -17,7 +18,8 @@ testing = process.env.NODE_ENV == 'test';
 
 function d({getClient,getClientD}){
 	let client = getClient(),
-	clientD = getClientD(client);
+	clientD = getClientD(client),
+	badSongName = new RegExp(`[^${songPattern}]`,'gi');
 
 	function addResponse(error=null){
 		return {
@@ -43,6 +45,26 @@ function d({getClient,getClientD}){
 			old: data && data.Attributes,
 			error
 		}
+	}
+
+	function DoUntilLast(list,operation,payloads){
+		return operation(payloads).then((response)=>{
+			if(response.data.length){
+				list.push(...response.data);
+				if(response.last){
+					payloads.last = response.last;
+					return DoUntilLast(list,operation,payloads);
+				}
+				else{
+					response.Items = list;
+					return response;
+				}
+			}
+			else{
+				response.Items = list;
+				return response;
+			}
+		})
 	}
 	async function tableInitializationHandler(status,TableName){
 		let c, n = 10,r;
@@ -155,14 +177,22 @@ function d({getClient,getClientD}){
 		r.id = params.Item.id;
 		return r;
 	}
-	this.getAllCategorie = async ()=>{
+	this.getAllCategorie = async (o={})=>{
 		await this.initialized;
-		let params = {
+		let {Limit=50, last} = o,
+		params = {
 			TableName: cTableName,
-			ReturnConsumedCapacity:'TOTAL'
+			ReturnConsumedCapacity:'TOTAL',
+			Limit
 		},
+		response;
+
+		if(last){
+			params.ExclusiveStartKey = last;
+		}
+
 		response = await clientD.send(new ScanCommand(params));
-		return getResponse(response.Items);
+		return {...getResponse(response.Items), last:response.LastEvaluatedKey};
 	}
 	this.getCategorie = async (name)=>{
 		await this.initialized;
@@ -240,43 +270,36 @@ function d({getClient,getClientD}){
 		await this.initialized;
 		try{
 			let params = {
-				TransactItems:[
-					{
-						Delete:{
-							TableName:cTableName,
-							Key:{
-								[cF.name]:name.toLowerCase()
-							},
-							ConditionExpression:`attribute_exists(#${cF.name})`,
-							ExpressionAttributeNames:{
-								[`#${cF.name}`]:cF.name
-							},
-							ReturnConsumedCapacity:'TOTAL',
-							ReturnValues:'ALL_OLD'
-						}
-					}
-				]
+				TableName:cTableName,
+				Key:{
+					[cF.name]:name.toLowerCase()
+				},
+				ConditionExpression:`attribute_exists(#${cF.name})`,
+				ExpressionAttributeNames:{
+					[`#${cF.name}`]:cF.name
+				},
+				ReturnConsumedCapacity:'TOTAL',
+				ReturnValues:'ALL_OLD'
 			},
 			ti = params.TransactItems,
 			c = (await this.getCategorie(name)).data[0],
-			songs = (c)? (await this.getAllSongs({ catId:c.id})).data:null,
+			songs,
 			response,
-			r;
+			r,
+			last;
 
 			if(c){
-				songs.forEach((s)=>{
-					let { catId, name } = s;
-					ti.push({
-						Delete:{
-							TableName: sTableName,
-							Key:{ [sF.name]:name, [sF.catId]:catId }
-						}
-					})
-				});
+				songs = (await DoUntilLast([],this.getAllSongs.bind(this),{ catId:c.id })).Items;
 
-				response = await clientD.send(new TransactWriteCommand(params));
+				let removed = await this.bulkRemoveSongs(c.id,songs);
 
-				return remResponse({ Attributes:{...c} })
+				if(removed == songs.length){
+					response = await clientD.send(new DeleteCommand(params));
+					return remResponse(response);
+				}
+				else{
+					return remResponse(null,{ message:"We couldn't delete some songs" })
+				}
 			}
 			else{
 				r = remResponse();
@@ -308,34 +331,59 @@ function d({getClient,getClientD}){
 				[sF.catId]:catId
 			}
 		},
+		response;
+
+		if(badSongName.test(name)){
+			params.Item[sF.name] = name.replace(badSongName,' ');
+		}
+
 		response = await clientD.send(new PutCommand(params));
 		return addResponse();
 	}
-	this.getAllSongs = async ({ catId, limit, next })=>{
+	this.getAl = async ()=>{
 		await this.initialized;
 		let params = {
+			TableName:sTableName,
+			ReturnConsumedCapacity:'TOTAL'
+		},
+		response;
+
+		response = await clientD.send(new ScanCommand(params));
+
+		return response.Items;
+	}
+	this.getAllSongs = async (o={})=>{
+		await this.initialized;
+		let { catId, limit, last, all } = o,
+		params = {
 			TableName: sTableName,
 			KeyConditionExpression:`${sF.catId}=:${sF.catId}`,
 			ExpressionAttributeValues:{
 				[`:${sF.catId}`]:catId
 			},
+			Limit:100,
 			ReturnConsumedCapacity:'TOTAL',
 		},
 		response,
 		r;
 
+		if(all){
+			response = await DoUntilLast([],this.getAllSongs.bind(this), {catId,limit});
+			return getResponse(response.Items);
+		}
+
 		if(limit){
 			params.Limit = limit;
 		}
-		if(next){
-			params.ExclusiveStartKey = next;
+		if(last){
+			params.ExclusiveStartKey = last;
 		}
 
 		response = await clientD.send(new QueryCommand(params));
 		r = getResponse(response.Items);
 
 		if(response.LastEvaluatedKey){
-			r.next = response.LastEvaluatedKey;
+			r.last = response.LastEvaluatedKey;
 		}
 
 		return r;
@@ -354,13 +402,13 @@ function d({getClient,getClientD}){
 		Item = (response.Item)? [response.Item]:[];
 		return getResponse(Item);
 	}
-	this.updateSong = async (key,catId,obj)=>{
+	this.updateSong = async (name,catId,obj)=>{
 		await this.initialized;
 		try{
 			let params = {
 				TableName: sTableName,
 				Key:{
-					[sF.name]:key,
+					[sF.name]:name,
 					[sF.catId]:catId
 				},
 				ConditionExpression:`attribute_exists(#${sF.name})`,
@@ -380,15 +428,15 @@ function d({getClient,getClientD}){
 			}).join(',');
 
 			if('name' in obj){
-				let name = obj.name,
-				r = await this.removeSong(key,catId),
+				let r = await this.removeSong(name,catId),
 				r2,
 				verses,
 				Attributes;
 
 				if(r.deleted){
+					console.log("deleted");
 					verses = obj[sF.verses] || r.old[sF.verses];
-					Attributes = { [sF.name]:name,[sF.verses]:verses,[sF.catId]:catId };
+					Attributes = { [sF.name]:obj.name,[sF.verses]:verses,[sF.catId]:catId };
 
 					r2 = await this.addSong(Attributes);
 
@@ -400,6 +448,7 @@ function d({getClient,getClientD}){
 					}
 				}
 				else{
+					console.log("Not deleted",name,catId);
 					return updResponse(null,r.error);
 				}
 			}
@@ -439,6 +488,45 @@ function d({getClient,getClientD}){
 			throw e;
 		}
 			
+	}
+	this.bulkRemoveSongs = async (catId,songs)=>{
+		let params = {
+			TransactItems:[]
+		},
+		removed = 0;
+
+		while(songs.length){
+			let params = {
+				TransactItems:[]
+			},
+			miniSongs = songs.splice(0,25),
+			response;
+
+			miniSongs.forEach((song)=>{
+				params.TransactItems.push({
+					Delete:{
+						TableName:sTableName,
+						Key:{
+							[sF.name]:song.name,
+							[sF.catId]:catId
+						},
+						ConditionExpression:`attribute_exists(#${sF.name})`,
+						ExpressionAttributeNames:{
+							[`#${sF.name}`]:sF.name
+						}
+					}
+				})
+			})
+
+			try{
+				response = await clientD.send(new TransactWriteCommand(params));
+			}
+			catch(e){
+				console.log("Error",e);
+			}
+		}
+
+		return removed;
 	}
 	this.addStream = async ({ name, catName, song })=>{
 		await this.initialized;
@@ -557,8 +645,8 @@ function d({getClient,getClientD}){
 		if(fil.limit in filters){
 			params.Limit = filters[fil.limit];
 		}
-		if(fil.next in filters){
-			params.ExclusiveStartKey = filters[fil.next];
+		if(fil.last in filters){
+			params.ExclusiveStartKey = filters[fil.last];
 		}
 		if(fil.lastTime in filters){
 			params.ExpressionAttributeNames = { [`#${stF.cTime}`]:stF.cTime };
@@ -571,7 +659,7 @@ function d({getClient,getClientD}){
 		r = getResponse(response.Items);
 
 		if(response.LastEvaluatedKey){
-			r.next = response.LastEvaluatedKey;
+			r.last = response.LastEvaluatedKey;
 		}
 		return r;
 	}
