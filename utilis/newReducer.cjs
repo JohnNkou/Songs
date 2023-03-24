@@ -23,8 +23,7 @@ function rSongs(states, action){
 	switch(action.type){
 
 		case C.ADD_SONG:
-			states.push(rSong({},action));
-			return states;
+			return [...states, rSong({},action)];
 
 		case C.ADD_SONGS:
 			states = states.concat(action.songs);
@@ -188,7 +187,13 @@ function curCat(states,action){
 
 	switch(type){
 		case C.SET_CURRENT_CAT:
-			return { name, id };
+			for(let i=0; i < Categories.length; i++){
+				if(Categories[i].name == name){
+					return { name, id };
+				}
+			}
+			console.error("categorie not in store",name,id);
+			return states.currentCat;
 		case C.UPDATE_CAT:
 			let currentCat = states.currentCat,
 			currentCatName = currentCat.name,
@@ -219,7 +224,11 @@ function curSong(states,action){
 
 	switch(type){
 		case C.SET_CURRENT_SONG:
-			return {...song, id, location, catId };
+			if(catSongs){
+				return {...song, id, location, catId };
+			}
+			console.error("catId not in store",catId);
+			return states.currentSong;
 		case C.REMOVE_CATEGORIE:
 			if(states.currentSong.catId == id){
 				return {name:"", verses:[]}
