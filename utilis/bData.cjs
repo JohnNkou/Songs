@@ -71,10 +71,6 @@ exports.documentTree = {
 			tail:
 			[
 				{
-					type:'text/javascript',
-					src: '/store'
-				},
-				{
 					src:'dist/bundle.js',
 					type: 'text/javascript'
 				}
