@@ -18,9 +18,8 @@ let notifier,
 notifier2,
 db,
 Pseq,
-fastAccess = {__exec__:[]},
+fastAccess,
 Validator;
-fastAccess = {__exec__:[]};
 
 
 function n(p,time,u='Update',f=1){
@@ -111,6 +110,7 @@ class Setup extends React.Component{
 			if(fastAccess.hasOwnProperty(n))
 				fAccess[n] = fAccess[n];
 		}*/
+		console.log(fAccess);
 		fastAccess = fAccess;
 	}
 
@@ -163,7 +163,7 @@ class Setup extends React.Component{
 
 		startStream.f = (startStream)? ()=>{
 			notifier2.addSpeed(streamText.started(lang), undefined, undefined, undefined, signal.success);
-			this.props.startStream();
+			this.store.dispatch(this.props.startStream());
 			setTimeout(()=>{
 				localStorage.setItem("stream",JSON.stringify({name:S.getName(), time:Date.now()}));
 			},15);
@@ -172,7 +172,7 @@ class Setup extends React.Component{
 
 		stopStream.f = (stopStream)? ()=>{
 			notifier2.addSpeed(streamText.stopped(lang));
-			this.props.stopStream();
+			this.store.dispatch(this.props.stopStream());
 			setTimeout(()=>{
 				localStorage.removeItem("stream");
 			},15)
@@ -182,9 +182,9 @@ class Setup extends React.Component{
 		stopStream.img 		= images.streamCreate.start; 
 	}
 
-	configureStreamManager(fAccess,streamManager,fastAccess){
+	configureStreamManager(fAccess,streamManager){
 		S = streamManager;
-		S.addFastAccess(fastAccess);
+		S.addFastAccess(fAccess);
 	}
 
 	handleKeydown(event){
@@ -199,15 +199,14 @@ class Setup extends React.Component{
 		let store = this.store,
 		Text = this.cachingText,
 		streamText = this.streamText,
-		{ streamManager, startStream, stopStream, setControl } = this.props,
+		{ streamManager, startStream, stopStream, setControl,fAccess } = this.props,
 		{ lang } = this.state,
 		images = this.images,
-		fAccess = this.props.fastAccess,
 		fn = null;
 
-		this.populateFastAccess(this.props.fAccess);
+		this.populateFastAccess(fAccess);
 		this.configureStream();
-		this.configureStreamManager(fAccess,streamManager,fastAccess);
+		this.configureStreamManager(fAccess,streamManager);
 		this.registerGlobalClickHandler(this.globalClickHandler);
 		this.unsubscribe = store.subscribe(()=>{
 			let state = this.state,
@@ -326,19 +325,28 @@ class OnlineSongs extends React.Component{
 		this.updateSongStatus = this.updateSongStatus.bind(this);
 		this.initTime = Date.now();
 		this.handleScroll = this.handleScroll.bind(this);
+		this.fetchSongs = this.fetchSongs.bind(this);
+		this.fetchStatus = {};
+		this.nodeRef = React.createRef();
 	}
 
 	componentDidMount(){
-		let store = this.store
+		let store = this.store,
+		emptyArray = [];
 
 		this.unsubscribe = store.subscribe(()=>{
 			let cState = store.getState(),
 			state = this.state,
 			currentCat = cState.currentCat,
-			songs = (cState.onlineSongs[currentCat.id] || []),
+			songs = (cState.onlineSongs[currentCat.id]) || emptyArray,
 			newState = {};
 
-			if(state.songs != songs){
+			if(state.currentCat == currentCat){
+				if(state.songs.length != songs.length){
+					newState.songs = songs;
+				}
+			}
+			else{
 				newState.songs = songs;
 			}
 			if(state.to != cState.ui.navigation.to){
@@ -364,15 +372,70 @@ class OnlineSongs extends React.Component{
 			}
 
 			if(Object.keys(newState).length){
-				this.setState(newState);
+				this.setState(newState,()=>{
+					console.log("In effect");
+				});
 			}
 		})
+	}
 
-		let c = setInterval(()=>{
-			this.node = document.querySelector("#online .papa");
-			if(this.node)
-				clearInterval(c);
-		},15)
+	fetchSongs(){
+		let { currentCat } = this.state,
+		{ fetchStatus } = this,
+		catId = currentCat.id,
+		songFetch = fetchStatus[catId],
+		last,
+		{ addSong } = this.props,
+		store = this.store,
+		data = { catId },
+		sendData = {
+			url:'/Song?action=getAll&catId='+catId,
+			type:'application/json',
+			s:({xml,body, status})=>{
+				songFetch.fetching = false;
+				if(xml.ok){
+					if(body.last){
+						songFetch.last = body.last;
+					}
+					else{
+						songFetch.complete = true;
+					}
+
+					body.data.forEach((song,i)=>{
+						store.dispatch(addSong(i,song.name,song.catId,song.verses,'online'));
+					})
+					
+					if(!body.data.length){
+						this.forceUpdate();
+					}
+				}
+				else{
+					console.error("Received an not ok response",status, body)
+				}
+			},
+			e:({error,xml,body})=>{
+				songFetch.fetching = false;
+
+				console.error("An Error happened while fetching for songs",error);
+			}
+		};
+
+		if(songFetch){
+			if(songFetch.complete || songFetch.fetching){
+				return;
+			}
+			else{
+				songFetch.fetching = true;
+			}
+			if(songFetch.last){
+				sendData.url += '&last='+ JSON.stringify(songFetch.last);
+			}
+		}
+		else{
+			fetchStatus[catId] = songFetch = {fetching:true, complete:false};
+		}
+		this.forceUpdate();
+		fetcher(sendData);
 	}
 
 	componentWillUnmount(){
@@ -381,7 +444,8 @@ class OnlineSongs extends React.Component{
 
 
 	componentDidUpdate(prevProps, prevState){
-		let { songs, report,catName } = this.state,
+		let {fetchStatus} = this, 
+		{ songs, report,catName, currentCat } = this.state,
 		songLength = songs.length;
 
 		if(!this.initialSongLength && songLength || prevState.catName != catName){
@@ -396,19 +460,31 @@ class OnlineSongs extends React.Component{
 			this.setState({ show:true })
 		}
 
+		if(this.state.currentCat.name && this.state.currentCat.name != prevState.currentCat.name){
+			if(fetchStatus[currentCat.id] && fetchStatus[currentCat.id].complete)
+				return;
+			this.fetchSongs();
+		}
+
 		invoqueAfterMount('online');
 	}
 
 	handleScroll(event){
-		let { songs, to } = this.state,
+		let { songs, to, currentCat } = this.state,
+		{ fetchStatus } = this,
+		songFetch = fetchStatus[currentCat.id],
 		songLength = songs.length, 
 		{ updateSongList } = this.props,
-		node = this.node,
+		node = this.nodeRef.current,
 		nodeHeight = node.getBoundingClientRect().height,
 		scrollTop = node.scrollTop,
 		scrollHeight = node.scrollHeight,
 		percent = (nodeHeight + scrollTop) / node.scrollHeight * 100,
 		store = this.store;
+
+		if(percent >= 60 && !songFetch.fetching){
+			this.fetchSongs();
+		}
 
 		if(songLength >= to && percent >= 70 ){
 			store.dispatch(updateSongList(to+100));
@@ -515,11 +591,14 @@ class OnlineSongs extends React.Component{
 	}
 
 	render(){
-		let { show, report, songs, downloadImage, currentCat } = this.state,
+		let {fetchStatus} = this,
+		{ show, report, songs, downloadImage, currentCat } = this.state,
 		{ lang } = this.props,
 		mustReport = report,
 		onlineClass = `il ${(!currentCat.name || !this.store.getState().onlineSongs[currentCat.id])? 'whoosh':''} ${(show)? 'heightHelper':'online'}`,
-		pop =  { ...this.props, ...this.state };
+		pop =  { ...this.props, ...this.state },
+		showLoading = (fetchStatus[currentCat.id] && fetchStatus[currentCat.id].fetching)? true:false,
+		loadingClass = (showLoading)? '':'whoosh';
 
 		// Report expect to have status, name, parameter
 		if(mustReport){
@@ -533,11 +612,11 @@ class OnlineSongs extends React.Component{
 		return (
 			<div id="online" className={onlineClass}>
 				<div className="onlineHead il blueBack">
-					<a className="vmid tagName" id="onLink" href="#" onClick={this.manageShowing}>Online</a>
+					<a className="vmid tagName" id="onLink" href="#" onClick={this.manageShowing}><span>Online</span><img className={loadingClass} src='img/loading.gif' /></a>
 					<Counter i={songs.length} />{(show && songs.length)? <Download additionalClass="vmid" src={downloadImage} download={()=> Promise.resolve((db.isBogus)? [null]:[])} action={[()=> { return new Promise((resolve)=> { resolve(false); this.throwReport();})}]} additionalClass="vmid" />:''}
 					<Liner additionalClass="vmid" />
 				</div>
-				{(show)? <div onScroll={this.handleScroll} className="papa"><SongList location="online" counterUpdater={this.counterUpdater} includeAdder={false} {...pop} store={this.store} report={report} Text={this.Text} /></div>:''
+				{(show)? <div ref={this.nodeRef} onScroll={this.handleScroll} className="papa"><SongList location="online" counterUpdater={this.counterUpdater} includeAdder={false} {...pop} store={this.store} report={report} Text={this.Text} /></div>:''
 			}
 			</div>
 			)
@@ -632,7 +711,7 @@ class OfflineSongs extends React.Component{
 		return (
 			<div id="offline" className={offlineClass}>
 				<div className="offlineHead il open blueBack">
-					<a className="vmid tagName" id="offLink" onClick={this.manageShowing} href="#">Local</a>
+					<a className="vmid tagName" id="offLink" onClick={this.manageShowing} href="#"><span>Local</span></a>
 					<Counter i={songs.length} />
 					<Liner additionalClass="vmid" />
 				</div>
@@ -1458,7 +1537,7 @@ class CreateStream extends React.Component{
 		{ lang, setAppUnreachable } = this.props,
 		{ Text,formError } = this,
 		data,
-		store;
+		store = this.store;
 
 		if(!appReachable)
 			return this.setState({message:Text.message.networkProblem, signal:signal.error});
@@ -1475,7 +1554,7 @@ class CreateStream extends React.Component{
 		else if(Validator.isMoreThan(streamName.length,50)){
 			return this.setState({ message:  formError(Text.nameHolder(lang),50) , signal:signal.error})
 		}
-		else if(this.badInput.test(streamName)){
+		else if(!Validator.isAlphaNumeric(streamName)){
 			return this.setState({message: Text.message.BadCharacter, signal:signal.error})
 		}
 		
@@ -1521,24 +1600,31 @@ class CreateStream extends React.Component{
 			url:"/stream?action=add",
 			method:'POST',
 			data:JSON.stringify(data),
-			s:(s)=>{
-
+			type:'application/json',
+			s:({ xml, body, status})=>{
 				clearInterval(c);
-				this.setState({message:Text.message.streamCreated, disabled:true, signal:signal.success})
-				startStream(streamName.toLowerCase(),true);
-			},
-			e:({status,error})=>{
-				clearInterval(c);
-				if(error && error.code && error.code == 6){
-					stopStream(streamName.toLowerCase());
-					return this.setState({message:Text.message.nameDuplication, signal:signal.error});
+				if(xml.ok){
+					this.setState({message:Text.message.streamCreated, disabled:true, signal:signal.success})
+					startStream(streamName.toLowerCase(),true);
 				}
-				this.setState({message:Text.message.creationError, signal:signal.error});
-				store.dispatch(setAppUnreachable());
-				stopStream(streamName.toLowerCase());
+				else if(xml.problems){
+					if(body.exist){
+						this.setState({message:Text.message.nameDuplication,signal:signal.error})
+						stopStream(streamName.toLowerCase());
+					}
+					else{
+						stopStream(streamName.toLowerCase());
+						this.setState({message:Text.message.creationError,signal:signal.error})
+					}
+				}
 			},
-			setter:(xml)=>{
-				xml.setRequestHeader('content-type','application/json');
+			e:({status,error,xml})=>{
+				clearInterval(c);
+				this.setState({message:Text.message.creationError, signal:signal.error});
+				if(xml.networkDown){
+					store.dispatch(setAppUnreachable());
+				}
+				stopStream(streamName.toLowerCase());
 			}
 		})
 
@@ -1819,7 +1905,8 @@ class CatNames extends React.Component{
 		this.propagationHandler = this.propagationHandler.bind(this);
 		this.showControl = this.showControl.bind(this);
 		this.state = { updateForced: state.updateForced.catNames, controls: state.keys.alt, view: state.ui.show.catList, catNames: state.Categories, controls: state.keys.alt }
-		this.image = state.images.download
+		this.image = state.images.download;
+		this.fetchCategories = this.fetchCategories.bind(this);
 	}
 
 	componentDidMount(){
@@ -1853,6 +1940,44 @@ class CatNames extends React.Component{
 			this.addCatButton = ()=> null;
 			this.forceUpdate();
 		}
+
+		this.fetchCategories();
+	}
+
+	fetchCategories(){
+		let store = this.store,
+		{ addCategorie } = this.props,
+		{ last } = this.state;
+
+		let sendData = {
+			url:'/Categorie?action=getAll',
+			type:'application/json',
+			s:({xml,body})=>{
+				if(xml.ok){
+					body.data.forEach((cat)=>{
+						store.dispatch(addCategorie(cat.name,cat.id,'online'));
+					})
+					if(body.last){
+						this.setState({last:body.last})
+					}
+					else{
+						this.setState({complete:true});
+					}
+				}
+				else{
+					console.error("Received an not ok status while retrieving categories",xml.status,body);
+				}
+			},
+			e:({error,xml,body})=>{
+				console.error("Error happening while retrieving categories",error,body);
+			}
+		};
+
+		if(last){
+			sendData.data = JSON.stringify({ last });
+		}
+
+		fetcher(sendData);
 	}
 
 	componentWillUmount(){
@@ -1923,11 +2048,14 @@ class CatNames extends React.Component{
 	}
 	action1(item,id){
 		let { changeIndex, setCurrentCat, updateSongList, changeCatListView } = this.props,
-		store = this.store;
+		store = this.store,
+		currentCat = store.getState().currentCat;
 
-		store.dispatch(changeIndex(0));
-		store.dispatch(setCurrentCat(item.name,item.id,item.location));
-		store.dispatch(updateSongList(100));
+		if(currentCat.id != item.id){
+			store.dispatch(changeIndex(0));
+			store.dispatch(setCurrentCat(item.name,item.id,item.location));
+			store.dispatch(updateSongList(100));
+		}
 		store.dispatch(changeCatListView(false));
 	}
 	action2({name,id}){
@@ -2757,29 +2885,34 @@ class StreamCreation extends React.Component{
 		let streamName = S.getName(),
 		data = {
 			[stF.name]:streamName
-		};
+		},
+		{ lang } = this.props;
+
 		fetcher({
 			url:`stream?action=delete`,
 			method:'POST',
 			data:JSON.stringify(data),
-			s:(response)=>{
-				clearInterval(this.counter);
-				notifier2.addSpeed(this.text.Stream.stopped(this.props.lang,streamName));
-				
-				
+			type:'application/json',
+			s:({ status, body, xml })=>{
+
+				if(xml.ok){
+					clearInterval(this.counter);
+					notifier2.addSpeed(this.text.Stream.stopped(lang,streamName));
+					this.setState({img:`img/${this.images.start}`});
+				}
+				else{
+					clearInterval(this.counter);
+					notifier2.addSpeed(this.text.Stream.stopError(lang));
+				}
 				stopStream(streamName);
-				this.setState({img:`img/${this.images.start}`});
 			},
 			e:(e)=>{
 				clearInterval(this.counter);
-				notifier2.addSpeed(this.text.stopError(this.props.lang,streamName));
+				notifier2.addSpeed(this.text.Stream.stopError(lang,streamName));
 				console.log(`Error while trying to stop the stream ${streamName}`,e);
 				stopStream(streamName);
 				
 				this.setState({img:`img/${this.images.start}`});
-			},
-			setter:(xml)=>{
-				xml.setRequestHeader('content-type','application/json');
 			}
 		})
 	}
@@ -2946,61 +3079,69 @@ class StreamList extends React.Component{
 
 		fetcher({
 			url:`/stream/?action=getAll&${filters.lastTime}=${lastTime}`,
-			s:({action, streams,timestamp,name})=>{
-				let myStream = S.getName();
-				if(!timestamp && t)
-					timestamp = t;
-				switch(action){
-					case SUB.UPDATE:
-						
-						if(myStream){
-							this.setState({list:streams.filter((stream)=> stream != myStream)});
-						}
-						else{
-							this.setState({list:streams})
-						}
-						this.restartUpdateStream(timestamp);
-						break;
-					case SUB.ADD:
-						if(!myStream || myStream != name){	
-							this.setState({list:[...this.state.list,name]});
-						}
-						this.restartUpdateStream(timestamp);
-						break;
-					case SUB.DELETE:
-						let isNotIn = (is.Array(name))? (x)=> (name.indexOf(x) == -1):(x)=> x != name, currentStreamName = S.getName(), currentRegistration = this.subscribe.registration;
-						let list = this.state.list.filter(isNotIn);
+			s:({ body, status,xml })=>{
+				if(xml.ok){
+					let {action, streams,timestamp,name} = body,
+					myStream = S.getName();
 
-						if(currentStreamName && !isNotIn(currentStreamName)){
-							stopStream(S.getName());
-						}
+					if(!timestamp && t)
+						timestamp = t;
+					switch(action){
+						case SUB.UPDATE:
+							
+							if(myStream){
+								this.setState({list:streams.filter((stream)=> stream != myStream)});
+							}
+							else{
+								this.setState({list:streams})
+							}
+							this.restartUpdateStream(timestamp);
+							break;
+						case SUB.ADD:
+							if(!myStream || myStream != name){	
+								this.setState({list:[...this.state.list,name]});
+							}
+							this.restartUpdateStream(timestamp);
+							break;
+						case SUB.DELETE:
+							let isNotIn = (is.Array(name))? (x)=> (name.indexOf(x) == -1):(x)=> x != name, currentStreamName = S.getName(), currentRegistration = this.subscribe.registration;
+							let list = this.state.list.filter(isNotIn);
 
-						if(currentRegistration && !isNotIn(currentRegistration)){
-							notifier2.addSpeed(this.streamText.subscription.end(this.props.lang,currentRegistration));
-							delete this.subscribe.registration;
-							store.dispatch(subscribeToStream(false));
-							this.updateCurrentStreamInfo();
-							abortSubscription(fetcher);
-						}
-						
-						this.setState({list:list});
+							if(currentStreamName && !isNotIn(currentStreamName)){
+								stopStream(S.getName());
+							}
 
-						this.restartUpdateStream(timestamp);
-						break;
-					case SUB.NOTHING:
-						this.restartUpdateStream(timestamp);
-						break;
-					default:
-						console.log("Incomprehensible action",action,streams);
-						
-						this.restartUpdateStream(timestamp);
+							if(currentRegistration && !isNotIn(currentRegistration)){
+								notifier2.addSpeed(this.streamText.subscription.end(this.props.lang,currentRegistration));
+								delete this.subscribe.registration;
+								store.dispatch(subscribeToStream(false));
+								this.updateCurrentStreamInfo();
+								abortSubscription(fetcher);
+							}
+							
+							this.setState({list:list});
+
+							this.restartUpdateStream(timestamp);
+							break;
+						case SUB.NOTHING:
+							this.restartUpdateStream(timestamp);
+							break;
+						default:
+							console.log("Incomprehensible action",action,streams);
+							
+							this.restartUpdateStream(timestamp);
+					}
 				}
-				
+				else{
+					console.og("Error updating the stream");
+				}
 			},
-			e:(e,xml)=>{
-				store.dispatch(setAppUnreachable());
+			e:({error, xml})=>{
+				if(xml.networkDown){
+					store.dispatch(setAppUnreachable());
+				}
 				notifier2.addSpeed(this.listText.updateStreamError(lang));
-				console.log("Error while retriving the stream",e);
+				console.log("Error while retriving the stream",error);
 			}
 		})
 	}
@@ -3024,45 +3165,52 @@ class StreamList extends React.Component{
 		notifier2.addSpeed(downloadText.start(lang,songName));
 		fetcher({
 			url,
-			s:(response)=>{
-				let { action,songName, catName, verses } = response;
-				delete downloadSong.inFetch[url];
-				switch(action){
-					case SUB.DELETE:
-						notifier2.addSpeed(this.listText.songDeleted(lang,songName));
-						break;
-					case SUB.ADD:
-						let newCatId = null;
-						if(!fastAccess[catName]){
-							newCatId = Date.now()
-							store.dispatch(addCategorie(catName,newCatId,'online'));
-							notifier2.addSpeed(this.listText.categorieInserted(lang,catName));
-						}
-						else{
-							newCatId = fastAccess[catName].id;
-						}
-						store.dispatch(addSong(0,songName, newCatId, verses, 'online'));
-						notifier2.addSpeed(this.listText.songInserted(lang,catName,songName));
+			s:({xml,body})=>{
+				if(xml.ok){
+					let { action,songName, catName, verses } = body;
+					delete downloadSong.inFetch[url];
+					switch(action){
+						case SUB.DELETE:
+							notifier2.addSpeed(this.listText.songDeleted(lang,songName));
+							break;
+						case SUB.ADD:
+							let newCatId = null;
+							if(!fastAccess[catName]){
+								newCatId = Date.now()
+								store.dispatch(addCategorie(catName,newCatId,'online'));
+								notifier2.addSpeed(this.listText.categorieInserted(lang,catName));
+							}
+							else{
+								newCatId = fastAccess[catName].id;
+							}
+							store.dispatch(addSong(0,songName, newCatId, verses, 'online'));
+							notifier2.addSpeed(this.listText.songInserted(lang,catName,songName));
 
-						if(this.streamCatName.toLowerCase() == catName.toLowerCase() && this.streamSongName.toLowerCase() == songName.toLowerCase()){
-							store.dispatch(setCurrentCat(catName,newCatId,'online'));
-							let songId = fastAccess[catName]['online'][songName.toUpperCase()];
-							store.dispatch(setCurrentSong(songId,newCatId,'online',this.streamPosition));
-						}
-						break;
-					case SUB.STREAMDELETED:
-						notifier2.addSpeed(this.streamText.stopped(lang,streamName));
-						break;
-					case SUB.CHANGED_SONG:
-						notifier2.addSpeed(downloadText.error(lang,songName));
-						break;
-					default:
-						console.error("Inregognized response from downloadSong fetcher",action,response);
+							if(this.streamCatName.toLowerCase() == catName.toLowerCase() && this.streamSongName.toLowerCase() == songName.toLowerCase()){
+								store.dispatch(setCurrentCat(catName,newCatId,'online'));
+								let songId = fastAccess[catName]['online'][songName.toUpperCase()];
+								store.dispatch(setCurrentSong(songId,newCatId,'online',this.streamPosition));
+							}
+							break;
+						case SUB.STREAMDELETED:
+							notifier2.addSpeed(this.streamText.stopped(lang,streamName));
+							break;
+						case SUB.CHANGED_SONG:
+							notifier2.addSpeed(downloadText.error(lang,songName));
+							break;
+						default:
+							console.error("Inregognized response from downloadSong fetcher",action,body);
+					}
+				}
+				else{
+					notifier2.addSpeed(text.downloadError(lang,songName));
+					delete downloadSong.inFetch[url];
 				}
 			},
-			e:({status,response})=>{
+			e:({xml,error})=>{
 				delete downloadSong.inFetch[url];
 				notifier2.addSpeed(text.downloadError(lang,songName));
+				console.error(error);
 			}
 		})
 	}
@@ -3087,115 +3235,123 @@ class StreamList extends React.Component{
 
 		fetcher({
 					url,
+					s: ({xml,body})=>{
+						if(xml.ok){
+							let response = body;
+							if(response){
+								try{
+									let catName = response[stF.catName] || past[stF.catName],
+									songName = response[stF.songName] || past[stF.songName],
+									position = response[stF.index],
+									songNameL = songName && songName.toUpperCase(),
+									subscribeMethod = this.subscribe,
+									registration = subscribeMethod.registration,
+									fastAccessCatName = null,
+									fastAccessCatNameOnline = null,
+									fastAccessCatNameOffline = null,
+									catId = null,
+									songNotInOnlineCat = undefined,
+									songNotInOfflineCat = undefined,
+									songId = null,
+									textStream = this.streamText,
+									textSubscription = textStream.subscription,
+									subscriptionSuccess = textSubscription.success,
+									subscriptionError = textSubscription.error,
+									dontHaveSong = textSubscription.dontHaveSong,
+									endSubscription = textSubscription.end;
+
+									if(catName && songName){
+										fastAccessCatName = fastAccess[catName],
+										catId = fastAccessCatName && fastAccessCatName.id
+										fastAccessCatNameOnline = fastAccessCatName && fastAccessCatName.online[songNameL],
+										fastAccessCatNameOffline = fastAccessCatName && fastAccessCatName.offline[songNameL],
+										songNotInOnlineCat = (fastAccessCatNameOnline === false) || (fastAccessCatNameOnline === undefined),
+										songNotInOfflineCat = (fastAccessCatNameOffline === false) || (fastAccessCatNameOffline === undefined);
+
+										if(!songNotInOnlineCat || !songNotInOfflineCat){
+											if(songNotInOnlineCat)
+												songId = fastAccessCatNameOffline;
+											else
+												songId = fastAccessCatNameOnline;
+										}
+									}
+
+
+									if(!registration){
+										subscribeMethod.registration = streamName;
+									}
+									else if(registration != streamName){
+										subscribeMethod.registration = streamName;
+									}
+
+									switch(response.action){
+										case SUB.UPDATE:
+
+											if(!update){
+												notifier2.addSpeed(subscriptionSuccess(lang,streamName))
+											}
+											if(!songName || !catName){
+
+											}
+											else if(!fastAccessCatName || (songNotInOnlineCat && songNotInOfflineCat)){
+												this.downloadSong(catName,songName,streamName)
+											}
+											else{
+												let location = (songNotInOfflineCat)? 'online':'offline';
+												store.dispatch(setCurrentCat(catName,fastAccessCatName.id,location));
+												store.dispatch(setCurrentSong(songId,catId,location,parseInt(position,10)));
+													
+											}
+											this.updateCurrentStreamInfo(catName, songName, position);
+
+
+											this.subscribe(streamName,true, { [stF.songName]: songName, [stF.catName]:catName });
+											break;
+
+										case SUB.UNSUBSCRIBE:
+											
+											notifier2.addSpeed(endSubscription(lang, streamName));
+											delete subscribeMethod.registration;
+											store.dispatch(subscribeToStream(false));
+											this.updateCurrentStreamInfo();
+											break;
+
+										case SUB.NOTHING:
+
+											notifier2.addSpeed(textSubscription.nothing(this.props.lang, streamName));
+											store.dispatch(subscribeToStream(false));
+											break;
+										default:
+
+											notifier2.addSpeed(subscriptionError(lang, streamName));
+											console.log("fetcher Odd response",response);
+											store.dispatch(subscribeToStream(false));
+											this.updateCurrentStreamInfo();
+									}
+								}
+								catch(e){
+									console.log(e);
+								}
+
+							}
+						}
+						else{
+							notifier2.addSpeed(this.text.Stream.subscription.error(this.props.lang,streamName));
+							store.dispatch(subscribeToStream(false));
+						}
+					},
+					e:({xml,body,error})=>{
+						notifier2.addSpeed( this.text.Stream.subscription.error(this.props.lang, streamName));
+						store.dispatch(subscribeToStream(false));
+						if(body){
+							console.log("Error while trying to subscribe to stream",streamName,status,body);
+						}
+					},
 					setter: (xml)=>{
 						fetcher.subscription = {abort:()=>{
 							xml.abort();
 							delete this.subscribe.registration;
 						}}
-					},
-					s: (response)=>{
-						if(response){
-							try{
-								let catName = response[stF.catName] || past[stF.catName],
-								songName = response[stF.songName] || past[stF.songName],
-								position = response[stF.index],
-								songNameL = songName && songName.toUpperCase(),
-								subscribeMethod = this.subscribe,
-								registration = subscribeMethod.registration,
-								fastAccessCatName = null,
-								fastAccessCatNameOnline = null,
-								fastAccessCatNameOffline = null,
-								catId = null,
-								songNotInOnlineCat = undefined,
-								songNotInOfflineCat = undefined,
-								songId = null,
-								textStream = this.streamText,
-								textSubscription = textStream.subscription,
-								subscriptionSuccess = textSubscription.success,
-								subscriptionError = textSubscription.error,
-								dontHaveSong = textSubscription.dontHaveSong,
-								endSubscription = textSubscription.end;
-
-								if(catName && songName){
-									fastAccessCatName = fastAccess[catName],
-									catId = fastAccessCatName && fastAccessCatName.id
-									fastAccessCatNameOnline = fastAccessCatName && fastAccessCatName.online[songNameL],
-									fastAccessCatNameOffline = fastAccessCatName && fastAccessCatName.offline[songNameL],
-									songNotInOnlineCat = (fastAccessCatNameOnline === false) || (fastAccessCatNameOnline === undefined),
-									songNotInOfflineCat = (fastAccessCatNameOffline === false) || (fastAccessCatNameOffline === undefined);
-
-									if(!songNotInOnlineCat || !songNotInOfflineCat){
-										if(songNotInOnlineCat)
-											songId = fastAccessCatNameOffline;
-										else
-											songId = fastAccessCatNameOnline;
-									}
-								}
-
-
-								if(!registration){
-									subscribeMethod.registration = streamName;
-								}
-								else if(registration != streamName){
-									subscribeMethod.registration = streamName;
-								}
-
-								switch(response.action){
-									case SUB.UPDATE:
-
-										if(!update){
-											notifier2.addSpeed(subscriptionSuccess(lang,streamName))
-										}
-										if(!songName || !catName){
-
-										}
-										else if(!fastAccessCatName || (songNotInOnlineCat && songNotInOfflineCat)){
-											this.downloadSong(catName,songName,streamName)
-										}
-										else{
-											let location = (songNotInOfflineCat)? 'online':'offline';
-											store.dispatch(setCurrentCat(catName,fastAccessCatName.id,location));
-											store.dispatch(setCurrentSong(songId,catId,location,parseInt(position,10)));
-												
-										}
-										this.updateCurrentStreamInfo(catName, songName, position);
-
-
-										this.subscribe(streamName,true, { [stF.songName]: songName, [stF.catName]:catName });
-										break;
-
-									case SUB.UNSUBSCRIBE:
-										
-										notifier2.addSpeed(endSubscription(lang, streamName));
-										delete subscribeMethod.registration;
-										store.dispatch(subscribeToStream(false));
-										this.updateCurrentStreamInfo();
-										break;
-
-									case SUB.NOTHING:
-
-										notifier2.addSpeed(textSubscription.nothing(this.props.lang, streamName));
-										store.dispatch(subscribeToStream(false));
-										break;
-									default:
-
-										notifier2.addSpeed(subscriptionError(lang, streamName));
-										console.log("fetcher Odd response",response);
-										store.dispatch(subscribeToStream(false));
-										this.updateCurrentStreamInfo();
-								}
-							}
-							catch(e){
-								console.log(e);
-							}
-
-						}
-						
-					},
-					e:({status,response})=>{
-						notifier2.addSpeed( this.text.Stream.subscription.error(this.props.lang, streamName));
-						store.dispatch(subscribeToStream(false));
-						console.log("Error while trying to subscribe to stream",streamName,status,response);
 					}
 				});
 	}
