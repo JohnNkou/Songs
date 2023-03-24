@@ -46,7 +46,7 @@ function storageHandler(CONSTANT){
 							lists[name] = data;
 						}
 						catch(e){
-							console.log("Error while applying function",fn.name," to data ",data);
+							console.error("Error while applying function",fn.name," to data ",data);
 						}
 					}
 				}
@@ -252,7 +252,6 @@ const P = function(){
 
 			if(this.subscribers[topic]){
 				delete this.subscribers[topic];
-				console.log(`Topic ${topic} deleted`);
 			}
 		}
 
@@ -266,10 +265,6 @@ function registerWorker(src){
 	if(serviceWorker){
 		return serviceWorker.register(src).then((registration)=>{
 			if(registration){
-				if(registration.scope){
-					console.log("Registration scope is",registration.scope);
-				}
-
 				let { installing, active } = registration;
 
 				if(installing){
@@ -311,7 +306,6 @@ function registerWorker(src){
 		})
 	}
 	else{
-		console.log("No service worker dude. Cry");
 		return false;
 	}
 }
@@ -339,7 +333,7 @@ function getLocalData(dbLoader,store,{addSong,addCategorie,addSongs}){
 							catId = cat.id;
 
 							store.dispatch(addCategorie(catName,catId));
-							fastLookUp[catName] = {}; console.log("cat",cat);
+							fastLookUp[catName] = {};
 
 							db.getAllSongs(catId)().then((songs)=>{
 								songs = songs.map((song)=>{
@@ -356,11 +350,11 @@ function getLocalData(dbLoader,store,{addSong,addCategorie,addSongs}){
 								if(id == catLength)
 									resolve({data:store.getState(),fastLookUp, db});
 
-							}).catch((e)=> { console.log("getLocalData getAllSong cath error",e); alert("getLocalData:getAllSong Error"+e.message);});
+							}).catch((e)=> { console.error("getLocalData getAllSong cath error",e); alert("getLocalData:getAllSong Error"+e.message);});
 
 						}
 						catch(e){
-							console.log("getLocalData catch error",e);
+							console.error("getLocalData catch error",e);
 						}
 							
 							
@@ -496,7 +490,6 @@ exports.streamer = function(fetcher,store,table){
 			}		
 
 			let url =  `stream?action=update`;
-			console.log("The url is",url);
 			fetcher({
 						url, 
 						method:'POST',
@@ -505,17 +498,16 @@ exports.streamer = function(fetcher,store,table){
 							xml.setRequestHeader('content-type','application/json');
 						},
 						e:({status,response})=>{
-								console.log("Error trying to update the stream with url",url, status, response);
+								console.error("Error trying to update the stream with url",url, status, response);
 						},
 						s:(response)=>{
-							console.log("streamUpdated",response);
 							let waitingDownload = response.waitingDownload,
 							catId = null;
 							if(waitingDownload){
 								let state = store.getState(),
 								{ Categories, onlineSongs, offlineSongs } = state,
 								r = {};
-								console.log("Oups, some people don't have my song");
+								
 								for(let catName in waitingDownload){
 									if((catId = Categories.indexOf(catName.toLowerCase())) == -1){
 										r[catName] = {delete:true};
@@ -614,7 +606,6 @@ function PSeq(){
 				if(!this.sequence.length){
 					id = this.sequence.push(p[0]) -1;
 					p[0]().then(sameCompose(this.executeNext, (d)=> { this.sequence[0].clients.forEach((client)=> client[0](d))})).catch((e)=>{
-						//console.log("Error",e);
 						this.sequence[0].clients.forEach((client)=>{
 							client[1](e);
 						})
@@ -642,12 +633,8 @@ function PSeq(){
 				this.sequence[0].clients.forEach((client)=>{
 					client[1](e);
 				})
-				//console.log("Error",e);
 				this.executeNext();
 			});
-		}
-		else{
-			//console.log("No more sequence");
 		}
 	}
 	this.subscribe = (id,f,e)=>{
@@ -661,26 +648,77 @@ function PSeq(){
 	}
 }
 
+function parseHeader(data){
+  let start = 0,
+  next,
+  headers = {},
+  i = 0;
+
+  while((next = data.indexOf(':',start)) != -1){
+    let name = data.slice(start,next),
+    value;
+    start = next+1;
+    next = data.indexOf('\n',start);
+    value = data.slice(start,next);
+    start = next+1;
+
+    headers[name] = value;
+  }
+
+  return headers;
+}
+
+function parseResponse(xml){
+	let body = xml.response || xml.responseText,
+	status = xml.status,
+	headers = parseHeader(xml.getAllResponseHeaders());
+
+	if(headers['content-type'] && headers['content-type'].indexOf('application/json') != -1){
+		body = JSON.parse(body);
+	}
+	if(!status){
+		xml.networkDown = true;
+	}
+	if(status >= 200 && status < 300){
+		xml.ok = true;
+	}
+	if(status >= 300 && status < 400){
+		xml.redirected = true;
+	}
+	if(status >= 400 && status < 500){
+		xml.problems = true;
+	}
+	if(status >= 500){
+		xml.serverError = true;
+	}
+
+	return {body, headers, status, xml};
+}
+
 exports.fetcher = function fetcher(a){
 	var xml = new XMLHttpRequest();
 	xml.open(a.method || 'GET',a.url,true);
 	if(a.setter){
 		a.setter(xml);
 	}
+	if(a.type){
+		xml.setRequestHeader('content-type',a.type);
+	}
 	xml.onload = ()=>{
-		var response = xml.response;
-		if(/application\/json/.test(xml.getResponseHeader('Content-Type'))){
-			response = JSON.parse(xml.response || xml.responseText);
+		try{
+			a.s(parseResponse(xml));
 		}
-		if(xml.status < 300 && xml.status >= 200){
-			a.s(response);
-		}
-		else{
-			a.e({status:xml.status,error:response},xml);
+		catch(e){
+			a.e(e);
 		}
 	}
 	xml.onerror = (e)=>{
-		a.e({status:xml.status, error:e},xml);
+		try{
+			a.e({...parseResponse(xml), error:e})
+		}
+		catch(e){
+			a.e({error:e,xml});
+		}
 	}
 	xml.send(a.data);
 }
@@ -828,12 +866,13 @@ function helpWithCoordinate(div1,div2){
 
 function errorLogger(){
 	let oldConsole = window.console,
-	error = oldConsole.error,
-	xml = new XMLHttpRequest(),
-	url = '/reportError';
+	error = oldConsole.error;
 
 	return function(...p){
 		error.apply(oldConsole,arguments);
+		let xml = new XMLHttpRequest(),
+		url = '/reportError';
+
 		xml.open('POST',url,true);
 		xml.setRequestHeader('content-type','application/json');
 		xml.send(JSON.stringify(p));
