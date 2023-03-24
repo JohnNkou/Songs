@@ -159,6 +159,12 @@ module.exports = {
 		stopError: (lang="En",name)=>{
 			return (lang.toLowerCase() == "en")? `Error while trying to stop stream ${name}`: `Une Erreur est survenue lors de l'arrete du stream ${name}`
 		},
+		creationError:(lang="En")=>{
+			return (lang.toLowerCase() == "en")? `We couldn't create the stream, Please try again`:`Le stream n'a pas pu etre crée, veuillez reessayer`
+		},
+		Error:(lang="En")=>{
+			return (lang.toLowerCase() == "en")? `An Error happened while creating the stream. Please try again`:`Une Erreur est survenu lors de la creation du stream. Veuillez reessayer`
+		},
 		download:{
 			start: (lang="En",songName)=>{
 				return (lang.toLowerCase() == "en")? ` Downloading song ${songName}`:`Telechargement de la chanson ${songName}`;
