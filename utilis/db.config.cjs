@@ -48,7 +48,7 @@ const config = (function(){
 	},
 	filters = {
 		limit:'limit',
-		next:'next',
+		last:'last',
 		lastTime:'lastTime'
 	},
 	streamdef = {
@@ -205,6 +205,15 @@ const config = (function(){
 							]
 						},
 						required: (required)? errorMessage.required(cF.name):false
+					},
+					'last':{
+						validate:{
+							names:[
+								[O,{
+									error: errorMessage.type('last',O)
+								}]
+							]
+						}
 					}
 				}
 			},
@@ -230,17 +239,14 @@ const config = (function(){
 						validate:{
 							names:[
 								[S,{
-									error: errorMessage.type(sF.name,S)
+									error: errorMessage.type(sF.catId,S)
 								}],
 								[Ne,{
-									error: errorMessage.empty(sF.name)
-								}],
-								[Ia,{
-									error: errorMessage.notAlphaNumeric(sF.name)
+									error: errorMessage.empty(sF.catId)
 								}]
 							]
 						},
-						required: (required)? errorMessage.required(sF.name):false
+						required: (required)? errorMessage.required(sF.catId):false
 					},
 					[sF.verses]:{
 						validate:{
@@ -251,6 +257,15 @@ const config = (function(){
 							]
 						},
 						required:(required)? errorMessage.required(sF.verses):false
+					},
+					'last':{
+						validate:{
+							names:[
+								[O,{
+									error: errorMessage.type('last',O)
+								}]
+							]
+						}
 					}
 				}
 			},
