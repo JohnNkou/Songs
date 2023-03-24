@@ -24,18 +24,12 @@ lazyGuider();
 
 let localStorageData = loadFromLocalStorage(System.LOCALSTORAGE),
 localData = getLocalData(dbLoader,store,Action),
-fastAccess = getRemoteData(store,songLoader,localData),
 streamManager = new streamer(fetcher,store,config.table),
 Msteps,
 MStepLoader;
 
-fastAccess.then(()=>{
-	console.log("Okay fastAccess");
-}).catch((e)=>{
-	console.error("fastAccess catch Error",e);
-})
 
-Promise.all([localData,fastAccess]).then(()=>{
+Promise.all([localData]).then(()=>{
 	let state = store.getState(),
 	categories = state.Categories,
 	{ favorites, nightMode, currentCat, currentSong } = localStorageData,
@@ -138,7 +132,7 @@ Promise.all([localData,MStepLoader]).then((r)=>{
 	let pan = { store, Text };
 	render(
 		<Custom.Provider value={pan}>
-			<App  step={Msteps} fAccess={fAccess} fastAccess={fastAccess} streamManager={streamManager} {...Action} validator={validator} note={note} seq={seq} db={db} />
+			<App  step={Msteps} fAccess={fAccess} streamManager={streamManager} {...Action} validator={validator} note={note} seq={seq} db={db} />
 		</Custom.Provider>,
 		document.getElementById('react-container')
 	)
