@@ -2,10 +2,12 @@ import minimize  from 'minimize';
 import mysql from 'mysql'
 import { SUB } from '../utilis/constant.cjs'
 import { spawn, fork } from 'child_process'
+import dbClients from '../utilis/db.js';
 import db from '../utilis/dbClass.js';
 import { check,transformer, validator } from '../utilis/dev_utilis.js'
 import messages from '../utilis/message.cjs';
 import config from '../utilis/db.config.cjs';
+import { songPattern } from '../utilis/pattern.js';
 
 const resTimeToWait = 30000,
 errorMessage = messages.error,
@@ -21,7 +23,9 @@ T = new transformer(V),
 streamConstrains = constrains[stream.name](errorMessage),
 streamRelaxConstrains = constrains[stream.name](errorMessage,false),
 catConstrains = constrains[cat.name](errorMessage),
+relaxCatConstrains = constrains[cat.name](errorMessage,false),
 songConstrains = constrains[song.name](errorMessage),
+relaxSongConstrains = constrains[song.name](errorMessage,false),
 streamFilterConstrains = constrains[`${stream.name}Filter`](errorMessage),
 testing = process.env.NODE_ENV == 'test',
 root = process.env.ROOT;
@@ -56,7 +60,7 @@ export function ErrorLogger(){
 	}
 }
 
-export function CommitHandler({app,db,closeFunction,procs}){
+export function CommitHandler(){
 	let reg = /heads\/master$/;
 
 	return (req,res,next)=>{
@@ -65,9 +69,12 @@ export function CommitHandler({app,db,closeFunction,procs}){
 		message = "";
 
 		if(ref){
+			res.status(200).end();
+
 			if(reg.test(ref)){
 				console.log("Git Pulling");
-				let proc = spawn("git",["pull","Master","master"]);
+				let proc = spawn("git",["pull","Master","master"]),
+				proc2;
 
 				proc.stderr.on('data',(chunk)=> { message += chunk });
 				proc.on('error',(e)=>{
@@ -75,78 +82,16 @@ export function CommitHandler({app,db,closeFunction,procs}){
 				})
 				proc.on('exit',(code,signal)=>{
 					if(code == 0){
-						console.log("Pulling finished");
-						console.log(message);
-						if(procs.length){
-							console.log("Closing",procs.length, 'server');
-							let n = procs.length,
-							fn = async ()=>{
-								if(!(--n)){
-									try{
-										console.log("Servers closed");
-										console.log("Forking new server");
-
-										let proc = await ForkProcess();
-
-										if(proc){
-											procs.push(proc);
-										}
-										else{
-											console.error("Bad Forking");
-										}
-									}
-									catch(e){
-										console.error("Error while forking");
-									}
-								}
-							}
-
-							while(procs.length){
-								let proc = procs.pop();
-								proc.send({ close:true })
-								proc.on('message',fn);
-							}
-						}
-						else{
-							console.log("Closing server");
-							closeFunction(app,db,req).then(async (result)=>{
-								if(result){
-									try{
-										console.log("Server closed");
-										console.log("Forking server");
-
-										let proc = await ForkProcess();
-
-										if(proc){
-											procs.push(proc);
-											console.log("Server forked");
-										}
-										else{
-											console.error("Bad Forking");
-										}
-									}
-									catch(e){
-										console.error("Error while forking server");
-									}
-								}
-								else{
-									console.error("Couldn't close the function",result);
-								}
-							}).catch((e)=>{
-								console.error("Close function error",e);
-							})
-						}
+						next();
 					}
 					else{
 						console.error("Git pull exited with bad code",code);
 						console.error(message);
 					}
 				})
-				res.status(200).end();
 			}
 			else{
 				console.log("Commit from non master",body);
-				res.status(202).end();
 			}
 		}
 		else{
@@ -155,58 +100,37 @@ export function CommitHandler({app,db,closeFunction,procs}){
 	}
 }
 
-export function CloseServer(app,db,req){
-	let args = arguments;
-	return new Promise((resolve,reject)=>{
-		if(args.length != 3){
-			throw Error("Bad argument length");
-		}
-
+export function CloseServer(app,db){
+	return (req,res,next)=>{
 		let server = app.__customServer;
+		server.close();
 
-		if(server){
-			server.close();
-			resolve(true);
-
-			setTimeout(()=>{
-				try{
-					db.end();
-				}
-				catch(e){
-					console.error("CloserServer db.destroy error",e);
-				}
-			},30000)
-		}
-		else{
-			reject(new Error("App don't have a customServer"))
-		}
-	})
+		setTimeout(()=>{
+			db.end();
+			next();
+		},15000)
+	}
 }
 
-function ForkProcess(){
-	return new Promise((resolve,reject)=>{
-		let proc = fork('start.js',{ detached:true, env:process.env, cwd: root });
+export function ForkProcess(app,db){
+	return (req,res)=>{
+		let proc = fork('start.js',{ env:process.env, cwd: root });
 		proc.on('message',(payload)=>{
 			if(payload.started){
-				console.log("Process spawned");
-				resolve(proc);
+				process.exit(0);
 			}
 			else{
-				console.error("Odd payload",payload);
-				resolve(false);
-				proc.kill();
+				console.error("Received Odd response",payload);
+				try{
+					app.listen(process.env.PORT);
+					db.newClient(dbClients);
+				}
+				catch(e){
+					console.error(e);
+					process.exit(1);
+				}
 			}
 		})
-		proc.on('error',(error)=>{
-			reject(error);
-		})
-	})
-}
-
-export const storeProvider = (store)=>{
-	return (req,res,next)=>{
-		res.set('Content-type','text/javascript');
-		res.status(200).end(`window.storeData=${JSON.stringify(store)}`);
 	}
 }
 
@@ -432,6 +356,8 @@ export function Stream(){
 							}).catch(next);
 						}
 						else{
+							let reg = new RegExp(`[^${songPattern}]`,'gi');
+							console.log("Bad characted",songName.match(reg));
 							return res.status(400).json({error,updated:false}).end();
 						}
 					}
@@ -501,6 +427,18 @@ export function Stream(){
 							}
 						}).end();
 					}	
+				case 'checkExist':
+					return db.getStream(query.name).then((r)=>{
+						if(r.data.length){
+							res.status(200).end();
+						}
+						else{
+							res.status(404).end();
+						}
+					}).catch((e)=>{
+						console.error(e);
+						res.status(404).end();
+					})
 				default:
 					res.status(400).json({
 						error:{
@@ -517,12 +455,117 @@ export function Stream(){
 			}).end();
 		}
 	}
-
 	if(process.env.NODE_ENV == 'test'){
 		return jest.fn(function(){ return fa.apply(null,arguments) })
 	}
 	else{
 		return fa;
+	}
+}
+
+export function Categorie(){
+		return (req,res,next)=>{
+			let query = req.query || {},
+			{ action } = query,
+			body = req.body || {},
+			r,
+			error;
+
+			if(action){
+				switch(action){
+					case 'getAll':
+						if(Object.keys(body).length){
+							r = check(body, relaxCatConstrains, V,T);
+							error = r.errors;
+
+							if(Object.keys(error).length){
+								return res.status(400).json({error,data:null}).end();
+							}
+						}
+						db.getAllCategorie(body).then((r)=>{
+							res.status(200).json(r).end();
+						}).catch((error)=>{
+							res.status(500).json({error}).end();
+						})
+						break;
+					default:
+						res.status(400).json({
+							error:{
+								message: errorMessage.unknown('action')
+							}
+						})
+				}
+			}
+			else{
+				res.status(400).json({
+					error:{
+						message:errorMessage.invalid('action')
+					}
+				}).end();
+			}
+		}
+}
+
+export function Song(){
+	return (req,res,next)=>{
+		let query = req.query || {},
+		{ action, catId, last } = query,
+		reqBody = { catId },
+		body = req.body || {},
+		r,
+		error;
+
+		if(last){
+			try{
+				reqBody.last = JSON.parse(last);
+			}
+			catch(e){
+
+			}
+		}
+
+		if(action){
+			switch(action){
+				case 'getAll':
+					if(Object.keys(reqBody).length){
+						r = check(reqBody,relaxSongConstrains,V,T);
+						error = r.errors;
+
+						if(Object.keys(error).length){
+							return res.status(400).json({error}).end();
+						}
+
+						return db.getAllSongs(reqBody).then((r)=>{
+							res.status(200).json(r).end();
+						}).catch((error)=>{
+							console.error(error);
+							res.status(500).json({error}).end();
+						})
+					}
+					else{
+						console.log("No reqBody given",reqBody);
+						res.status(400).json({
+							error:{
+								message:errorMessage.missData()
+							}
+						}).end();
+					}
+					break;
+				default:
+					res.status(400).json({
+						error:{
+							message:errorMessage.invalid('action')
+						}
+					})
+			}
+		}
+		else{
+			res.status(400).json({
+				error:{
+					message:errorMessage.invalid('action')
+				}
+			})
+		}
 	}
 }
 export function streamUpdater(subscribers,up, downloadWaiters,stream){
