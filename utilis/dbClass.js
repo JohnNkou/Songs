@@ -16,6 +16,26 @@ fil = config.filters,
 testing = process.env.NODE_ENV == 'test';
 
 
+function DoUntilLast(list,operation,payloads){
+	return operation(payloads).then((response)=>{
+		if(response.data.length){
+			list.push(...response.data);
+			if(response.last){
+				payloads.last = response.last;
+				return DoUntilLast(list,operation,payloads);
+			}
+			else{
+				response.Items = list;
+				return response;
+			}
+		}
+		else{
+			response.Items = list;
+			return response;
+		}
+	})
+}
+
 function d({getClient,getClientD}){
 	let client = getClient(),
 	clientD = getClientD(client),
@@ -47,25 +67,6 @@ function d({getClient,getClientD}){
 		}
 	}
 
-	function DoUntilLast(list,operation,payloads){
-		return operation(payloads).then((response)=>{
-			if(response.data.length){
-				list.push(...response.data);
-				if(response.last){
-					payloads.last = response.last;
-					return DoUntilLast(list,operation,payloads);
-				}
-				else{
-					response.Items = list;
-					return response;
-				}
-			}
-			else{
-				response.Items = list;
-				return response;
-			}
-		})
-	}
 	async function tableInitializationHandler(status,TableName){
 		let c, n = 10,r;
 
@@ -346,11 +347,20 @@ function d({getClient,getClientD}){
 			TableName:sTableName,
 			ReturnConsumedCapacity:'TOTAL'
 		},
-		response;
+		response,
+		data = [];
 
-		response = await clientD.send(new ScanCommand(params));
+		while(response = await clientD.send(new ScanCommand(params))){
+			data.push(...response.Items);
+			if(!response.LastEvaluatedKey){
+				break;
+			}
+			else{
+				params.ExclusiveStartKey = response.LastEvaluatedKey;
+			}
+		}
 
-		return response.Items;
+		return data;
 	}
 	this.getAllSongs = async (o={})=>{
 		await this.initialized;
