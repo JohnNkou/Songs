@@ -98,7 +98,7 @@ window.store = store;
 Promise.all([localData,MStepLoader]).then((r)=>{
 	let { data, db } = r[0],
 	stepManager = r[1];
-	Msteps = stepManager;
+	Msteps = null; // stepManager;
 
 	setTimeout(()=>{
 		let local = storageHandler().getItems(JSON.parse, System.LOCALSTORAGE, 'stream');
