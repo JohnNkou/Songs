@@ -10,11 +10,18 @@ sF = table.song.fields;
 
 let songLength = songs.length,
 song,
-catId = nanoid(),
+catId = '_iEYzp2HvqtDa_dz4RL-m',
 inserted = 0;
 
 try{
-	await db.addCategorie({[cF.name]:'cantique', [cF.id]: catId});
+	try{
+		await db.addCategorie({[cF.name]:'cantique', [cF.id]: catId});
+	}
+	catch(e){
+		if(e.name != 'ConditionalCheckFailedException'){
+			throw e;
+		}
+	}
 
 	while(songLength--){
 		song = songs[songLength];
@@ -25,9 +32,8 @@ try{
 				inserted++;
 			}
 			catch(e){
-				console.log(e.code, e.name);
-				console.log(e.message);
-				console.log("Couldn't insert song", song.Text);
+				if(e.name != 'ConditionalCheckFailedException')
+					throw e;
 			}
 		}
 	}

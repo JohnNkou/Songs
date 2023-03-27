@@ -39800,7 +39800,8 @@ Promise.all([localData, MStepLoader]).then(function (r) {
     data = _r$.data,
     db = _r$.db,
     stepManager = r[1];
-  Msteps = stepManager;
+  Msteps = null; // stepManager;
+
   setTimeout(function () {
     var local = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_2__.storageHandler)().getItems(JSON.parse, _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_4__.System.LOCALSTORAGE, 'stream');
     var cLocalStorage = local[_utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_4__.System.cLocalStorage];
