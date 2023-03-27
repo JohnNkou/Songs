@@ -708,8 +708,8 @@ exports.fetcher = function fetcher(a){
 		try{
 			a.s(parseResponse(xml));
 		}
-		catch(e){
-			a.e(e);
+		catch(error){
+			a.e({error,xml});
 		}
 	}
 	xml.onerror = (e)=>{

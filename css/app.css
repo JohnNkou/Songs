@@ -55,6 +55,7 @@ input{
 }
 .TLL{
 	width:0%;
+	left: -100%;
 	margin-right:-1px;
 	overflow:scroll;
 }
@@ -908,9 +909,6 @@ input{
 	.TRR{
 		left:0%;
 	}
-	.TLL{
-		left:-40%;
-	}
 	.popUp{
 		width:	52%;
 		left: 	25%;
@@ -931,9 +929,6 @@ input{
 	}
 	.TRRR .Toggler{
 		display: inline-block;
-	}
-	.TLL{
-		left:-50%;
 	}
 	#content {
 		width: 90%;
@@ -956,9 +951,6 @@ input{
 
 @media(max-width: 540px){
 	#first{
-	}
-	.TLL{
-		left:-60%;
 	}
 	#second .Notification{
 		width:70%;

@@ -432,10 +432,44 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
     return _this5;
   }
   _createClass(OnlineSongs, [{
+    key: "componentDidUpdate",
+    value: function componentDidUpdate(prevProps, prevState) {
+      var fetchStatus = this.fetchStatus,
+        _this$state2 = this.state,
+        songs = _this$state2.songs,
+        report = _this$state2.report,
+        catName = _this$state2.catName,
+        currentCat = _this$state2.currentCat,
+        songLength = songs.length;
+      if (!this.initialSongLength && songLength || prevState.catName != catName) {
+        this.initialSongLength = songLength;
+      }
+      if (!songLength && report) {
+        this.setState({
+          report: false
+        });
+      }
+      if (this.state.currentCat.name != prevState.currentCat.name && this.state.songs.length) {
+        this.setState({
+          show: true
+        });
+      }
+      if (this.state.currentCat.name && this.state.currentCat.name != prevState.currentCat.name) {
+        if (fetchStatus[currentCat.id] && fetchStatus[currentCat.id].complete) return;
+        this.fetchSongs();
+      } else if (songs != prevState.songs && !fetchStatus[currentCat.id]) {
+        this.fetchSongs();
+      }
+      (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.invoqueAfterMount)('online');
+    }
+  }, {
     key: "componentDidMount",
     value: function componentDidMount() {
       var _this6 = this;
       var store = this.store,
+        state = store.getState(),
+        currentCat = state.currentCat,
+        catId = currentCat.id,
         emptyArray = [];
       this.unsubscribe = store.subscribe(function () {
         var cState = store.getState(),
@@ -444,7 +478,7 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
           songs = cState.onlineSongs[currentCat.id] || emptyArray,
           newState = {};
         if (state.currentCat == currentCat) {
-          if (state.songs.length != songs.length) {
+          if (state.songs != songs) {
             newState.songs = songs;
           }
         } else {
@@ -472,11 +506,12 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
           newState.controls = cState.keys.alt;
         }
         if (Object.keys(newState).length) {
-          _this6.setState(newState, function () {
-            console.log("In effect");
-          });
+          _this6.setState(newState);
         }
       });
+      if (currentCat.name && state.onlineSongs[catId] && (!this.fetchStatus[catId] || !this.fetchStatus[catId].complete)) {
+        this.fetchSongs();
+      }
     }
   }, {
     key: "fetchSongs",
@@ -510,6 +545,7 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
                 store.dispatch(addSong(i, song.name, song.catId, song.verses, 'online'));
               });
               if (!body.data.length) {
+                _this7.fetchStatus[catId].complete = true;
                 _this7.forceUpdate();
               }
             } else {
@@ -546,35 +582,6 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
     key: "componentWillUnmount",
     value: function componentWillUnmount() {
       this.unsubscribe();
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate(prevProps, prevState) {
-      var fetchStatus = this.fetchStatus,
-        _this$state2 = this.state,
-        songs = _this$state2.songs,
-        report = _this$state2.report,
-        catName = _this$state2.catName,
-        currentCat = _this$state2.currentCat,
-        songLength = songs.length;
-      if (!this.initialSongLength && songLength || prevState.catName != catName) {
-        this.initialSongLength = songLength;
-      }
-      if (!songLength && report) {
-        this.setState({
-          report: false
-        });
-      }
-      if (this.state.currentCat.name != prevState.currentCat.name && this.state.songs.length) {
-        this.setState({
-          show: true
-        });
-      }
-      if (this.state.currentCat.name && this.state.currentCat.name != prevState.currentCat.name) {
-        if (fetchStatus[currentCat.id] && fetchStatus[currentCat.id].complete) return;
-        this.fetchSongs();
-      }
-      (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.invoqueAfterMount)('online');
     }
   }, {
     key: "handleScroll",
@@ -4022,12 +4029,12 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
                 _this55.restartUpdateStream(timestamp);
             }
           } else {
-            console.og("Error updating the stream");
+            console.error("Error updating the stream");
           }
         },
-        e: function e(_ref19) {
-          var error = _ref19.error,
-            xml = _ref19.xml;
+        e: function e(o) {
+          var error = o.error,
+            xml = o.xml;
           if (xml.networkDown) {
             store.dispatch(setAppUnreachable());
           }
@@ -4067,9 +4074,9 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
       notifier2.addSpeed(downloadText.start(lang, songName));
       (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)({
         url: url,
-        s: function s(_ref20) {
-          var xml = _ref20.xml,
-            body = _ref20.body;
+        s: function s(_ref19) {
+          var xml = _ref19.xml,
+            body = _ref19.body;
           if (xml.ok) {
             var action = body.action,
               _songName = body.songName,
@@ -4111,9 +4118,9 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
             delete downloadSong.inFetch[url];
           }
         },
-        e: function e(_ref21) {
-          var xml = _ref21.xml,
-            error = _ref21.error;
+        e: function e(_ref20) {
+          var xml = _ref20.xml,
+            error = _ref20.error;
           delete downloadSong.inFetch[url];
           notifier2.addSpeed(text.downloadError(lang, songName));
           console.error(error);
@@ -4147,10 +4154,10 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
         store = this.store;
       (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)({
         url: url,
-        s: function s(_ref22) {
+        s: function s(_ref21) {
           var _this58$subscribe;
-          var xml = _ref22.xml,
-            body = _ref22.body;
+          var xml = _ref21.xml,
+            body = _ref21.body;
           if (xml.ok) {
             var response = body;
             if (response) {
@@ -4226,10 +4233,10 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
             store.dispatch(subscribeToStream(false));
           }
         },
-        e: function e(_ref23) {
-          var xml = _ref23.xml,
-            body = _ref23.body,
-            error = _ref23.error;
+        e: function e(_ref22) {
+          var xml = _ref22.xml,
+            body = _ref22.body,
+            error = _ref22.error;
           notifier2.addSpeed(_this58.text.Stream.subscription.error(_this58.props.lang, streamName));
           store.dispatch(subscribeToStream(false));
           if (body) {
@@ -4628,12 +4635,12 @@ var ArrowNav = /*#__PURE__*/function (_React$Component19) {
   }]);
   return ArrowNav;
 }(react__WEBPACK_IMPORTED_MODULE_0__.Component);
-var NavHelper = function NavHelper(_ref24) {
-  var length = _ref24.length,
-    currentIndex = _ref24.currentIndex,
-    goToVerse = _ref24.goToVerse,
-    catName = _ref24.catName,
-    songName = _ref24.songName;
+var NavHelper = function NavHelper(_ref23) {
+  var length = _ref23.length,
+    currentIndex = _ref23.currentIndex,
+    goToVerse = _ref23.goToVerse,
+    catName = _ref23.catName,
+    songName = _ref23.songName;
   function clickHandler(event, i) {
     event.preventDefault();
     event.stopPropagation();
@@ -5148,8 +5155,8 @@ var Guider = /*#__PURE__*/function (_React$PureComponent6) {
       var _this76 = this;
       var state = this.state;
       var currentAction = state.action;
-      doAction.then(function (_ref25) {
-        var updateText = _ref25.updateText;
+      doAction.then(function (_ref24) {
+        var updateText = _ref24.updateText;
         if (updateText) _this76.forceUpdate();else if (!currentAction.nextAction && state.section.nextSection) _this76.toSection(state.section.nextSection);else _this76.setState(_objectSpread(_objectSpread({}, state), {}, {
           action: currentAction.nextAction
         }));
@@ -5335,8 +5342,8 @@ var Guider = /*#__PURE__*/function (_React$PureComponent6) {
   }]);
   return Guider;
 }(react__WEBPACK_IMPORTED_MODULE_0__.PureComponent);
-var Styles = function Styles(_ref26) {
-  var lists = _ref26.lists;
+var Styles = function Styles(_ref25) {
+  var lists = _ref25.lists;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, lists.map(function (list, i) {
     var l2 = _objectSpread({}, list);
     var data = l2.data;
@@ -5346,25 +5353,25 @@ var Styles = function Styles(_ref26) {
     }, l2), data ? data : '');
   }));
 };
-var Metas = function Metas(_ref27) {
-  var lists = _ref27.lists;
+var Metas = function Metas(_ref26) {
+  var lists = _ref26.lists;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, lists.map(function (list, i) {
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("meta", _extends({
       key: i
     }, list));
   }));
 };
-var Links = function Links(_ref28) {
-  var lists = _ref28.lists,
-    i = _ref28.i;
+var Links = function Links(_ref27) {
+  var lists = _ref27.lists,
+    i = _ref27.i;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, lists.map(function (list, i) {
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("link", _extends({
       key: i
     }, list));
   }));
 };
-var Scripts = function Scripts(_ref29) {
-  var lists = _ref29.lists;
+var Scripts = function Scripts(_ref28) {
+  var lists = _ref28.lists;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, lists.map(function (list, i) {
     var l2 = _objectSpread({}, list);
     var data = l2.data;
@@ -5377,16 +5384,16 @@ var Scripts = function Scripts(_ref29) {
     }, l2));
   }));
 };
-var HTML = function HTML(_ref30) {
-  var data = _ref30.data,
-    styles = _ref30.styles,
-    metas = _ref30.metas,
-    links = _ref30.links,
-    scripts = _ref30.scripts,
-    title = _ref30.title,
-    store = _ref30.store,
-    nodeJs = _ref30.nodeJs,
-    manifest = _ref30.manifest;
+var HTML = function HTML(_ref29) {
+  var data = _ref29.data,
+    styles = _ref29.styles,
+    metas = _ref29.metas,
+    links = _ref29.links,
+    scripts = _ref29.scripts,
+    title = _ref29.title,
+    store = _ref29.store,
+    nodeJs = _ref29.nodeJs,
+    manifest = _ref29.manifest;
   function ap(t) {
     var a = document.body;
     var c = document.createElement("p");
@@ -5524,9 +5531,9 @@ var App = /*#__PURE__*/function (_React$Component23) {
   return App;
 }(react__WEBPACK_IMPORTED_MODULE_0__.Component);
 App.contextType = (_utilis_context_cjs__WEBPACK_IMPORTED_MODULE_4___default());
-var Liner = function Liner(_ref31) {
-  var _ref31$additionalClas = _ref31.additionalClass,
-    additionalClass = _ref31$additionalClas === void 0 ? '' : _ref31$additionalClas;
+var Liner = function Liner(_ref30) {
+  var _ref30$additionalClas = _ref30.additionalClass,
+    additionalClass = _ref30$additionalClas === void 0 ? '' : _ref30$additionalClas;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
     className: "tight ".concat(additionalClass)
   }, " ");
@@ -36709,8 +36716,11 @@ exports.fetcher = function fetcher(a) {
   xml.onload = function () {
     try {
       a.s(parseResponse(xml));
-    } catch (e) {
-      a.e(e);
+    } catch (error) {
+      a.e({
+        error: error,
+        xml: xml
+      });
     }
   };
   xml.onerror = function (e) {
