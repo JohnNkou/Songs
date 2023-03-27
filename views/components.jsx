@@ -330,8 +330,40 @@ class OnlineSongs extends React.Component{
 		this.nodeRef = React.createRef();
 	}
 
+	componentDidUpdate(prevProps, prevState){
+		let {fetchStatus} = this, 
+		{ songs, report,catName, currentCat } = this.state,
+		songLength = songs.length;
+
+		if(!this.initialSongLength && songLength || prevState.catName != catName){
+			this.initialSongLength = songLength;
+		}
+		
+		if(!songLength && report){
+			this.setState({report:false});
+		}
+
+		if(this.state.currentCat.name != prevState.currentCat.name && this.state.songs.length){
+			this.setState({ show:true })
+		}
+
+		if(this.state.currentCat.name && this.state.currentCat.name != prevState.currentCat.name){
+			if(fetchStatus[currentCat.id] && fetchStatus[currentCat.id].complete)
+				return;
+			this.fetchSongs();
+		}
+		else if(songs != prevState.songs && !fetchStatus[currentCat.id]){
+			this.fetchSongs();
+		}
+
+		invoqueAfterMount('online');
+	}
+
 	componentDidMount(){
 		let store = this.store,
+		state = store.getState(),
+		currentCat = state.currentCat,
+		catId = currentCat.id,
 		emptyArray = [];
 
 		this.unsubscribe = store.subscribe(()=>{
@@ -342,7 +374,7 @@ class OnlineSongs extends React.Component{
 			newState = {};
 
 			if(state.currentCat == currentCat){
-				if(state.songs.length != songs.length){
+				if(state.songs != songs){
 					newState.songs = songs;
 				}
 			}
@@ -372,11 +404,13 @@ class OnlineSongs extends React.Component{
 			}
 
 			if(Object.keys(newState).length){
-				this.setState(newState,()=>{
-					console.log("In effect");
-				});
+				this.setState(newState);
 			}
 		})
+
+		if(currentCat.name &&  state.onlineSongs[catId] && (!this.fetchStatus[catId] || !this.fetchStatus[catId].complete)){
+			this.fetchSongs();
+		}
 	}
 
 	fetchSongs(){
@@ -406,6 +440,7 @@ class OnlineSongs extends React.Component{
 					})
 					
 					if(!body.data.length){
+						this.fetchStatus[catId].complete = true;
 						this.forceUpdate();
 					}
 				}
@@ -440,33 +475,6 @@ class OnlineSongs extends React.Component{
 
 	componentWillUnmount(){
 		this.unsubscribe();
-	}
-
-
-	componentDidUpdate(prevProps, prevState){
-		let {fetchStatus} = this, 
-		{ songs, report,catName, currentCat } = this.state,
-		songLength = songs.length;
-
-		if(!this.initialSongLength && songLength || prevState.catName != catName){
-			this.initialSongLength = songLength;
-		}
-		
-		if(!songLength && report){
-			this.setState({report:false});
-		}
-
-		if(this.state.currentCat.name != prevState.currentCat.name && this.state.songs.length){
-			this.setState({ show:true })
-		}
-
-		if(this.state.currentCat.name && this.state.currentCat.name != prevState.currentCat.name){
-			if(fetchStatus[currentCat.id] && fetchStatus[currentCat.id].complete)
-				return;
-			this.fetchSongs();
-		}
-
-		invoqueAfterMount('online');
 	}
 
 	handleScroll(event){
@@ -3133,10 +3141,12 @@ class StreamList extends React.Component{
 					}
 				}
 				else{
-					console.og("Error updating the stream");
+					console.error("Error updating the stream");
 				}
 			},
-			e:({error, xml})=>{
+			e:(o)=>{
+				let { error, xml } = o;
+				
 				if(xml.networkDown){
 					store.dispatch(setAppUnreachable());
 				}
