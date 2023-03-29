@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid';
 import { PutCommand, UpdateCommand, DeleteCommand, GetCommand, ScanCommand, TransactWriteCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import config from './db.config.cjs';
 import { songPattern } from './pattern.js';
+import fs from 'fs';
 
 const { song,cat,stream,catdef,songdef,streamdef } = config.table,
 cF = cat.fields,

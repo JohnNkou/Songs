@@ -557,7 +557,7 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
               xml = _ref2.xml,
               body = _ref2.body;
             songFetch.fetching = false;
-            console.error("An Error happened while fetching for songs", error);
+            console.error("An Error happened while fetching for songs", error.name, error.message, error.stack);
           }
         };
       if (songFetch) {
@@ -661,7 +661,7 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
           }
         })["catch"](function (e) {
           console.error("Error while trying to inserted categorie");
-          console.error(e);
+          console.error(e.name, e.message, e.stack);
         });
       }
     }
@@ -1456,7 +1456,7 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
               try {
                 _this20.scrollHandler(_this20.listDiv, event, trackedTouchs);
               } catch (e) {
-                console.error(e);
+                console.error(e.name, e.message, e.stack);
               }
             };
           }
@@ -1584,7 +1584,7 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
             message: message,
             signal: _utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.signal.error
           });
-          console.error(e);
+          console.error(e.name, e.message, e.stack);
         });
       }
     }
@@ -1777,7 +1777,7 @@ var AddSongDiv = /*#__PURE__*/function (_React$Component6) {
             name: newSongName,
             VersesText: VersesText
           });
-          console.error(e);
+          console.error(e.name, e.message, e.stack);
         });
       }
     }
@@ -2531,7 +2531,7 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
           var error = _ref6.error,
             xml = _ref6.xml,
             body = _ref6.body;
-          console.error("Error happening while retrieving categories", error, body);
+          console.error("Error happening while retrieving categories", body, error.name, error.message, error.stack);
         }
       };
       if (last) {
@@ -2611,7 +2611,7 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
             console.error("Couldn't delete categorie");
           }
         })["catch"](function (e) {
-          console.error(e);
+          console.error(e.name, e.message, e.stack);
         });
       } else {
         store.dispatch(removeCategorie(item.name, item.id));
@@ -3002,7 +3002,7 @@ var Download = /*#__PURE__*/function (_React$Component13) {
           });
         }
       })["catch"](function (e) {
-        console.error("checkImageDownload Error", e);
+        console.error("checkImageDownload Error", e.name, e.message, e.stack);
       });
     }
   }, {
@@ -3232,7 +3232,7 @@ var SongList = /*#__PURE__*/function (_React$Component14) {
               }
             } catch (e) {
               console.error("insertSong Error" + c);
-              console.error(e);
+              console.error(e.name, e.message, e.stack);
               return e;
             }
           });
@@ -3753,15 +3753,23 @@ var StreamCreation = /*#__PURE__*/function (_React$Component16) {
           }
           _stopStream(streamName);
         },
-        e: function e(_e) {
+        e: function (_e) {
+          function e(_x5) {
+            return _e.apply(this, arguments);
+          }
+          e.toString = function () {
+            return _e.toString();
+          };
+          return e;
+        }(function (e) {
           clearInterval(_this52.counter);
           notifier2.addSpeed(_this52.text.Stream.stopError(lang, streamName));
-          console.log("Error while trying to stop the stream ".concat(streamName), _e);
+          console.log("Error while trying to stop the stream ".concat(streamName), e);
           _stopStream(streamName);
           _this52.setState({
             img: "img/".concat(_this52.images.start)
           });
-        }
+        })
       });
     }
   }, {
@@ -4118,13 +4126,21 @@ var StreamList = /*#__PURE__*/function (_React$Component17) {
             delete downloadSong.inFetch[url];
           }
         },
-        e: function e(_ref20) {
+        e: function (_e2) {
+          function e(_x6) {
+            return _e2.apply(this, arguments);
+          }
+          e.toString = function () {
+            return _e2.toString();
+          };
+          return e;
+        }(function (_ref20) {
           var xml = _ref20.xml,
             error = _ref20.error;
           delete downloadSong.inFetch[url];
           notifier2.addSpeed(text.downloadError(lang, songName));
-          console.error(error);
-        }
+          console.error(error.name, e.message, e.stack);
+        })
       });
     }
   }, {
@@ -4441,7 +4457,7 @@ var Content = /*#__PURE__*/function (_React$Component18) {
         _store4.dispatch(addToFavorite(catName, catId, songName, songId, location));
         notify.addSpeed(Text.added(lang, songName));
       } catch (e) {
-        console.error("Favorite addToFavorite Error:", e);
+        console.error("Favorite addToFavorite Error:", e.name, e.message, e.stack);
       }
     }
   }, {
@@ -4454,7 +4470,7 @@ var Content = /*#__PURE__*/function (_React$Component18) {
         _store5.dispatch(removeFromFavorite(catName, catId, songName, songId));
         notify.addSpeed(Text.deleted(lang, songName));
       } catch (e) {
-        console.error("Favorite removeFromFavorite Error:", e);
+        console.error("Favorite removeFromFavorite Error:", e.name, e.message, e.stack);
       }
     }
   }, {
@@ -5130,7 +5146,7 @@ var Guider = /*#__PURE__*/function (_React$PureComponent6) {
       }).then(function () {
         _this74.animate(true);
       })["catch"](function (e) {
-        console.error("Guider toStep catch Error", e);
+        console.error("Guider toStep catch Error", e.name, e.message, e.stack);
       });
     }
   }, {
@@ -5146,7 +5162,7 @@ var Guider = /*#__PURE__*/function (_React$PureComponent6) {
       }).then(function () {
         _this75.animate(true);
       })["catch"](function (e) {
-        console.error("Guide toSection catch error", e);
+        console.error("Guide toSection catch error", e.name, e.message, e.stack);
       });
     }
   }, {
@@ -5161,7 +5177,7 @@ var Guider = /*#__PURE__*/function (_React$PureComponent6) {
           action: currentAction.nextAction
         }));
       })["catch"](function (e) {
-        console.error("toAction catch error", e);
+        console.error("toAction catch error", e.name, e.message, e.stack);
       });
     }
   }, {
@@ -5208,7 +5224,7 @@ var Guider = /*#__PURE__*/function (_React$PureComponent6) {
       clear().then(function () {
         return _this78.toSection(next ? section.nextSection : section.prevSection);
       })["catch"](function (e) {
-        console.error("Couldn't clear to go to ", next ? 'next' : 'prev', 'step');
+        console.error("Couldn't clear to go to ", next ? 'next' : 'prev', 'step', e.name, e.message, e.stack);
       });
     }
   }, {
@@ -5221,7 +5237,7 @@ var Guider = /*#__PURE__*/function (_React$PureComponent6) {
       clear().then(function () {
         return _this79.toStep(next ? step.nextStep : step.prevStep);
       })["catch"](function (e) {
-        console.error("Couldn't clear to go to ", next ? 'next' : 'prev', 'step');
+        console.error("Couldn't clear to go to ", next ? 'next' : 'prev', 'step', e.name, e.message, e.stack);
       });
     }
   }, {
