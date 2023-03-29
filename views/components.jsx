@@ -451,7 +451,7 @@ class OnlineSongs extends React.Component{
 			e:({error,xml,body})=>{
 				songFetch.fetching = false;
 
-				console.error("An Error happened while fetching for songs",error);
+				console.error("An Error happened while fetching for songs",error.name,error.message, error.stack);
 			}
 		};
 
@@ -551,7 +551,7 @@ class OnlineSongs extends React.Component{
 				}
 			}).catch((e)=>{
 				console.error("Error while trying to inserted categorie");
-				console.error(e);
+				console.error(e.name,e.message,e.stack);
 			})
 		}
 	} 
@@ -1141,7 +1141,7 @@ class AddSongDiv extends React.Component{
 							this.scrollHandler(this.listDiv,event,trackedTouchs);
 						}
 						catch(e){
-							console.error(e);
+							console.error(e.name,e.message,e.stack);
 						}
 					}
 				}
@@ -1249,7 +1249,7 @@ class AddSongDiv extends React.Component{
 				let message = (e.name == 'ConstraintError')? this.songText.insertion.duplicate(lang,songName): this.songText.insertion.error(lang);
 
 				this.setState({ message, signal:signal.error })
-				console.error(e);
+				console.error(e.name,e.message,e.stack);
 			})
 		}
 	}
@@ -1368,7 +1368,7 @@ class AddSongDiv extends React.Component{
 
 				this.setState({message, signal: signal.error, name:newSongName, VersesText});
 
-				console.error(e);
+				console.error(e.name,e.message,e.stack);
 			})
 		}
 	}
@@ -1977,7 +1977,7 @@ class CatNames extends React.Component{
 				}
 			},
 			e:({error,xml,body})=>{
-				console.error("Error happening while retrieving categories",error,body);
+				console.error("Error happening while retrieving categories",body,error.name,error.message,error.stack);
 			}
 		};
 
@@ -2047,7 +2047,7 @@ class CatNames extends React.Component{
 				}
 
 			}).catch((e)=>{
-				console.error(e);
+				console.error(e.name,e.message,e.stack);
 			})
 		}
 		else{
@@ -2300,7 +2300,7 @@ class Download extends React.Component{
 					this.setState({img:!img});
 			}
 		}).catch((e)=>{
-			console.error("checkImageDownload Error",e);
+			console.error("checkImageDownload Error",e.name,e.message,e.stack);
 		})
 	}
 
@@ -2510,7 +2510,7 @@ class SongList extends React.Component{
 					}
 					catch(e){
 						console.error("insertSong Error"+c);
-						console.error(e);
+						console.error(e.name,e.message,e.stack);
 						return e;
 					}
 				})
@@ -3220,7 +3220,7 @@ class StreamList extends React.Component{
 			e:({xml,error})=>{
 				delete downloadSong.inFetch[url];
 				notifier2.addSpeed(text.downloadError(lang,songName));
-				console.error(error);
+				console.error(error.name,e.message,e.stack);
 			}
 		})
 	}
@@ -3537,7 +3537,7 @@ class Content extends React.Component{
 			notify.addSpeed(Text.added(lang,songName));
 		}
 		catch(e){
-			console.error("Favorite addToFavorite Error:",e);
+			console.error("Favorite addToFavorite Error:",e.name,e.message,e.stack);
 		}
 	}
 
@@ -3551,7 +3551,7 @@ class Content extends React.Component{
 			notify.addSpeed(Text.deleted(lang,songName));
 		}
 		catch(e){
-			console.error("Favorite removeFromFavorite Error:",e);
+			console.error("Favorite removeFromFavorite Error:",e.name,e.message,e.stack);
 		}
 		
 	}
@@ -4110,7 +4110,7 @@ export class Guider extends React.PureComponent{
 		}).then(()=>{
 			this.animate(true);
 		}).catch((e)=>{
-			console.error("Guider toStep catch Error",e);
+			console.error("Guider toStep catch Error",e.name,e.message,e.stack);
 		})
 	}
 	toSection(section){
@@ -4120,7 +4120,7 @@ export class Guider extends React.PureComponent{
 		}).then(()=>{
 			this.animate(true);
 		}).catch((e)=>{
-			console.error("Guide toSection catch error",e);
+			console.error("Guide toSection catch error",e.name,e.message,e.stack);
 		})
 	}
 	toAction(doAction){
@@ -4134,7 +4134,7 @@ export class Guider extends React.PureComponent{
 			else
 				this.setState({...state, action: currentAction.nextAction});
 		}).catch((e)=>{
-			console.error("toAction catch error",e);
+			console.error("toAction catch error",e.name,e.message,e.stack);
 		})
 	}
 	animate(add){
@@ -4177,7 +4177,7 @@ export class Guider extends React.PureComponent{
 
 		clear().then(()=> this.toSection((next)? section.nextSection: section.prevSection)
 			).catch((e)=>{
-				console.error("Couldn't clear to go to ",((next)? 'next':'prev'),'step');
+				console.error("Couldn't clear to go to ",((next)? 'next':'prev'),'step', e.name,e.message,e.stack);
 			})
 	}
 
@@ -4186,7 +4186,7 @@ export class Guider extends React.PureComponent{
 		let clear = this.clear();
 
 		clear().then(()=> this.toStep((next)? step.nextStep: step.prevStep)).catch((e)=>{
-			console.error("Couldn't clear to go to ",((next)? 'next':'prev'),'step');
+			console.error("Couldn't clear to go to ",((next)? 'next':'prev'),'step', e.name, e.message,e.stack);
 		})
 	}
 
