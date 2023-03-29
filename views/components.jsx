@@ -1943,7 +1943,7 @@ class CatNames extends React.Component{
 		this.node = document.querySelector(".catNames");
 
 		if(db.isBogus){
-			this.addCatButton = ()=> null;
+			this.addCatButton = ()=> <div></div>;
 			this.forceUpdate();
 		}
 

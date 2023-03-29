@@ -2489,7 +2489,7 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
       this.node = document.querySelector(".catNames");
       if (db.isBogus) {
         this.addCatButton = function () {
-          return null;
+          return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", null);
         };
         this.forceUpdate();
       }

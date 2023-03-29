@@ -50,7 +50,7 @@ input{
 	left:0%
 }
 .TRR{
-	width: 30%;
+	width: 350px;
 	position: absolute;
 }
 .TLL{
@@ -60,7 +60,7 @@ input{
 	overflow:scroll;
 }
 .TRRR{
-	width: 70%;
+	width: 100%;
 }
 .Full{
 	width:100%;
@@ -196,7 +196,7 @@ input{
 
 #first{
 	height:100%;
-	position: relative;
+	position: absolute;
 	z-index: 1;
 	border-right:1px solid silver;
 	box-shadow: 2px 0px 2px rgb(182 180 180 / 50%);
@@ -396,6 +396,7 @@ input{
 	position: relative;
 	z-index: 100000;
 	height:100%;
+	padding-left: 350px;
 }
 #second .Notification{
 	width:50%;
@@ -903,8 +904,9 @@ input{
 		width: 350px;
 	}
 	#second{
-		width:100%;
+		/* width:100%; */
 		left:0%;
+		padding-left: 0;
 	}
 	.TRR{
 		left:0%;
