@@ -130,7 +130,7 @@ const config = (function(){
 		],
 		KeySchema:[
 			{
-				AttributeName:cat.fields.name,
+				AttributeName:cat.fields.id,
 				KeyType:'HASH'
 			}
 		],
