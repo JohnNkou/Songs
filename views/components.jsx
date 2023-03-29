@@ -419,7 +419,7 @@ class OnlineSongs extends React.Component{
 		catId = currentCat.id,
 		songFetch = fetchStatus[catId],
 		last,
-		{ addSong } = this.props,
+		{ addSongs } = this.props,
 		store = this.store,
 		data = { catId },
 		sendData = {
@@ -435,9 +435,7 @@ class OnlineSongs extends React.Component{
 						songFetch.complete = true;
 					}
 
-					body.data.forEach((song,i)=>{
-						store.dispatch(addSong(i,song.name,song.catId,song.verses,'online'));
-					})
+					store.dispatch(addSongs(body.data,catId));
 					
 					if(!body.data.length){
 						this.fetchStatus[catId].complete = true;
@@ -1960,7 +1958,7 @@ class CatNames extends React.Component{
 		let sendData = {
 			url:'/Categorie?action=getAll',
 			type:'application/json',
-			s:({xml,body})=>{
+			s:({xml,body,headers})=>{
 				if(xml.ok){
 					body.data.forEach((cat)=>{
 						store.dispatch(addCategorie(cat.name,cat.id,'online'));
