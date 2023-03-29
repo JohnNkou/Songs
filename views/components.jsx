@@ -2132,6 +2132,7 @@ class ResultList extends React.Component{
 		this.action = this.action.bind(this);
 		this.state = { resultView: state.ui.show.resultList, songs: state.searchResult };
 		this.store = store;
+		this.nodeRef = React.createRef();
 	}
 
 	componentDidMount(){
@@ -2139,21 +2140,19 @@ class ResultList extends React.Component{
 		store = this.store;
 
 		this.unsubscribe = store.subscribe(()=>{
-			let state = store.getState(),
+			let cState = store.getState(),
+			state = this.state,
 			newState = {};
 
-			if(state.ui.show.resultList != this.state.resultView){
-				newState.resultView = state.ui.show.resultList;
-			}
-			if(state.searchResult != this.state.songs){
-				newState.songs = state.searchResult;
+			if(state.resultView != cState.ui.show.resultList){
+				newState.resultView = cState.ui.show.resultList;
 			}
 
 			if(Object.keys(newState).length){
 				this.setState(newState);
 			}
 		})
-		this.node = document.querySelector("#first .head .result");
+		this.node = this.nodeRef.current;
 		this.node.ontouchmove = (event)=>{
 			this.scrollHandler(this.node,event,trackedTouchs);
 		}
@@ -2175,17 +2174,307 @@ class ResultList extends React.Component{
 	}
 
 	render(){
-		let {resultView, songs } = this.state,
+		let {resultView} = this.state,
 		hide = (resultView)? '':'whoosh',
 		style = { style:" abs abBottom list result shadowC BLRad BRRad "+hide };
-		songs = (songs.length)? songs: ["Aucun resultat"];
 		return (
-			<List action={this.action} abs={style} list={songs} />
+			<div ref={this.nodeRef} className={style.style}>
+				<OnlineResult store={this.store} {...this.props} />
+				<OfflineResult store={this.store} {...this.props} />
+				{/*<List action={this.action} list={songs} first={()=> <div class='first'><span>Online</span></div>} />
+								<List action={this.action}  first={()=> <div class='first'><span>Offline</span></div>} list={[]} />*/}
+			</div>
 			)
 
 	}
 }
 ResultList.contextType = Custom;
+
+class OnlineResult extends React.Component{
+	constructor(props){
+		super(props);
+
+		this.first = this.first.bind(this);
+		this.state = {songs:[], term:'', fetching:false};
+		this.fetchSong = this.fetchSong.bind(this);
+		this.setSong = this.setSong.bind(this);
+		this.xml;
+		this.store = props.store;
+	}
+
+	componentDidMount(){
+		let store = this.store;
+
+		this.unsubscribe = store.subscribe(()=>{
+			let cState = store.getState(),
+			state = this.state,
+			newState = {};
+
+			if(state.term != cState.searchTerm){
+				newState.term = cState.searchTerm;
+			}
+			if(!cState.searchTerm){
+				newState.songs = [];
+			}
+
+			if(Object.keys(newState).length){
+				this.setState(newState);
+			}
+		})
+	}
+
+	componentDidUpdate(prevProps,prevState){
+		let props = this.props,
+		state = this.state;
+
+		if(prevState.term != state.term){
+			if(state.fetching){
+				this.xml.abort();
+			}
+			if(state.term){
+				this.fetchTerm();
+			}
+		}
+	}
+
+	fetchSong(song){
+		let { setCurrentSong, setCurrentCat, addCategorie } = this.props,
+		state = store.getState(),
+		catId = song.catId,
+		currentCat = state.currentCat,
+		onlineSongs = state.onlineSongs,
+		catSongs = onlineSongs[catId],
+		filter,
+		catName,
+		self;
+
+		if(!catSongs){
+			fetcher({
+				url:`/Categorie?action=get&id=${catId}`,
+				s:({xml,body,status})=>{
+					if(xml.ok){
+						let cat = body.data[0];
+
+						if(cat){
+							store.dispatch(addCategorie(cat.name,cat.id,'online'));
+							self.setSong(song);
+						}
+						else{
+							console.error("cat not found",body);
+						}
+					}
+				},
+				e:({xml,error})=>{
+					console.error(error.name,error.message,error.stack);
+				}
+			})
+		}
+		else{
+			this.setSong(song);
+		}
+	}
+
+	setSong(song){
+		let { setCurrentSong, setCurrentCat, addSong } = this.props,
+		state = store.getState(),
+		catId = song.catId,
+		currentCat = state.currentCat,
+		onlineSongs = state.onlineSongs,
+		catSongs = onlineSongs[catId],
+		filter,
+		catName;
+
+		if(catSongs){
+			for(let i=0; i < state.Categories.length; i++){
+				if(state.Categories[i].id == catId){
+					catName = state.Categories[i].name;
+					break;
+				}
+			}
+			if(!catName){
+				throw Error("Categorie not found "+catName);
+			}
+
+			if(currentCat.id != catId){
+				store.dispatch(setCurrentCat(catName,catId));
+			}
+
+			for(let i=0; i < catSongs.length; i++){
+				if(catSongs[i].name == song.name){
+					return store.dispatch(setCurrentSong(i,catId));
+				}
+			}
+
+			store.dispatch(addSong(catSongs.length,song.name, catId, song.verses,'online'));
+			store.dispatch(setCurrentSong(catSongs.length, catId));
+
+		}
+	}
+
+	fetchTerm(){
+		let { term, fetching } = this.state;
+
+		if(fetching)
+			return;
+
+		this.setState({fetching:true});
+
+		this.xml = fetcher({
+			url:`/Song?action=search&term=${term}`,
+			s:({xml,body,status})=>{
+				let songs = ["Auncun resultat"],
+				newState = {fetching:false, songs};
+
+				if(xml.ok){
+					let data = body.data;
+					
+					if(data.length){
+						newState.songs = data;
+					}
+				}
+				else{
+					console.error("Received a non ok response",status,body);
+				}
+				this.setState(newState);
+			},
+			e:({xml,error,body,aborted})=>{
+				if(aborted){
+					return this.setState({fetching:false});
+				}
+				this.setState({fetching:false, songs:["Une erreur est survenue"]});
+				console.error("error whie fetching for term",error.name, error.message, error.stack);
+			}
+		})
+	}
+
+	first(){
+		let { fetching } = this.state,
+		imgShow = (fetching)? '':'whoosh';
+
+		return <div className='first'><span>Online</span><img className={imgShow} src='img/loading.gif' /></div>
+	}
+
+	render(){
+		let { songs } = this.state;
+
+		return <List first={this.first} action={this.fetchSong} list={songs} />
+	}
+}
+
+class OfflineResult extends React.Component{
+	constructor(props){
+		super(props);
+
+		this.first = this.first.bind(this);
+		this.setSong = this.setSong.bind(this);
+		this.searchSong = this.searchSong.bind(this);
+		this.state = {songs:[], term:''};
+		this.store = props.store;
+	}
+
+	componentDidMount(){
+		let store = this.store;
+
+		this.unsubscribe = store.subscribe(()=>{
+			let cState = store.getState(),
+			state = this.state,
+			newState = {};
+
+			if(state.term != cState.searchTerm){
+				newState.term = cState.searchTerm;
+			}
+
+			if(Object.keys(newState).length){
+				this.setState(newState);
+			}
+		})
+	}
+
+	componentDidUpdate(prevProps,prevState){
+		let state = this.state;
+
+		if(state.term != prevState.term){
+			this.searchSong();
+		}
+	}
+
+	setSong(song){
+		let store = this.store,
+		{ setCurrentCat, setCurrentSong } = this.props,
+		state = store.getState(),
+		Categories = state.Categories,
+		currentCat = state.currentCat,
+		catName,
+		catId = song.catId,
+		catSongs = state.offlineSongs[catId];
+
+		if(catSongs){
+			if(currentCat.id != catId){
+				for(let i=0; i < Categories.length; i++){
+					if(Categories[i].id == catId){
+						catName = Categories[i].name;
+						return;
+					}
+				}
+
+				if(!catName){
+					return console.error("catName not found",catId,Categories);
+				}
+
+				store.dispatch(setCurrentCat(catName,catId));
+			}
+			store.dispatch(setCurrentSong(song.id,catId,'offline'))
+		}
+		else{
+			console.error("catId don't exist in offlineSong",catId,state.offlineSongs)
+		}
+	}
+
+	searchSong(){
+		let { term } = this.state,
+		state = store.getState(),
+		offlineSongs = state.offlineSongs,
+		songs = ["Aucun resultat"],
+		searchResult = [],
+		length,
+		chosenResult,
+		c;
+
+		if(!term){
+			return this.setState({songs:[]});
+		}
+
+		for(let catId in offlineSongs){
+			c = offlineSongs[catId];
+			length = c.length;
+
+			for(let i=0; i < length; i++){
+				if(c[i].name.indexOf(term) != -1){
+					searchResult.push({...c[i],catId,id:i});
+				}
+			}	
+		}
+
+		if(searchResult.length){
+			chosenResult = searchResult;
+		}
+		else{
+			chosenResult = songs;
+		}
+
+		this.setState({songs:chosenResult});
+	}
+
+	first(){
+		return <div className='first'><span>Offline</span></div>
+	}
+
+	render(){
+		let { songs } = this.state;
+
+		return <List first={this.first} action={this.setSong} list={songs} />
+	}
+}
 
 const List = ({catName,putInLastAccess,hide,updateMyCat,args,song,abs,src,list = [],action,action2,first=()=>{},controls,wipe,modif,download,downloadAll,topClass, itemClass,showControl})=>{
 
@@ -2218,7 +2507,7 @@ const Item = ({i,hide,item,action,action2,src,wipe,modif,updateMyCat,song,downlo
 	return (
 		<>
 			<div className={`il f1 ${name}`}>
-				<a id={item.id} className={itemClass} inlist="true" onClick={(action)? (event)=>{ event.preventDefault(); action(item,i) }:'' } href="#">{name}</a>
+				<a id={item.id} className={itemClass} inlist="true" onClick={(action)? (event)=>{ event.preventDefault(); action(item,i) }:(event)=>{ event.preventDefault(); event.nativeEvent.stopImmediatePropagation(); } } href="#">{name}</a>
 			</div>
 			<div className='il'>
 				{(item && showControl && showControl(item))? <Controls wipe={({target})=> wipe(item,target,i)} modif={()=> modif(item,i)} />:null}
