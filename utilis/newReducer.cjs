@@ -481,45 +481,14 @@ function searchR(states,action){
 	let { type, songName } = action;
 	
 	if(type != C.SEARCH_SONG)
-		return states.searchResult;
+		return states;
 
 	if(!songName){
-		return [];
+		return "";
 	}
-	let result = [],
-	Reg = new RegExp(`.*${action.songName}.*`,"i"),
-	length = 0,
-	songs;
-
-	states.Categories.forEach((cat)=>{
-		let catName = cat.name,
-		catId = cat.id;
-
-		songs = states.onlineSongs[catId];
-		if(songs){
-			length = songs.length;
-			for(let i=0; i < length; i++){
-				let song = songs[i];
-				if(Reg.test(song.name)){
-					result.push({catName,catId,...song, songId:i, name:song.name.toLowerCase(), location:'online'});
-				}
-			}
-		}
-
-		songs = states.offlineSongs[catId];
-		if(songs){
-			length = songs.length;
-			for(let i=0; i < length; i++){
-				let song = songs[i];
-				if(Reg.test(song.name)){
-					result.push({catName,catId,...song, songId:i, name:song.name.toLowerCase(), location:'offline'});
-				}
-			}
-		}
-
-	});
-
-	return result;
+	else{
+		return songName;
+	}
 }
 
 function selectorR(states,action){
@@ -574,7 +543,7 @@ const Reducer = (states,action)=>{
 		updateForced: updateFR(states.updateForced,action),
 		language: languageR(states.language,action),
 		favorites: favR(states.favorites,action),
-		searchResult: searchR(states,action),
+		searchTerm: searchR(states.searchTerm,action),
 		selector: selectorR(states.selector,action),
 		songIncrement: songIncR(states.songIncrement,action),
 		isStreaming: isStreamingR(states.isStreaming,action),
