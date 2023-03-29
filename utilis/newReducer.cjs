@@ -9,11 +9,11 @@ function rSong(state,action){
 	let { type, id, name, verses } = action;
 	switch(action.type){
 		case C.ADD_SONG:
-			return {id,name:name.toUpperCase(), verses};
+			return {id,name:name.toLowerCase(), verses};
 		case C.UPDATE_SONG:
 			if(state.id != action.id)
 				return state;
-			return {id,name:name.toUpperCase(),verses};
+			return {id,name:name.toLowerCase(),verses};
 		default:
 			return state;
 	}
@@ -26,7 +26,14 @@ function rSongs(states, action){
 			return [...states, rSong({},action)];
 
 		case C.ADD_SONGS:
-			states = states.concat(action.songs);
+			states = states.concat(action.songs.filter((song)=>{
+				let length = states.length;
+				for(let i=0; i < length; i++){
+					if(song.name == states[i].name)
+						return false;
+				}
+				return true;
+			}));
 			
 			return states;
 
