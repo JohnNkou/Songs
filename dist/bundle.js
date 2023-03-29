@@ -522,7 +522,7 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
         catId = currentCat.id,
         songFetch = fetchStatus[catId],
         last,
-        addSong = this.props.addSong,
+        addSongs = this.props.addSongs,
         store = this.store,
         data = {
           catId: catId
@@ -541,9 +541,7 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
               } else {
                 songFetch.complete = true;
               }
-              body.data.forEach(function (song, i) {
-                store.dispatch(addSong(i, song.name, song.catId, song.verses, 'online'));
-              });
+              store.dispatch(addSongs(body.data, catId));
               if (!body.data.length) {
                 _this7.fetchStatus[catId].complete = true;
                 _this7.forceUpdate();
@@ -2509,7 +2507,8 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
         type: 'application/json',
         s: function s(_ref5) {
           var xml = _ref5.xml,
-            body = _ref5.body;
+            body = _ref5.body,
+            headers = _ref5.headers;
           if (xml.ok) {
             body.data.forEach(function (cat) {
               store.dispatch(addCategorie(cat.name, cat.id, 'online'));
@@ -36687,7 +36686,7 @@ function parseHeader(data) {
     next = data.indexOf('\n', start);
     value = data.slice(start, next);
     start = next + 1;
-    headers[name] = value;
+    headers[name.toLowerCase()] = value;
   }
   return headers;
 }
@@ -38318,14 +38317,14 @@ function rSong(state, action) {
     case C.ADD_SONG:
       return {
         id: id,
-        name: name.toUpperCase(),
+        name: name.toLowerCase(),
         verses: verses
       };
     case C.UPDATE_SONG:
       if (state.id != action.id) return state;
       return {
         id: id,
-        name: name.toUpperCase(),
+        name: name.toLowerCase(),
         verses: verses
       };
     default:
@@ -38337,7 +38336,13 @@ function rSongs(states, action) {
     case C.ADD_SONG:
       return [].concat(_toConsumableArray(states), [rSong({}, action)]);
     case C.ADD_SONGS:
-      states = states.concat(action.songs);
+      states = states.concat(action.songs.filter(function (song) {
+        var length = states.length;
+        for (var i = 0; i < length; i++) {
+          if (song.name == states[i].name) return false;
+        }
+        return true;
+      }));
       return states;
     case C.UPDATE_SONG:
       return states.map(function (song) {
