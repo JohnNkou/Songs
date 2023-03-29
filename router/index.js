@@ -356,8 +356,7 @@ export function Stream(){
 							}).catch(next);
 						}
 						else{
-							let reg = new RegExp(`[^${songPattern}]`,'gi');
-							console.log("Bad characted",songName.match(reg));
+
 							return res.status(400).json({error,updated:false}).end();
 						}
 					}
@@ -473,6 +472,22 @@ export function Categorie(){
 
 			if(action){
 				switch(action){
+					case 'get':
+						if(query.id){ console.log('id is',query.id);
+							db.getCategorie(query.id).then((r)=>{
+								res.status(200).json(r).end();
+							}).catch((e)=>{
+								res.status(500).json(e).end();
+							})
+						}
+						else{
+							res.status(400).json({
+								error:{
+									message:errorMessage.missData()
+								}
+							}).end();
+						}
+						break;
 					case 'getAll':
 						if(Object.keys(body).length){
 							r = check(body, relaxCatConstrains, V,T);
@@ -551,12 +566,34 @@ export function Song(){
 						}).end();
 					}
 					break;
+				case 'search':
+					if(query.term){
+						let args = [query.term]
+
+						if(query.last){
+							args.push(query.last);
+						}
+
+						return db.searchSong.apply(db,args).then((r)=>{
+							res.status(200).json(r).end();
+						}).catch((e)=>{
+							res.status(500).json(e).end();
+						})
+					}
+					else{
+						res.status(400).json({
+							error:{
+								message:errorMessage.invalid('query')
+							}
+						}).end();
+					}
+					break;
 				default:
 					res.status(400).json({
 						error:{
 							message:errorMessage.invalid('action')
 						}
-					})
+					}).end();
 			}
 		}
 		else{
@@ -564,7 +601,7 @@ export function Song(){
 				error:{
 					message:errorMessage.invalid('action')
 				}
-			})
+			}).end();
 		}
 	}
 }

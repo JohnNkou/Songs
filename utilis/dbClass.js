@@ -196,117 +196,82 @@ function d({getClient,getClientD}){
 		response = await clientD.send(new ScanCommand(params));
 		return {...getResponse(response.Items), last:response.LastEvaluatedKey};
 	}
-	this.getCategorie = async (name)=>{
+	this.getCategorie = async (id)=>{
 		await this.initialized;
 		let params = {
 			TableName: cTableName,
 			Key:{
-				[cF.name]:name
+				[cF.id]:id
 			},
 			ReturnConsumedCapacity:'TOTAL'
 		},
+		response,
+		Item;
+
+		console.log('params',params);
+
 		response = await clientD.send(new GetCommand(params)),
-		Item = (response.Item)? [response.Item]:[];
+		Item = (response.Item)? [response.Item]:[]; console.log('GAMA');
 		return getResponse(Item);
 	}
-	this.updateCategorie = async (key,obj)=>{
+	this.updateCategorie = async (id,obj)=>{
 		await this.initialized;
-		let name = obj[cF.name],
-		c = (await this.getCategorie(key)).data[0],
-		songs = (await this.getAllSongs({ catId:c[cF.id] })).data,
-		newId = nanoid(),
-		params = {
-			TransactItems:[]
+		let params = {
+			TableName:cTableName,
+			Key:{
+				[cF.id]:id
+			},
+			ConditionExpression:`attribute_exists(${cF.id})`,
+			UpdateExpression:`SET `,
+			ExpressionAttributeNames:{},
+			ExpressionAttributeValues:{},
+			ReturnValues:'ALL_NEW'
 		},
-		ti = params.TransactItems,
+		update = [],
 		response;
 
-		ti.push({
-			Delete:{
-				TableName:cTableName,
-				Key:{
-					[cF.name]:key.toLowerCase()
-				}
-			}
-		},{
-			Put:{
-				TableName:cTableName,
-				Item:{
-					[cF.name]:name.toLowerCase(),
-					[cF.id]:newId
-				}
-			}
-		})
-		songs.forEach((s)=>{
-			let name = s[sF.name],
-			catId = s[sF.catId],
-			verses = s[sF.verses],
-			creationTime = s[sF.cTime];
+		for(let obName in obj){
+			params.ExpressionAttributeNames[`#${obName}`] = obName;
+			params.ExpressionAttributeValues[`:${obName}`] = (obName == cF.name)? obj[obName].toLowerCase(): obj[obName];
+			update.push(`#${obName}=:${obName}`);
+		}
 
-			ti.push({
-				Delete:{
-					TableName:sTableName,
-					Key:{
-						[sF.name]:name,
-						[sF.catId]:catId
-					}
-				}
-			},{
-				Put:{
-					TableName:sTableName,
-					Item:{
-						[sF.name]:name,
-						[sF.verses]:verses,
-						[sF.catId]:newId,
-						[sF.cTime]:creationTime
-					}
-				}
-			})
-		});
+		params.UpdateExpression += update.join(',');
 
-		response = await clientD.send(new TransactWriteCommand(params));
-
-		return updResponse({Attributes:{ name,id:newId }})
+		response = await clientD.send(new UpdateCommand(params));
+		
+		return updResponse(response);
 	}
-	this.removeCategorie = async (name)=>{
+	this.removeCategorie = async (id)=>{
 		await this.initialized;
 		try{
 			let params = {
 				TableName:cTableName,
 				Key:{
-					[cF.name]:name.toLowerCase()
+					[cF.id]:id
 				},
-				ConditionExpression:`attribute_exists(#${cF.name})`,
+				ConditionExpression:`attribute_exists(#${cF.id})`,
 				ExpressionAttributeNames:{
-					[`#${cF.name}`]:cF.name
+					[`#${cF.id}`]:cF.id
 				},
 				ReturnConsumedCapacity:'TOTAL',
 				ReturnValues:'ALL_OLD'
 			},
-			ti = params.TransactItems,
-			c = (await this.getCategorie(name)).data[0],
 			songs,
 			response,
 			r,
 			last;
 
-			if(c){
-				songs = (await DoUntilLast([],this.getAllSongs.bind(this),{ catId:c.id })).Items;
+			songs = (await DoUntilLast([],this.getAllSongs.bind(this),{ catId:id})).Items;
 
-				let removed = await this.bulkRemoveSongs(c.id,songs);
+			let removed = await this.bulkRemoveSongs(id,songs);
 
-				if(removed == songs.length){
-					response = await clientD.send(new DeleteCommand(params));
-					return remResponse(response);
-				}
-				else{
-					return remResponse(null,{ message:"We couldn't delete some songs" })
-				}
+			if(removed == songs.length){
+				response = await clientD.send(new DeleteCommand(params));
+				return remResponse(response);
 			}
 			else{
-				r = remResponse();
-				r.exist = false;
-				return r;
+				return remResponse(null,{ message:"We couldn't delete some songs" })
 			}
 		}
 		catch(e){
@@ -338,7 +303,7 @@ function d({getClient,getClientD}){
 		if(badSongName.test(name)){
 			params.Item[sF.name] = name.replace(badSongName,' ');
 		}
-
+		
 		response = await clientD.send(new PutCommand(params));
 		return addResponse();
 	}
@@ -538,6 +503,34 @@ function d({getClient,getClientD}){
 		}
 
 		return removed;
+	}
+	this.searchSong = async (term,last)=>{
+		let params = {
+			TableName:sTableName,
+			FilterExpression:`contains(#${sF.name},:val)`,
+			ExpressionAttributeNames:{
+				[`#${sF.name}`]: sF.name
+			},
+			ExpressionAttributeValues:{
+				':val': term
+			},
+			LIMIT:100
+		},
+		r,
+		response;
+
+		if(last){
+			params.ExclusiveStartKey = last;
+		}
+
+		r = await clientD.send(new ScanCommand(params)),
+		response = getResponse(r.Items);
+
+		if(r.LastEvaluatedKey){
+			response.last = r.LastEvaluatedKey;
+		}
+
+		return response;
 	}
 	this.addStream = async ({ name, catName, song })=>{
 		await this.initialized;
