@@ -4,39 +4,19 @@ import { songPattern } from './pattern.js'
 import http from 'http';
 
 export async function addSongs(db,songs){
-	let i=0,
-	songLength = songs.length;
-
-	while(i < songLength){
-		await db.addSong(songs[i++]);
-	}
+	await Promise.all(songs.map((song)=> db.addSong(song)));
 }
 export async function addCats(db,cats){
-	let i=0,
-	catLength = cats.length;
-
-	while(i < catLength){
-		await db.addCategorie({...cats[i++],id:nanoid()});
-	}
+	await Promise.all(cats.map((cat)=> db.addCategorie(cat)))
 }
 
 export async function addStreams(db,streams){
-	let i=0,
-	sLength = streams.length;
-
-	while(i < sLength){
-		await db.addStream(streams[i++]);
-	}
+	await Promise.all(streams.map((stream)=> db.addStream(stream)));
 }
 export async function addCatId(cats,songs){
-	let catLength = cats.length,
-	songLength = songs.length,
-	i=0;
+	let catLength = cats.length;
 
-	while(i < songLength){
-		songs[i]['catId'] = cats[i % catLength]['id'];
-		i++;
-	}
+	songs.forEach((song,i)=>{ song[`catId`] = cats[i % catLength]['id']; })
 }
 export function validator(is){
 	let alfaNumPattern = /^[a-z0-9\sàèéôö'"-_]+$/i,
@@ -190,10 +170,10 @@ export const songs = [
 	{ name:'pig', verses:['mihn','don']}
 ];
 export const categories = [
-	{ name:'cantique' },
-	{ name:'individual' },
-	{ name:'hymn' },
-	{ name:'tarzan' }
+	{ name:'cantique', id:nanoid() },
+	{ name:'individual', id:nanoid() },
+	{ name:'hymn', id:nanoid() },
+	{ name:'tarzan', id:nanoid() }
 ];
 export const streams = [
 	{ 
