@@ -720,7 +720,18 @@ exports.fetcher = function fetcher(a){
 			a.e({error:e,xml});
 		}
 	}
+	xml.onabort = (e)=>{
+		a.e({
+			error:{
+				name:'aborted',
+				message:'Request aborted'
+			},
+			aborted:true
+		})
+	}
 	xml.send(a.data);
+
+	return xml;
 }
 
 exports.abortSubscription = function(f){
