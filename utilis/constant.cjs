@@ -116,7 +116,7 @@ exports.appState = {
 	},
 	language:"Fr",
 	favorites:{},
-	searchResult:[],
+	searchTerm:"",
 	message:"",
 	selector:{
 		withVerse:false
