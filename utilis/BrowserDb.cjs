@@ -662,7 +662,7 @@ function parseHeader(data){
     value = data.slice(start,next);
     start = next+1;
 
-    headers[name] = value;
+    headers[name.toLowerCase()] = value;
   }
 
   return headers;
