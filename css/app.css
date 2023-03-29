@@ -897,6 +897,18 @@ input{
 	color:white
 }
 
+.result .first{
+	line-height:20px;
+}
+.result .first span{
+	font-weight:bold;
+	letter-spacing:3px;
+	font-size:0.9em;
+}
+.result .first *{
+	vertical-align:middle;
+}
+
 @media(max-width: 942px){
 	#first, #second{
 		position:absolute;
