@@ -1,5 +1,5 @@
 exports.documentTree = {
-		title: "Song Apps",
+		title: "Mictam",
 		metas:[
 			{
 				name: "viewport",
@@ -7,7 +7,7 @@ exports.documentTree = {
 			},
 			{
 				name:'application-name',
-				content:'songA'
+				content:'Mictam'
 			},
 			{
 				name:'author',
@@ -15,7 +15,7 @@ exports.documentTree = {
 			},
 			{
 				name:'description',
-				content:'Want to share your lyrics with people, or stream your lyrics so other people can see it in real time, SongA allow you to do just that. You can create your songs, stream them and allow other user to download your lyrics. Dive right in to see'
+				content:'Want to share your lyrics with people, or stream your lyrics so other people can see it in real time, Mictam allow you to do just that. You can create your songs, stream them and allow other user to download your lyrics. Dive right in to see'
 			}
 		],
 		links:[
