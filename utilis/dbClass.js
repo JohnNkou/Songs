@@ -514,7 +514,7 @@ function d({getClient,getClientD}){
 			ExpressionAttributeValues:{
 				':val': term
 			},
-			LIMIT:30
+			LIMIT:100
 		},
 		r,
 		response;

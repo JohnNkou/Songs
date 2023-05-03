@@ -2841,7 +2841,7 @@ var OnlineResult = /*#__PURE__*/function (_React$Component13) {
           this.xml.abort();
         }
         if (state.term) {
-          this.fetchTerm();
+          this.fetchTerm(state.fetching);
         }
       }
     }
@@ -2925,12 +2925,12 @@ var OnlineResult = /*#__PURE__*/function (_React$Component13) {
     }
   }, {
     key: "fetchTerm",
-    value: function fetchTerm() {
+    value: function fetchTerm(skip) {
       var _this41 = this;
       var _this$state16 = this.state,
         term = _this$state16.term,
         fetching = _this$state16.fetching;
-      if (fetching) return;
+      if (fetching && !skip) return;
       this.setState({
         fetching: true
       });

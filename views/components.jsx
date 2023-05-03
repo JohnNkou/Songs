@@ -2232,7 +2232,7 @@ class OnlineResult extends React.Component{
 				this.xml.abort();
 			}
 			if(state.term){
-				this.fetchTerm();
+				this.fetchTerm(state.fetching);
 			}
 		}
 	}
@@ -2311,10 +2311,10 @@ class OnlineResult extends React.Component{
 		}
 	}
 
-	fetchTerm(){
+	fetchTerm(skip){
 		let { term, fetching } = this.state;
 
-		if(fetching)
+		if(fetching && !skip)
 			return;
 
 		this.setState({fetching:true});

@@ -568,7 +568,7 @@ export function Song(){
 					break;
 				case 'search':
 					if(query.term){
-						let args = [query.term]
+						let args = [query.term.toLowerCase()]
 
 						if(query.last){
 							args.push(query.last);
