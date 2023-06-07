@@ -37,7 +37,7 @@ app.set("view engine","jsx")
 app.engine("jsx",express_react.createEngine());
 app.use(compression());
 app.use(express.json());
-app.use(express.static(root,{setHeaders:(res,filepath)=> {
+app.use(express.static(`${root}/public`,{setHeaders:(res,filepath)=> {
 	if(path.basename(filepath) == "worker.js"){
 		res.set('Service-Worker-Allowed','/');
 	}
