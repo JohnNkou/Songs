@@ -2,7 +2,8 @@ const TerserPlugin = require('terser-webpack-plugin'),
 Failer = require('./Plugins/failedCompile.cjs'),
 webpack = require('webpack'),
 { execSync } = require('child_process'),
-env = process.env;
+env = process.env,
+path = require('path');
 
 env.os = execSync('uname').toString().replace('\n','');
 
@@ -13,6 +14,7 @@ module.exports = ()=> ({
 		filename:"./client/index.jsx"
 	},
 	output:{
+		path:path.resolve(__dirname,'public/dist'),
 		filename:"bundle.js",
 		chunkFilename:'[name].js',
 		environment:{

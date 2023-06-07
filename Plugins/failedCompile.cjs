@@ -25,7 +25,7 @@ class Failer{
 		}
 
 		compiler.hooks.afterEmit.tap('Failer',(compilation)=>{
-			let file = "dist/bundle.js";
+			let file = "public/dist/bundle.js";
 			let f = fs.readFileSync(file).toString();
 			let gog = [];
 			let count = 0;
