@@ -2500,7 +2500,9 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
     value: function fetchCategories() {
       var _this36 = this;
       var store = this.store,
-        addCategorie = this.props.addCategorie,
+        _this$props11 = this.props,
+        addCategorie = _this$props11.addCategorie,
+        setCurrentCat = _this$props11.setCurrentCat,
         last = this.state.last;
       var sendData = {
         url: '/Categorie?action=getAll',
@@ -2510,6 +2512,7 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
             body = _ref5.body,
             headers = _ref5.headers;
           if (xml.ok) {
+            var _cat;
             body.data.forEach(function (cat) {
               store.dispatch(addCategorie(cat.name, cat.id, 'online'));
             });
@@ -2521,6 +2524,10 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
               _this36.setState({
                 complete: true
               });
+            }
+            if (body.data.length) {
+              _cat = body.data[0];
+              store.dispatch(setCurrentCat(_cat.name, _cat.id));
             }
           } else {
             console.error("Received an not ok status while retrieving categories", xml.status, body);
@@ -2588,9 +2595,9 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
   }, {
     key: "modif",
     value: function modif(item, id) {
-      var _this$props11 = this.props,
-        setCurrentCat = _this$props11.setCurrentCat,
-        changeCatView = _this$props11.changeCatView,
+      var _this$props12 = this.props,
+        setCurrentCat = _this$props12.setCurrentCat,
+        changeCatView = _this$props12.changeCatView,
         store = this.store,
         state = store.getState();
       store.dispatch(setCurrentCat(item.name, item.id, item.location));
@@ -2619,11 +2626,11 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
   }, {
     key: "action1",
     value: function action1(item, id) {
-      var _this$props12 = this.props,
-        changeIndex = _this$props12.changeIndex,
-        setCurrentCat = _this$props12.setCurrentCat,
-        updateSongList = _this$props12.updateSongList,
-        changeCatListView = _this$props12.changeCatListView,
+      var _this$props13 = this.props,
+        changeIndex = _this$props13.changeIndex,
+        setCurrentCat = _this$props13.setCurrentCat,
+        updateSongList = _this$props13.updateSongList,
+        changeCatListView = _this$props13.changeCatListView,
         store = this.store,
         currentCat = store.getState().currentCat;
       if (currentCat.id != item.id) {
@@ -2639,9 +2646,9 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
       var name = _ref8.name,
         id = _ref8.id;
       var text = this.text,
-        _this$props13 = this.props,
-        lang = _this$props13.lang,
-        addCategorie = _this$props13.addCategorie;
+        _this$props14 = this.props,
+        lang = _this$props14.lang,
+        addCategorie = _this$props14.addCategorie;
       return db.insertCategorie(name, id)().then(function (r) {
         if (r) {
           notifier.addSpeed(text.insertion.success(lang, name));
@@ -2764,9 +2771,9 @@ var ResultList = /*#__PURE__*/function (_React$Component12) {
         catId = _ref10.catId,
         location = _ref10.location,
         catName = _ref10.catName;
-      var _this$props14 = this.props,
-        setCurrentCat = _this$props14.setCurrentCat,
-        setCurrentSong = _this$props14.setCurrentSong,
+      var _this$props15 = this.props,
+        setCurrentCat = _this$props15.setCurrentCat,
+        setCurrentSong = _this$props15.setCurrentSong,
         store = this.store;
       store.dispatch(setCurrentCat(catName, catId, location));
       store.dispatch(setCurrentSong(songId, catId, location));
@@ -2848,10 +2855,10 @@ var OnlineResult = /*#__PURE__*/function (_React$Component13) {
   }, {
     key: "fetchSong",
     value: function fetchSong(song) {
-      var _this$props15 = this.props,
-        setCurrentSong = _this$props15.setCurrentSong,
-        setCurrentCat = _this$props15.setCurrentCat,
-        addCategorie = _this$props15.addCategorie,
+      var _this$props16 = this.props,
+        setCurrentSong = _this$props16.setCurrentSong,
+        setCurrentCat = _this$props16.setCurrentCat,
+        addCategorie = _this$props16.addCategorie,
         state = store.getState(),
         catId = song.catId,
         currentCat = state.currentCat,
@@ -2868,9 +2875,9 @@ var OnlineResult = /*#__PURE__*/function (_React$Component13) {
               body = _ref11.body,
               status = _ref11.status;
             if (xml.ok) {
-              var _cat = body.data[0];
-              if (_cat) {
-                store.dispatch(addCategorie(_cat.name, _cat.id, 'online'));
+              var _cat2 = body.data[0];
+              if (_cat2) {
+                store.dispatch(addCategorie(_cat2.name, _cat2.id, 'online'));
                 self.setSong(song);
               } else {
                 console.error("cat not found", body);
@@ -2890,10 +2897,10 @@ var OnlineResult = /*#__PURE__*/function (_React$Component13) {
   }, {
     key: "setSong",
     value: function setSong(song) {
-      var _this$props16 = this.props,
-        setCurrentSong = _this$props16.setCurrentSong,
-        setCurrentCat = _this$props16.setCurrentCat,
-        addSong = _this$props16.addSong,
+      var _this$props17 = this.props,
+        setCurrentSong = _this$props17.setCurrentSong,
+        setCurrentCat = _this$props17.setCurrentCat,
+        addSong = _this$props17.addSong,
         state = store.getState(),
         catId = song.catId,
         currentCat = state.currentCat,
@@ -3044,9 +3051,9 @@ var OfflineResult = /*#__PURE__*/function (_React$Component14) {
     key: "setSong",
     value: function setSong(song) {
       var store = this.store,
-        _this$props17 = this.props,
-        setCurrentCat = _this$props17.setCurrentCat,
-        setCurrentSong = _this$props17.setCurrentSong,
+        _this$props18 = this.props,
+        setCurrentCat = _this$props18.setCurrentCat,
+        setCurrentSong = _this$props18.setCurrentSong,
         state = store.getState(),
         Categories = state.Categories,
         currentCat = state.currentCat,
@@ -3313,12 +3320,12 @@ var Download = /*#__PURE__*/function (_React$Component15) {
     key: "checkImageDownload",
     value: function checkImageDownload() {
       var _this45 = this;
-      var _this$props18 = this.props,
-        args = _this$props18.args,
-        action2 = _this$props18.action2,
-        download = _this$props18.download,
-        name = _this$props18.name,
-        item = _this$props18.item;
+      var _this$props19 = this.props,
+        args = _this$props19.args,
+        action2 = _this$props19.action2,
+        download = _this$props19.download,
+        name = _this$props19.name,
+        item = _this$props19.item;
       var img = this.state.img;
       if (!download) {
         if (img) this.setState({
@@ -3347,11 +3354,11 @@ var Download = /*#__PURE__*/function (_React$Component15) {
     value: function save(e) {
       var _this46 = this;
       if (e) e.preventDefault();
-      var _this$props19 = this.props,
-        action = _this$props19.action,
-        args = _this$props19.args,
-        song = _this$props19.song,
-        name = _this$props19.name;
+      var _this$props20 = this.props,
+        action = _this$props20.action,
+        args = _this$props20.args,
+        song = _this$props20.song,
+        name = _this$props20.name;
       this.doAction(action, args, song).then(function (r) {
         if (r) {
           /*if(song){
@@ -3483,22 +3490,22 @@ var SongList = /*#__PURE__*/function (_React$Component16) {
   }, {
     key: "shouldAddMoreSong",
     value: function shouldAddMoreSong() {
-      var _this$props20 = this.props,
-        to = _this$props20.to,
-        songs = _this$props20.songs,
-        updateSongList = _this$props20.updateSongList,
-        increment = _this$props20.increment;
+      var _this$props21 = this.props,
+        to = _this$props21.to,
+        songs = _this$props21.songs,
+        updateSongList = _this$props21.updateSongList,
+        increment = _this$props21.increment;
       return to < songs.length;
     }
   }, {
     key: "addMoreSong",
     value: function addMoreSong(event) {
       try {
-        var _this$props21 = this.props,
-          to = _this$props21.to,
-          increment = _this$props21.increment,
-          updateSongList = _this$props21.updateSongList,
-          _store3 = _this$props21.store;
+        var _this$props22 = this.props,
+          to = _this$props22.to,
+          increment = _this$props22.increment,
+          updateSongList = _this$props22.updateSongList,
+          _store3 = _this$props22.store;
         if (this.shouldAddMoreSong()) {
           var percent = Math.floor((this.listDiv.clientHeight + this.listDiv.scrollTop) / this.listDiv.scrollHeight * 100);
           percent > 65 ? _store3.dispatch(updateSongList(to + increment)) : '';
@@ -3510,17 +3517,17 @@ var SongList = /*#__PURE__*/function (_React$Component16) {
   }, {
     key: "reportSuccess",
     value: function reportSuccess(name, i, verses) {
-      var _this$props22 = this.props,
-        report = _this$props22.report,
-        addSong = _this$props22.addSong,
-        removeSong = _this$props22.removeSong,
-        counterUpdater = _this$props22.counterUpdater,
-        currentCat = _this$props22.currentCat,
-        songs = _this$props22.songs,
-        lang = _this$props22.lang,
-        location = _this$props22.location,
-        store = _this$props22.store,
-        addCategorie = _this$props22.addCategorie,
+      var _this$props23 = this.props,
+        report = _this$props23.report,
+        addSong = _this$props23.addSong,
+        removeSong = _this$props23.removeSong,
+        counterUpdater = _this$props23.counterUpdater,
+        currentCat = _this$props23.currentCat,
+        songs = _this$props23.songs,
+        lang = _this$props23.lang,
+        location = _this$props23.location,
+        store = _this$props23.store,
+        addCategorie = _this$props23.addCategorie,
         catName = currentCat.name,
         catId = currentCat.id,
         addCat = location == 'online' && !store.getState().offlineSongs[catId],
@@ -3538,9 +3545,9 @@ var SongList = /*#__PURE__*/function (_React$Component16) {
   }, {
     key: "reportError",
     value: function reportError(name) {
-      var _this$props23 = this.props,
-        report = _this$props23.report,
-        lang = _this$props23.lang;
+      var _this$props24 = this.props,
+        report = _this$props24.report,
+        lang = _this$props24.lang;
       if (report) {
         report(_utilis_constant_cjs__WEBPACK_IMPORTED_MODULE_2__.insertStatus.FAILED, name);
       } else {
@@ -3602,7 +3609,7 @@ var SongList = /*#__PURE__*/function (_React$Component16) {
       var _insertSong = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(name, verses, cat, index) {
         var _this49 = this;
         var tried,
-          _this$props24,
+          _this$props25,
           store,
           currentCat,
           lang,
@@ -3616,7 +3623,7 @@ var SongList = /*#__PURE__*/function (_React$Component16) {
           while (1) switch (_context.prev = _context.next) {
             case 0:
               tried = _args.length > 4 && _args[4] !== undefined ? _args[4] : 0;
-              _this$props24 = this.props, store = _this$props24.store, currentCat = _this$props24.currentCat, lang = _this$props24.lang, songText = this.text.Song, catName = currentCat.name, catId = currentCat.id, state = store.getState();
+              _this$props25 = this.props, store = _this$props25.store, currentCat = _this$props25.currentCat, lang = _this$props25.lang, songText = this.text.Song, catName = currentCat.name, catId = currentCat.id, state = store.getState();
               if (state.offlineSongs[catId]) {
                 _context.next = 8;
                 break;
@@ -3694,14 +3701,14 @@ var SongList = /*#__PURE__*/function (_React$Component16) {
   }, {
     key: "modif",
     value: function modif(item, id) {
-      var _this$props25 = this.props,
-        changeIndex = _this$props25.changeIndex,
-        setCurrentSong = _this$props25.setCurrentSong,
-        location = _this$props25.location,
-        changeAddSongView = _this$props25.changeAddSongView,
-        currentCat = _this$props25.currentCat,
-        store = _this$props25.store,
-        setControl = _this$props25.setControl;
+      var _this$props26 = this.props,
+        changeIndex = _this$props26.changeIndex,
+        setCurrentSong = _this$props26.setCurrentSong,
+        location = _this$props26.location,
+        changeAddSongView = _this$props26.changeAddSongView,
+        currentCat = _this$props26.currentCat,
+        store = _this$props26.store,
+        setControl = _this$props26.setControl;
       store.dispatch(setCurrentSong(id, currentCat.id, location));
       store.dispatch(changeIndex(0));
       store.dispatch(setControl(true));
@@ -3712,12 +3719,12 @@ var SongList = /*#__PURE__*/function (_React$Component16) {
     value: function wipe(item, target, songId) {
       var _this51 = this;
       var name = item.name || item;
-      var _this$props26 = this.props,
-        removeSong = _this$props26.removeSong,
-        currentCat = _this$props26.currentCat,
-        location = _this$props26.location,
-        lang = _this$props26.lang,
-        store = _this$props26.store;
+      var _this$props27 = this.props,
+        removeSong = _this$props27.removeSong,
+        currentCat = _this$props27.currentCat,
+        location = _this$props27.location,
+        lang = _this$props27.lang,
+        store = _this$props27.store;
       var catName = currentCat.name,
         parent = target.parentNode,
         catId = currentCat.id;
@@ -3743,14 +3750,14 @@ var SongList = /*#__PURE__*/function (_React$Component16) {
   }, {
     key: "action",
     value: function action(x, id) {
-      var _this$props27 = this.props,
-        currentCat = _this$props27.currentCat,
-        setCurrentSong = _this$props27.setCurrentSong,
-        subscribedToStream = _this$props27.subscribedToStream,
-        subscribeToStream = _this$props27.subscribeToStream,
-        location = _this$props27.location,
-        changeDirection = _this$props27.changeDirection,
-        store = _this$props27.store;
+      var _this$props28 = this.props,
+        currentCat = _this$props28.currentCat,
+        setCurrentSong = _this$props28.setCurrentSong,
+        subscribedToStream = _this$props28.subscribedToStream,
+        subscribeToStream = _this$props28.subscribeToStream,
+        location = _this$props28.location,
+        changeDirection = _this$props28.changeDirection,
+        store = _this$props28.store;
       (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.abortSubscription)(_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher);
       S.updateStream(currentCat.name, x.name, 0, x.verses);
       store.dispatch(setCurrentSong(id, currentCat.id, location));
@@ -3906,9 +3913,9 @@ var Favorite = /*#__PURE__*/function (_React$Component17) {
   }, {
     key: "action",
     value: function action(item) {
-      var _this$props28 = this.props,
-        setCurrentCat = _this$props28.setCurrentCat,
-        setCurrentSong = _this$props28.setCurrentSong,
+      var _this$props29 = this.props,
+        setCurrentCat = _this$props29.setCurrentCat,
+        setCurrentSong = _this$props29.setCurrentSong,
         store = this.store;
       store.dispatch(setCurrentCat(item.catName, item.catId, item.location));
       store.dispatch(setCurrentSong(item.songId, item.catId, item.location));
@@ -4300,10 +4307,10 @@ var StreamList = /*#__PURE__*/function (_React$Component19) {
     value: function updateStream(t) {
       var _this60 = this;
       var text = this.text,
-        _this$props29 = this.props,
-        lang = _this$props29.lang,
-        subscribeToStream = _this$props29.subscribeToStream,
-        setAppUnreachable = _this$props29.setAppUnreachable,
+        _this$props30 = this.props,
+        lang = _this$props30.lang,
+        subscribeToStream = _this$props30.subscribeToStream,
+        setAppUnreachable = _this$props30.setAppUnreachable,
         store = this.store,
         lastTime = t || 0;
       (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)({
@@ -4406,12 +4413,12 @@ var StreamList = /*#__PURE__*/function (_React$Component19) {
       var downloadSong = this.downloadSong;
       var url = "stream/song?action=download&".concat(stF.name, "=").concat(streamName);
       if (downloadSong.inFetch[url]) return;
-      var _this$props30 = this.props,
-        lang = _this$props30.lang,
-        addCategorie = _this$props30.addCategorie,
-        addSong = _this$props30.addSong,
-        setCurrentCat = _this$props30.setCurrentCat,
-        setCurrentSong = _this$props30.setCurrentSong,
+      var _this$props31 = this.props,
+        lang = _this$props31.lang,
+        addCategorie = _this$props31.addCategorie,
+        addSong = _this$props31.addSong,
+        setCurrentCat = _this$props31.setCurrentCat,
+        setCurrentSong = _this$props31.setCurrentSong,
         newCatId = this.state.newCatId,
         downloadText = this.streamText.download,
         store = this.store;
@@ -4498,11 +4505,11 @@ var StreamList = /*#__PURE__*/function (_React$Component19) {
     value: function subscribe(streamName, update) {
       var _this63 = this;
       var past = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      var _this$props31 = this.props,
-        subscribeToStream = _this$props31.subscribeToStream,
-        setCurrentSong = _this$props31.setCurrentSong,
-        setCurrentCat = _this$props31.setCurrentCat,
-        lang = _this$props31.lang,
+      var _this$props32 = this.props,
+        subscribeToStream = _this$props32.subscribeToStream,
+        setCurrentSong = _this$props32.setCurrentSong,
+        setCurrentCat = _this$props32.setCurrentCat,
+        lang = _this$props32.lang,
         url = "stream/subscribe?".concat(stF.name, "=").concat(streamName).concat(update ? "&".concat(stq.updating, "=true") : ""),
         store = this.store;
       (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)({
@@ -4929,21 +4936,6 @@ var ArrowNav = /*#__PURE__*/function (_React$Component21) {
   }, {
     key: "backArrowHandler",
     value: function backArrowHandler(event) {
-      var _this$props32 = this.props,
-        total = _this$props32.total,
-        current = _this$props32.current,
-        catName = _this$props32.catName,
-        songName = _this$props32.songName,
-        images = _this$props32.images,
-        goToVerse = _this$props32.goToVerse,
-        index = _this$props32.index;
-      event.preventDefault();
-      event.stopPropagation();
-      (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.indexChanger)(Math.max(0, --index), catName, songName, goToVerse, S);
-    }
-  }, {
-    key: "nextArrowHandler",
-    value: function nextArrowHandler(event) {
       var _this$props33 = this.props,
         total = _this$props33.total,
         current = _this$props33.current,
@@ -4954,19 +4946,34 @@ var ArrowNav = /*#__PURE__*/function (_React$Component21) {
         index = _this$props33.index;
       event.preventDefault();
       event.stopPropagation();
-      (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.indexChanger)(Math.min(total, ++index), catName, songName, goToVerse, S);
+      (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.indexChanger)(Math.max(0, --index), catName, songName, goToVerse, S);
     }
   }, {
-    key: "render",
-    value: function render() {
+    key: "nextArrowHandler",
+    value: function nextArrowHandler(event) {
       var _this$props34 = this.props,
         total = _this$props34.total,
         current = _this$props34.current,
         catName = _this$props34.catName,
         songName = _this$props34.songName,
         images = _this$props34.images,
-        index = _this$props34.index,
-        goToVerse = _this$props34.goToVerse;
+        goToVerse = _this$props34.goToVerse,
+        index = _this$props34.index;
+      event.preventDefault();
+      event.stopPropagation();
+      (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.indexChanger)(Math.min(total, ++index), catName, songName, goToVerse, S);
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this$props35 = this.props,
+        total = _this$props35.total,
+        current = _this$props35.current,
+        catName = _this$props35.catName,
+        songName = _this$props35.songName,
+        images = _this$props35.images,
+        index = _this$props35.index,
+        goToVerse = _this$props35.goToVerse;
       var prevView = index != 0 && index != undefined ? "" : "whoosh",
         nextView = index < total && songName ? "" : "whoosh";
       return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
@@ -5160,10 +5167,10 @@ var SetupPopUp = /*#__PURE__*/function (_React$Component23) {
   _createClass(SetupPopUp, [{
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      var _this$props35 = this.props,
-        addCatView = _this$props35.addCatView,
-        addSongView = _this$props35.addSongView,
-        createStreamView = _this$props35.createStreamView;
+      var _this$props36 = this.props,
+        addCatView = _this$props36.addCatView,
+        addSongView = _this$props36.addSongView,
+        createStreamView = _this$props36.createStreamView;
       if (addCatView || addSongView || createStreamView) {
         if (!this.popUpVisible) {
           this.props.adjustHeight();
@@ -5368,9 +5375,9 @@ var Language = /*#__PURE__*/function (_React$Component24) {
     key: "render",
     value: function render() {
       var _this77 = this;
-      var _this$props36 = this.props,
-        changeLanguage = _this$props36.changeLanguage,
-        lang = _this$props36.lang;
+      var _this$props37 = this.props,
+        changeLanguage = _this$props37.changeLanguage,
+        lang = _this$props37.lang;
       var hide = this.state.show ? '' : 'whoosh';
       var list = ["En", "Fr"];
       return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
@@ -5580,9 +5587,9 @@ var Guider = /*#__PURE__*/function (_React$PureComponent6) {
   }, {
     key: "render",
     value: function render() {
-      var _this$props37 = this.props,
-        show = _this$props37.show,
-        end = _this$props37.end;
+      var _this$props38 = this.props,
+        show = _this$props38.show,
+        end = _this$props38.end;
       var stepStyle = this.state.style;
       var _this$state25 = this.state,
         step = _this$state25.step,
