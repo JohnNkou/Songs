@@ -1952,7 +1952,7 @@ class CatNames extends React.Component{
 
 	fetchCategories(){
 		let store = this.store,
-		{ addCategorie } = this.props,
+		{ addCategorie, setCurrentCat } = this.props,
 		{ last } = this.state;
 
 		let sendData = {
@@ -1960,6 +1960,8 @@ class CatNames extends React.Component{
 			type:'application/json',
 			s:({xml,body,headers})=>{
 				if(xml.ok){
+					let cat;
+
 					body.data.forEach((cat)=>{
 						store.dispatch(addCategorie(cat.name,cat.id,'online'));
 					})
@@ -1968,6 +1970,12 @@ class CatNames extends React.Component{
 					}
 					else{
 						this.setState({complete:true});
+					}
+
+					if(body.data.length){
+						cat = body.data[0];
+
+						store.dispatch(setCurrentCat(cat.name, cat.id));
 					}
 				}
 				else{
