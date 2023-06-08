@@ -8,6 +8,8 @@ import { check,transformer, validator } from '../utilis/dev_utilis.js'
 import messages from '../utilis/message.cjs';
 import config from '../utilis/db.config.cjs';
 import { songPattern } from '../utilis/pattern.js';
+import { createStore } from 'redux';
+import { Reducer} from '../utilis/newReducer.cjs';
 
 const resTimeToWait = 30000,
 errorMessage = messages.error,
@@ -208,7 +210,7 @@ export const indexRouter =  (store)=>{
 		let query = req.query,
 		manifest = /*query.manifest || */false;
 
-		res.app.render('index.jsx',{store,nodeJs:true, manifest},(err,html)=>{
+		res.app.render('index.jsx',{ manifest},(err,html)=>{
 			if(err){
 				console.log(err)
 				res.end("Error"+html)
@@ -220,6 +222,44 @@ export const indexRouter =  (store)=>{
 			}
 		})
 		
+	}
+}
+
+export function ServerSong(appState){
+	return async (req,res)=>{
+		let params = req.params,
+		catId = params.catId,
+		songName = params.songName,
+		payload,data,
+		newState,
+		store;
+
+		try{
+			payload = await db.getSong(songName,catId);
+			data = payload.data[0];
+
+			if(data){
+				newState = {...appState};
+				newState.currentCat = { name:"Youth", id:catId }
+				newState.currentSong = { name:data.name, verses:data.verses, index:0 }
+				store = createStore(Reducer,newState);
+
+				res.app.render("index.jsx",{ store, db: { isBogus:true } },(err,html)=>{
+					if(err){
+						console.error('err',err);
+					}
+					else{
+						res.status(200).set("Content-Type","text/html").end(html);
+					}
+				});
+			}
+			else{
+				res.status(200).json({message:"Nothing"});
+			}
+		}
+		catch(e){
+			res.status(500).json(e);
+		}
 	}
 }
 
