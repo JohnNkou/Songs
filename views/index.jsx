@@ -23,7 +23,7 @@ export default function Index(props){
 	return (
 		<Custom.Provider value={pan}>
 			<HTML {...documentTree} {...props} data={store.getState()}>
-				{(state && state.currentSong.name && state.currentCat.name)? <script type='text/javascript' dangerouslySetInnerHTML={{__html:`
+				{(state && state.currentSong.name)? <script type='text/javascript' dangerouslySetInnerHTML={{__html:`
 					window.appState = ${JSON.stringify(state)}
 				`}}></script> : null}
 			</HTML>
