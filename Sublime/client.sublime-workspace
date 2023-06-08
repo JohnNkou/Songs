@@ -1,0 +1,2462 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"songN",
+				"songName"
+			],
+			[
+				"conten",
+				"content-type"
+			],
+			[
+				"success",
+				"successfully"
+			],
+			[
+				"notifier",
+				"notifier2"
+			],
+			[
+				"offlin",
+				"offlineSongs"
+			],
+			[
+				"onlineS",
+				"onlineSongs"
+			],
+			[
+				"setCurre",
+				"setCurrentCat"
+			],
+			[
+				"changeSet",
+				"changeSettingsView"
+			],
+			[
+				"changeSetti",
+				"changeSettingListView"
+			],
+			[
+				"settingLi",
+				"settingListView"
+			],
+			[
+				"handSear",
+				"handleSearchInput"
+			],
+			[
+				"handleSear",
+				"handleSearchInput"
+			],
+			[
+				"lastElemen",
+				"lastElementHeight"
+			],
+			[
+				"DevToo",
+				"DevToolViewToogler"
+			],
+			[
+				"Setting",
+				"SettingsToggler"
+			],
+			[
+				"coor",
+				"coord"
+			],
+			[
+				"coord",
+				"coordi1"
+			],
+			[
+				"componen",
+				"componentDidUpdate"
+			],
+			[
+				"offline",
+				"offlineCurrentCatSongLength"
+			],
+			[
+				"offli",
+				"offlineSongs"
+			],
+			[
+				"tracked",
+				"trackedTouchs"
+			],
+			[
+				"stringR",
+				"stringRepresentation2"
+			],
+			[
+				"stringRe",
+				"stringRepresentation"
+			],
+			[
+				"stringRepren",
+				"stringRepresentation2"
+			],
+			[
+				"localStor",
+				"localStorageData"
+			],
+			[
+				"localSto",
+				"localStorageData"
+			],
+			[
+				"currentSon",
+				"currentSong"
+			],
+			[
+				"addS",
+				"addSong"
+			],
+			[
+				"changeVerseD",
+				"changeVerseDivNumber"
+			],
+			[
+				"changeStrea",
+				"changeStreamCreateView"
+			],
+			[
+				"updateSon",
+				"updateSong"
+			],
+			[
+				"stateCurre",
+				"stateCurrentSongName"
+			],
+			[
+				"register",
+				"registerGlobalClickHandler"
+			],
+			[
+				"streamLi",
+				"streamListView"
+			],
+			[
+				"catNam",
+				"catName"
+			],
+			[
+				"configureS",
+				"configureStreamManager"
+			],
+			[
+				"configure",
+				"configureStreamManager"
+			],
+			[
+				"setCurrent",
+				"setCurrentSong"
+			],
+			[
+				"addSon",
+				"addSong"
+			],
+			[
+				"OfflineS",
+				"OfflineSongs"
+			],
+			[
+				"updateSong",
+				"updateSongList"
+			],
+			[
+				"Text",
+				"Texts"
+			],
+			[
+				"fastAc",
+				"fastAccess"
+			],
+			[
+				"fastAcc",
+				"fastAccess"
+			],
+			[
+				"componentDid",
+				"componentDidMount"
+			],
+			[
+				"fastAcce",
+				"fastAccess"
+			],
+			[
+				"componentD",
+				"componentDidMount"
+			],
+			[
+				"fast",
+				"fastAccessCatNameOffline"
+			],
+			[
+				"fastA",
+				"fastAccessCatNameOnline"
+			],
+			[
+				"songNotIn",
+				"songNotInOfflineCat"
+			],
+			[
+				"songNot",
+				"songNotInOnlineCat"
+			],
+			[
+				"changeStr",
+				"changeStreamListView"
+			],
+			[
+				"changeCat",
+				"changeCatListView"
+			],
+			[
+				"setCurr",
+				"setCurrentCat"
+			],
+			[
+				"notifer",
+				"notifier2"
+			],
+			[
+				"Categor",
+				"Categories"
+			],
+			[
+				"subscrip",
+				"subscriptionError"
+			],
+			[
+				"fastAccessC",
+				"fastAccessCatNameOffline"
+			],
+			[
+				"updateStr",
+				"updateStream"
+			],
+			[
+				"notifi",
+				"notifier2"
+			],
+			[
+				"subscribed",
+				"subscribed"
+			],
+			[
+				"AddSon",
+				"AddSongDiv"
+			],
+			[
+				"saveUi",
+				"saveUiInfoCurried"
+			],
+			[
+				"catName",
+				"catNames"
+			],
+			[
+				"goToPre",
+				"goToPreviousStep"
+			],
+			[
+				"goToNext",
+				"goToNextSection"
+			],
+			[
+				"counter",
+				"counters"
+			],
+			[
+				"querySe",
+				"querySelector"
+			],
+			[
+				"trackedTou",
+				"trackedTouchs"
+			],
+			[
+				"setting",
+				"settingListView"
+			],
+			[
+				"PopU",
+				"PopUp"
+			],
+			[
+				"PopUp",
+				"PopUpWrapper"
+			],
+			[
+				"goToNextS",
+				"goToNextStep"
+			],
+			[
+				"favoite",
+				"favorites"
+			],
+			[
+				"context",
+				"contextType"
+			],
+			[
+				"REGISTRATION",
+				"REGISTRATION_DONE"
+			],
+			[
+				"REGISTR",
+				"REGISTRATION_INSTALLING"
+			],
+			[
+				"REGISTRAT",
+				"REGISTRATION_INSTALLING"
+			],
+			[
+				"for",
+				"for\tfor (…) {…}"
+			],
+			[
+				"save",
+				"failedToSavedSongs"
+			],
+			[
+				"updateS",
+				"updateSongStatus"
+			],
+			[
+				"songL",
+				"songLength"
+			],
+			[
+				"report",
+				"reportSuccess"
+			],
+			[
+				"getCate",
+				"getCategorieByKey"
+			],
+			[
+				"getCateg",
+				"getCategorie"
+			],
+			[
+				"getCat",
+				"getCategorieByKey"
+			],
+			[
+				"favL",
+				"favListView"
+			],
+			[
+				"streamL",
+				"streamListView"
+			],
+			[
+				"songLi",
+				"songListDiv"
+			],
+			[
+				"change",
+				"changeCatListView"
+			],
+			[
+				"filt",
+				"filtered2"
+			],
+			[
+				"action",
+				"actionsReverser"
+			],
+			[
+				"In",
+				"Input"
+			],
+			[
+				"Son",
+				"SongList"
+			],
+			[
+				"stream",
+				"StreamCreation"
+			],
+			[
+				"He",
+				"Head1"
+			],
+			[
+				"favorte",
+				"favorites"
+			],
+			[
+				"catN",
+				"catNames"
+			],
+			[
+				"sea",
+				"searchResult"
+			],
+			[
+				"setCu",
+				"setCurrentCat"
+			],
+			[
+				"addSongD",
+				"AddSongDiv"
+			],
+			[
+				"subscr",
+				"subscribeToStream"
+			],
+			[
+				"dowl",
+				"downloadSong"
+			],
+			[
+				"wai",
+				"waiters"
+			],
+			[
+				"res",
+				"resTimeToWait"
+			],
+			[
+				"remot",
+				"remotePort"
+			],
+			[
+				"strea",
+				"streamer"
+			],
+			[
+				"remote",
+				"remoteAddress"
+			],
+			[
+				"remo",
+				"remotePort"
+			],
+			[
+				"updateStream",
+				"updateCurrentStreamInfo"
+			],
+			[
+				"setCurren",
+				"setCurrentSong"
+			],
+			[
+				"current",
+				"currentStreamSong"
+			],
+			[
+				"currentStrea",
+				"currentStreamCat"
+			],
+			[
+				"currentStre",
+				"currentStreamCat"
+			],
+			[
+				"onli",
+				"online"
+			],
+			[
+				"off",
+				"offline"
+			],
+			[
+				"Catego",
+				"Categories"
+			],
+			[
+				"pop",
+				"props\tReact: this.props"
+			],
+			[
+				"toUp",
+				"toUpperCase"
+			],
+			[
+				"waiti",
+				"waitingDownload"
+			],
+			[
+				"onlin",
+				"onlineCategories"
+			],
+			[
+				"subs",
+				"subscriber"
+			],
+			[
+				"subscri",
+				"subscriber"
+			],
+			[
+				"querySel",
+				"querySelector"
+			],
+			[
+				"coo",
+				"coordi1"
+			],
+			[
+				"ini",
+				"initialState"
+			],
+			[
+				"ori",
+				"originalGame"
+			],
+			[
+				"addBu",
+				"addButton"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "/Users/flashbell/Node/Songs/worker.js",
+			"settings":
+			{
+				"buffer_size": 838,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/views/index.jsx",
+			"settings":
+			{
+				"buffer_size": 883,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/middleware/index.js",
+			"settings":
+			{
+				"buffer_size": 4375,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/utilis/Text.cjs",
+			"settings":
+			{
+				"buffer_size": 15932,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/js/worker.js",
+			"settings":
+			{
+				"buffer_size": 670,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/views/components.jsx",
+			"settings":
+			{
+				"buffer_size": 127405,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/utilis/BrowserDb.cjs",
+			"settings":
+			{
+				"buffer_size": 20114,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/utilis/constant.cjs",
+			"settings":
+			{
+				"buffer_size": 3437,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/utilis/aCreator.cjs",
+			"settings":
+			{
+				"buffer_size": 3827,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/utilis/guider.js",
+			"settings":
+			{
+				"buffer_size": 93959,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/utilis/store.js",
+			"settings":
+			{
+				"buffer_size": 751,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/client/index.jsx",
+			"settings":
+			{
+				"buffer_size": 4115,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/song.appcache",
+			"settings":
+			{
+				"buffer_size": 580,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/utilis/songLoader.js",
+			"settings":
+			{
+				"buffer_size": 2079,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/css/app.css",
+			"settings":
+			{
+				"buffer_size": 17721,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/bash/devHelp.sh",
+			"settings":
+			{
+				"buffer_size": 517,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"settings":
+			{
+				"buffer_size": 0,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/router/index.js",
+			"settings":
+			{
+				"buffer_size": 29663,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/utilis/db.js",
+			"settings":
+			{
+				"buffer_size": 437,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/utilis/db.config.cjs",
+			"settings":
+			{
+				"buffer_size": 7246,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/utilis/message.cjs",
+			"settings":
+			{
+				"buffer_size": 1078,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/utilis/newReducer.cjs",
+			"settings":
+			{
+				"buffer_size": 10750,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/init.js",
+			"settings":
+			{
+				"buffer_size": 469,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/db/setup.js",
+			"settings":
+			{
+				"buffer_size": 1942,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/flashbell/Node/Songs/db/data.js",
+			"settings":
+			{
+				"buffer_size": 103,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/Makefile/Make.sublime-build",
+					""
+				],
+				[
+					"Packages/Makefile/Make.sublime-build",
+					"Clean"
+				]
+			],
+			[
+				"Packages/Makefile/Make.sublime-build",
+				""
+			]
+		],
+		[
+			[
+				[
+					"Packages/Python/Python.sublime-build",
+					""
+				],
+				[
+					"Packages/Python/Python.sublime-build",
+					"Syntax Check"
+				]
+			],
+			[
+				"Packages/Python/Python.sublime-build",
+				""
+			]
+		],
+		[
+			[
+				[
+					"Packages/User/Javascript.sublime-build",
+					""
+				],
+				[
+					"Packages/User/mongo.sublime-build",
+					""
+				]
+			],
+			[
+				"Packages/User/Javascript.sublime-build",
+				""
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"Package Control: ",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+			"sublime.clear()",
+			"clear()",
+			"sublime.log_input(True)",
+			"sublime.log_commands(True)",
+			"sublime.log_commands(true)",
+			"sublime.log_command(true);"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/flashbell/Node/Songs/utilis/db.copy.js",
+		"/Users/flashbell/Node/Songs/X.appcache",
+		"/Users/flashbell/Node/Songs/utilis/reducers.js",
+		"/Users/flashbell/Node/Songs/views/container.cjs",
+		"/Users/flashbell/Node/Songs/utilis/prop_to_Func.cjs",
+		"/Users/flashbell/Node/Songs/utilis/constant.cjs",
+		"/Users/flashbell/Node/Songs/utilis/Text.cjs",
+		"/Users/flashbell/Node/Songs/worker.js",
+		"/Users/flashbell/Node/Songs/utilis/db.js",
+		"/Users/flashbell/Node/Songs/utilis/init.js",
+		"/Users/flashbell/Library/Application Support/Sublime Text 3/Packages/User/addStep.sublime-macro",
+		"/Users/flashbell/Node/Songs/views/components.jsx",
+		"/Users/flashbell/Node/Songs/utilis/newReducer.js",
+		"/Users/flashbell/Node/html_dev/css/app.css",
+		"/Users/flashbell/Node/Songs/views/component.jsx",
+		"/Users/flashbell/Node/Songs/views/components_copy.jsx",
+		"/Users/flashbell/Node/Songs/router/index.js",
+		"/Users/flashbell/Node/Songs/utilis/BrowserDb.cjs",
+		"/Users/flashbell/Node/Songs/views/container.js",
+		"/Users/flashbell/Node/Songs/utilis/guider.js",
+		"/Users/flashbell/Library/Application Support/Sublime Text 3/Packages/User/nextStep.sublime-macro",
+		"/Users/flashbell/Node/photo/routes/index.js",
+		"/Users/flashbell/Node/Songs/views/index.jsx",
+		"/Users/flashbell/Node/Songs/views/container.cjs.js",
+		"/Users/flashbell/Node/Utilis/BrowserDb.js",
+		"/Users/flashbell/Node/Songs/utilis/txt.js",
+		"/Users/flashbell/Node/Songs/utilis/txt.cjs",
+		"/Users/flashbell/Node/Songs/utilis/Text.js",
+		"/Users/flashbell/Node/dev/components.jsx",
+		"/Users/flashbell/Node/Songs/client/index.js",
+		"/Users/flashbell/Node/Songs/dist/dist/index.html",
+		"/Users/flashbell/Node/Songs/clients/utilis/test.js",
+		"/Users/flashbell/Node/Songs/clients/utilis/store.js",
+		"/Users/flashbell/Node/Songs/clients/utilis/reducer.js",
+		"/Users/flashbell/Node/Songs/clients/utilis/db.js",
+		"/Users/flashbell/Node/Songs/clients/utilis/container.js",
+		"/Users/flashbell/Node/Songs/clients/utilis/constant.js",
+		"/Users/flashbell/Node/Songs/clients/utilis/aCreator.js",
+		"/Users/flashbell/Node/Songs/clients/utilis/container2.js",
+		"/Users/flashbell/Node/Songs/clients/index.jsx",
+		"/Users/flashbell/Node/Songs/utilis.js/container.js",
+		"/Users/flashbell/Node/Songs/utilis.js/test.js",
+		"/Users/flashbell/Node/Songs/utilis.js/store.js",
+		"/Users/flashbell/Node/Songs/utilis.js/reducer.js",
+		"/Users/flashbell/Node/Songs/utilis.js/aCreator.js",
+		"/Users/flashbell/Node/Songs/utilis.js/constant.js",
+		"/Users/flashbell/Node/Songs/utilis.js/db.js",
+		"/Users/flashbell/Node/Songs/views/lists.jsx",
+		"/Users/flashbell/Node/Songs/views/index.js",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/Songs/Node/utilis.js/constant.js",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/Songs/Node/cl ts",
+		"/Users/flashbell/Desktop/prach.html",
+		"/Users/flashbell/Desktop/r.html",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/MONTAGE_Connect_102_mac/Uninstall MONTAGE Connect.app/Contents/Info.plist",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/memoire/test.html",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/mongodb-macos-x86_64-4.4.1/bin/json/mem.js",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/memoire/aimin",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/mongodb-macos-x86_64-4.4.1/bin/json/test.php",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/mongodb-macos-x86_64-4.4.1/bin/json/class.js",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/memoire/Connexion.html",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/mongodb-macos-x86_64-4.4.1/bin/json/untitled.js",
+		"/Users/flashbell/.ssh/known_hosts",
+		"/Applications/MAMP/conf/apache/extra/httpd-ssl.conf",
+		"/Applications/MAMP/conf/apache/httpd.conf",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/mongodb-macos-x86_64-4.4.1/bin/json/restaurants.json",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/mongodb-macos-x86_64-4.4.1/bin/json/neighborhoods.json",
+		"/Applications/MAMP/bin/php/php7.1.6/bin/json/test.json",
+		"/Applications/MAMP/bin/php/php7.1.6/bin/json/test.php",
+		"/Applications/MAMP/bin/php/php7.1.6/bin/json/restaurants_json.json",
+		"/Applications/MAMP/bin/php/php7.1.6/bin/json/res.js",
+		"/Applications/MAMP/bin/php/php7.1.6/bin/json/neighborhoods.json",
+		"/Applications/MAMP/bin/php/php7.1.6/bin/json/restaurants_1.json",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/Max_2/Configuration/conf.php",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/Songs/essai.php",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/Songs/t.php",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/Songs/songs_copy.html",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/Songs/songs.html",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/Songs/cantiqueJson.js",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/Test.html",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/Songs/cantique.js",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/9780596005900-master/examples/scull/scull.h",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/9780596005900-master/examples/misc-progs/setconsole.c",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/9780596005900-master/examples/usb/usb-skeleton.c",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/9780596005900-master/examples/scull/scull.init",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/9780596005900-master/examples/scull/access.c",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/9780596005900-master/examples/scull/main.c",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/php-osc-master/src/Timetag.php",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/php-osc-master/src/OSCMessage.php",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/php-osc-master/src/OSCException.php",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/php-osc-master/src/OSCDatagram.php",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/php-osc-master/src/OSCClient.php",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/php-osc-master/src/Infinitum.php",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/php-osc-master/src/OSCBundle.php",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/php-osc-master/src/Blob.php",
+		"/Volumes/TOSHIB/Applications/MAMP/htdocs/php-osc-master/tests/OSCClientTest.php",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/php-osc-master/tests/OSCClientTest.php",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/php-osc-master/src/Timetag.php",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/php-osc-master/src/OSCMessage.php",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/php-osc-master/src/OSCException.php",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/php-osc-master/src/OSCDatagram.php",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/php-osc-master/src/OSCClient.php",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/php-osc-master/src/OSCBundle.php",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/php-osc-master/src/Infinitum.php",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/php-osc-master/src/Blob.php",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/php-osc-master/composer.json",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/9780596005900-master/examples/misc-modules/hello.c",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/9780596005900-master/examples/misc-modules/Makefile",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/9780596005900-master/examples/simple/simple.c",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/9780596005900-master/examples/include/lddbus.h",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/DoYourDataRecoveryForMac6.6/file/maranata.sql",
+		"/Volumes/TOSHIB/Users/flashbell/Downloads/DoYourDataRecoveryForMac6.6/file/function.php",
+		"/Applications/MAMP/htdocs/amado/shop.php",
+		"/Applications/MAMP/htdocs/amado/shop.html",
+		"/Applications/MAMP/htdocs/amado/product-details.html",
+		"/Applications/MAMP/htdocs/amado/checkout.html",
+		"/Applications/MAMP/htdocs/amado/cart.html",
+		"/Applications/MAMP/htdocs/amado/index.html",
+		"/Users/flashbell/Downloads/amado/Taches.txt",
+		"/Users/flashbell/Downloads/amado/product-details.html",
+		"/Users/flashbell/Downloads/amado/checkout.html",
+		"/Users/flashbell/Downloads/amado/cart.html",
+		"/Users/flashbell/Downloads/amado/shop.html",
+		"/Users/flashbell/Downloads/amado/index.html",
+		"/Applications/MAMP/htdocs/Max_project/Sublime/mysql.sql",
+		"/Applications/MAMP/htdocs/Songs/songs.html",
+		"/Applications/MAMP/htdocs/Songs/cantique.js",
+		"/Applications/MAMP/htdocs/Songs/song.html",
+		"/Applications/MAMP/htdocs/Songs/cantique.json"
+	],
+	"find":
+	{
+		"height": 40.0
+	},
+	"find_in_files":
+	{
+		"height": 102.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"fetcher",
+			"streamer",
+			"updatestream",
+			"stream/update",
+			"Verses",
+			"setCurrentSong",
+			"fetcher",
+			"Verses\\W",
+			"Verses",
+			"fetcher",
+			"restimetoWait",
+			"songs",
+			"console.log",
+			"getAllCategorie",
+			"\\n",
+			"subR",
+			"keyR",
+			"updateFr",
+			"languageR",
+			"favR",
+			"searchR",
+			"messageR",
+			"songInc",
+			"rCat",
+			"Action1",
+			"store1",
+			"w\\(",
+			"Action\\.",
+			"getLocal",
+			"setLocal",
+			"indexChanger",
+			"streamer",
+			"seq",
+			"getAllReturn",
+			"sameCompose",
+			"dbChooser",
+			"Action1",
+			"store1",
+			"^import",
+			"Text\\.",
+			"Text",
+			"\\WC\\W",
+			"guider",
+			"\\WGuider\\W",
+			"\\WApp\\W",
+			"mergeLocalDataWi",
+			"storageHandler",
+			"streamer",
+			"fetcher",
+			"registerWorker",
+			"\\Wstep",
+			"seq",
+			"dbChooser",
+			"appState",
+			"\\WtA",
+			"songLoader",
+			"prop_to",
+			"(\\W)fconsole",
+			"(\\W)console",
+			"\\Wconsole",
+			"db",
+			"waitTo",
+			"stream",
+			"getAllCategorie",
+			"store",
+			"C\\.ADD_SONG",
+			"^\\t",
+			"fastAccess\\[",
+			"updateSong",
+			"catid",
+			"^\\t{2}",
+			"updateFastAccess",
+			"updateFastAcess",
+			"insertSong",
+			"\\WDa\\W",
+			"scrollHandler",
+			"counterUpdater",
+			"scrollHandler",
+			"C\\.ADD_SONGS",
+			"\\WText\\W",
+			"\\WText",
+			"Text",
+			"Text.createStreamDiv.message",
+			"Le contenu de la chanson etant affiché,",
+			"^\\t",
+			"store\\.getState\\(\\)",
+			"^\\t",
+			"store\\.getState\\(\\)",
+			"offSongs",
+			"store\\.getState\\(\\)",
+			"^\\t",
+			"store.getState\\(\\)",
+			"^#\\t",
+			"store\\.getState\\(\\)",
+			"online \\.list",
+			"\\.list",
+			"this\\.node",
+			"scrollHandler\\(",
+			"scrollHandler",
+			"is\\s=",
+			"is\\s",
+			"props\\.setMessage",
+			"prevprops\\.current\\.name",
+			"appReachable",
+			"VersesDiv",
+			"VerseDiv",
+			"sthis",
+			"\\WS\\s+=",
+			"localStorage",
+			"time\\W",
+			"time",
+			"updateStream",
+			"time",
+			"\\WS\\s+=",
+			"fastAccess\\['__exec",
+			"name\\s+=",
+			"JSON",
+			"local",
+			"setName",
+			"setLocal",
+			"getLocal",
+			"startStream\\(",
+			"S\\.setName",
+			"dispatchSong",
+			"is\\s",
+			"notifier\\s=",
+			"jsx\\.state",
+			"props\\.songList"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": true,
+		"replace_history":
+		[
+			"",
+			"//import",
+			"$1console",
+			"$1fConsole",
+			"fConsole",
+			"",
+			"cLocalStorage",
+			"",
+			"props.VerseIndex",
+			"props.isFavorite",
+			"Text",
+			"$1lang$2",
+			"$1",
+			"$1 = [];",
+			"$2($3,$1)",
+			"",
+			"c2Height",
+			"c1",
+			"",
+			"coordi$1",
+			"streamName",
+			"\\.list",
+			"#online",
+			"Ms5_s4",
+			"Ms5_s6",
+			"Ms5_s3",
+			"Ms5_s5",
+			"Ms5_s4",
+			"Ms5_s3",
+			"Ms5_s2",
+			"_a3",
+			"_a2",
+			"$1Background",
+			"$1",
+			"",
+			"\"\"",
+			"popUpDiv",
+			"$1Background",
+			"popUpDiv",
+			"$1Background",
+			"popUpdDiv",
+			"\\t",
+			"$1;",
+			"$1$2\\n$1-webkit-$2",
+			"\\t\\t\\t\\t\\t\\t\\t",
+			"currentCat.name",
+			"Verses",
+			"songName",
+			"catName",
+			"props",
+			"\\.Oups",
+			"Oups",
+			"",
+			"\\t",
+			"",
+			"$1lang",
+			"lang",
+			"\\.lang",
+			"lang",
+			"\\t\\t\\t\\t",
+			"$1.$3",
+			"$1",
+			"$2",
+			"$1",
+			"{/*$1*/}",
+			"(index.getAll && index.getAll()) || (index.mozGetAll && index.mozGetAll())",
+			"",
+			"\\t\\t\\t\\t",
+			"secondDiv",
+			"nodes$2",
+			"",
+			"$1onlineSongs",
+			"onlineSongs",
+			"onlineCatNames",
+			"props",
+			"()=> resolve(true)$1",
+			"\\t\\t\\t\\t",
+			"\\t\\t\\t\\t\\t",
+			"\\t\\t\\t\\t",
+			"then(()=> resolve(true))",
+			"()=> resolve(true)",
+			"",
+			"\\t\\t\\t",
+			"changeVerse",
+			"$1\\nreturn new Promise((resolve,reject)=>{ $2 resolve(true)})$3",
+			"Ms3.section.nextSection",
+			"Ms3.section.action.nextAction.nextAction",
+			"Ms3.section.nextSection.action.nextAction",
+			"songListDiv",
+			"actionsReverser",
+			"unsubscribers",
+			"\\t\\t\\t\\t",
+			"addCatdom",
+			"catNamesList",
+			"exports.$1",
+			"notifier.addSpeed",
+			"\\t",
+			"\\t\\t",
+			"\\t",
+			"",
+			"\\t\\t",
+			"\\t",
+			"\\t{1}",
+			"SUB\\.",
+			"cat",
+			"l",
+			"import $1 from $4",
+			"$4",
+			"$3",
+			"$2",
+			"$1",
+			"import $1 from $2",
+			"export const $1 =",
+			"import $1 from $2",
+			"\\t\\t",
+			"\\t\\t\\t",
+			"\\t\\t\\t\\t",
+			"\\t{4}",
+			"\\t\\t\\t",
+			"kak"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 5,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "/Users/flashbell/Node/Songs/worker.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 838,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 14,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/Users/flashbell/Node/Songs/views/index.jsx",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 883,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 29,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/Users/flashbell/Node/Songs/middleware/index.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4375,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 110.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 28,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "/Users/flashbell/Node/Songs/utilis/Text.cjs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 15932,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false,
+							"word_wrap": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "/Users/flashbell/Node/Songs/js/worker.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 670,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								148,
+								148
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 27,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "/Users/flashbell/Node/Songs/views/components.jsx",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 127405,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"translate_tabs_to_spaces": false,
+							"word_wrap": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 47759.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "/Users/flashbell/Node/Songs/utilis/BrowserDb.cjs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 20114,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false,
+							"word_wrap": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "/Users/flashbell/Node/Songs/utilis/constant.cjs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3437,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 26,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "/Users/flashbell/Node/Songs/utilis/aCreator.cjs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3827,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 25,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "/Users/flashbell/Node/Songs/utilis/guider.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 93959,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 24,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "/Users/flashbell/Node/Songs/utilis/store.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 751,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 23,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "/Users/flashbell/Node/Songs/client/index.jsx",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4115,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 110.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 22,
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "/Users/flashbell/Node/Songs/song.appcache",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 580,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 21,
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"file": "/Users/flashbell/Node/Songs/utilis/songLoader.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2079,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 20,
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "/Users/flashbell/Node/Songs/css/app.css",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 17721,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CSS/CSS.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 19,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "/Users/flashbell/Node/Songs/utilis/guider.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 93959,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 18,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "/Users/flashbell/Node/Songs/utilis/aCreator.cjs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3827,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 16,
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"file": "/Users/flashbell/Node/Songs/utilis/songLoader.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2079,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 17,
+					"type": "text"
+				},
+				{
+					"buffer": 15,
+					"file": "/Users/flashbell/Node/Songs/bash/devHelp.sh",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 517,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								491,
+								491
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/ShellScript/Bash.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 15,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 6,
+			"sheets":
+			[
+				{
+					"buffer": 11,
+					"file": "/Users/flashbell/Node/Songs/client/index.jsx",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4115,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"translate_tabs_to_spaces": false,
+							"word_wrap": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 382.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 16,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 0,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 33,
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"file": "/Users/flashbell/Node/Songs/utilis/songLoader.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2079,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 35,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/Users/flashbell/Node/Songs/middleware/index.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4375,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 10,
+					"type": "text"
+				},
+				{
+					"buffer": 17,
+					"file": "/Users/flashbell/Node/Songs/router/index.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 29663,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 18,
+					"file": "/Users/flashbell/Node/Songs/utilis/db.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 437,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false,
+							"word_wrap": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 13,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "/Users/flashbell/Node/Songs/views/components.jsx",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 127405,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								63372,
+								63372
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"translate_tabs_to_spaces": false,
+							"word_wrap": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 36277.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 19,
+					"file": "/Users/flashbell/Node/Songs/utilis/db.config.cjs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7246,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 12,
+					"type": "text"
+				},
+				{
+					"buffer": 20,
+					"file": "/Users/flashbell/Node/Songs/utilis/message.cjs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1078,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "/Users/flashbell/Node/Songs/utilis/BrowserDb.cjs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 20114,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"translate_tabs_to_spaces": false,
+							"word_wrap": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 11353.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 21,
+					"file": "/Users/flashbell/Node/Songs/utilis/newReducer.cjs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10750,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								8992,
+								9023
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false,
+							"word_wrap": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 8236.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "/Users/flashbell/Node/Songs/utilis/aCreator.cjs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3827,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "/Users/flashbell/Node/Songs/utilis/constant.cjs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3437,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 36,
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "/Users/flashbell/Node/Songs/css/app.css",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 17721,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CSS/CSS.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 37,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "/Users/flashbell/Node/Songs/utilis/guider.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 93959,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 34,
+					"type": "text"
+				},
+				{
+					"buffer": 22,
+					"file": "/Users/flashbell/Node/Songs/init.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 469,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								466,
+								466
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 32,
+					"type": "text"
+				},
+				{
+					"buffer": 23,
+					"file": "/Users/flashbell/Node/Songs/db/setup.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1942,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								840,
+								840
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 31,
+					"type": "text"
+				},
+				{
+					"buffer": 24,
+					"file": "/Users/flashbell/Node/Songs/db/data.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 103,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								99,
+								99
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 30,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "/Users/flashbell/Node/Songs/utilis/Text.cjs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 15932,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false,
+							"word_wrap": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 26.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			],
+			[
+				1,
+				0,
+				2,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			0.43561866412,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 83.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.unsaved_changes":
+	{
+		"height": 100.0
+	},
+	"pinned_build_system": "",
+	"project": "Song.sublime-project",
+	"replace":
+	{
+		"height": 71.0
+	},
+	"save_all_on_build": false,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"~/Node/dev/index.js"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 200.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 472.0
+	},
+	"selected_group": 1,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": false,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+		"max_columns": 1
+	}
+}
