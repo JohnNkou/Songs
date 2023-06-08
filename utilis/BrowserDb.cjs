@@ -882,7 +882,7 @@ function errorLogger(){
 	return function(...p){
 		error.apply(oldConsole,arguments);
 		let xml = new XMLHttpRequest(),
-		url = '/reportError';
+		url = '/api/reportError';
 
 		xml.open('POST',url,true);
 		xml.setRequestHeader('content-type','application/json');

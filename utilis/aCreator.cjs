@@ -33,7 +33,7 @@ exports.removeSong = (id,catId,name,location='online')=>({
 exports.startStreamFromLocal = (name,fetcher)=>{
 	return ()=> new Promise((resolve,reject)=>{
 		fetcher({
-			url:`/stream?name=${name}&action=checkExist`,
+			url:`/api/stream?name=${name}&action=checkExist`,
 			s:(response)=>{
 				resolve(true);
 			},

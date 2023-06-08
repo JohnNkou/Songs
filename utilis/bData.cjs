@@ -27,12 +27,12 @@ exports.documentTree = {
 			},
 			{
 				rel:'stylesheet',
-				href:'css/app.css',
+				href:'/css/app.css',
 				type:'text/css'
 			},
 			{
 				rel:'stylesheet',
-				href:'css/font.css',
+				href:'/css/font.css',
 				type:'text/css'
 			}
 		],
@@ -41,7 +41,7 @@ exports.documentTree = {
 			[
 				{
 					type:'text/javascript',
-					src: 'polyfill/Symbol.js'
+					src: '/polyfill/Symbol.js'
 				},
 				/*{
 					type:'text/javascript',
@@ -71,7 +71,7 @@ exports.documentTree = {
 			tail:
 			[
 				{
-					src:'dist/bundle.js',
+					src:'/dist/bundle.js',
 					type: 'text/javascript'
 				}
 
