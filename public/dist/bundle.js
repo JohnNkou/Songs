@@ -5753,13 +5753,8 @@ var HTML = function HTML(_ref33) {
     title = _ref33.title,
     store = _ref33.store,
     nodeJs = _ref33.nodeJs,
-    manifest = _ref33.manifest;
-  function ap(t) {
-    var a = document.body;
-    var c = document.createElement("p");
-    c.textContent = t;
-    a.appendChild(c);
-  }
+    manifest = _ref33.manifest,
+    children = _ref33.children;
   var manifestFile = manifest ? 'song.appcache' : '';
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("html", {
     manifest: manifestFile
@@ -5776,7 +5771,7 @@ var HTML = function HTML(_ref33) {
     className: "wrapper"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(App, null)), scripts.tail && scripts.tail.length ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Scripts, {
     lists: scripts.tail
-  }) : ''));
+  }) : ''), children ? children : null);
 };
 var App = /*#__PURE__*/function (_React$Component25) {
   _inherits(App, _React$Component25);
@@ -36755,6 +36750,8 @@ function getStoreData(appState) {
   if (window.storeData) {
     window.storeData.Text = Text;
     return window.storeData;
+  } else if (window.appState) {
+    return window.appState;
   }
   return appState;
 }
