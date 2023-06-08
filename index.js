@@ -7,10 +7,9 @@ import fs from 'fs';
 import https from 'https'
 import logger from 'morgan'
 import path from 'path'
-import { indexRouter, Stream, Waiters, Subscription, PopulateCategoriesAndSongs,  streamCreator, streamCollector, streamUpdater, streamSubscription, streamDeleter, noStore, songDownloader, downloadToSubscriber, streamPicker, addDefaultsCategorieAndSongs, ErrorLogger, Categorie, Song, CommitHandler, CloseServer, ForkProcess }  from './router/index.js';
+import { indexRouter, Stream, Waiters, Subscription, PopulateCategoriesAndSongs,  streamCreator, streamCollector, streamUpdater, streamSubscription, streamDeleter, noStore, songDownloader, downloadToSubscriber, streamPicker, addDefaultsCategorieAndSongs, ErrorLogger, Categorie, Song, CommitHandler, CloseServer, ForkProcess, ServerSong }  from './router/index.js';
 import { killUnusedStream } from './utilis/sUtilities.js'
 import { appState } from './utilis/constant.cjs';
-import songAdderController from './utilis/songAdderController.js'
 import { streamFileName, lineTermination } from './db/data.js'
 import db from './utilis/dbClass.js'
 
@@ -43,19 +42,19 @@ app.use(express.static(`${root}/public`,{setHeaders:(res,filepath)=> {
 	}
 }}));
 app.get('/', indexRouter(appState));
+app.get('/song/:catId/:songName',ServerSong(appState));
 app.get('/connect',noStore(),(req,res)=>{
 	res.status(200).end();
 })
 app.get('/health',(req,res)=>{
 	res.status(200).end();
 })
-app.route('/Categorie').get(Categorie());
-app.route('/Song').get(Song());
-app.get('/songAdder.js',noStore(), songAdderController(appState));
-app.route('/stream').get(StreamJest, Waiters(streamWaiter)).post(StreamJest,Subscription(streamSubscribers), Waiters(streamWaiter));
-app.get('/stream/subscribe',(req,res,next)=>{ res.status(0); next();  }, SubscriptionJest);
-app.get('/stream/song', StreamJest);
-app.post('/reportError',ErrorLogger());
+app.route('/api/Categorie').get(Categorie());
+app.route('/api/Song').get(Song());
+app.route('/api/stream').get(StreamJest, Waiters(streamWaiter)).post(StreamJest,Subscription(streamSubscribers), Waiters(streamWaiter));
+app.get('/api/stream/subscribe',(req,res,next)=>{ res.status(0); next();  }, SubscriptionJest);
+app.get('/api/stream/song', StreamJest);
+app.post('/api/reportError',ErrorLogger());
 app.post('/webhoock',CommitHandler(), CloseServer(app,db), ForkProcess(app,db));
 app.use(function(err,req,res,next){
 	console.error("OUps an error");
