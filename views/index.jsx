@@ -12,15 +12,21 @@ import  store from '../utilis/serverStore.cjs';
 
 
 export default function Index(props){
-	const pan = { Text, store };
+	let pan = { Text, store },
+	state;
 
 	if(props.store){
 		pan.store = props.store;
+		state = props.store.getState();
 
 	}
 	return (
 		<Custom.Provider value={pan}>
-			<HTML {...documentTree} {...props} data={store.getState()} />
+			<HTML {...documentTree} {...props} data={store.getState()}>
+				{(state && state.currentSong.name && state.currentCat.name)? <script type='text/javascript' dangerouslySetInnerHTML={{__html:`
+					window.appState = ${JSON.stringify(state)}
+				`}}></script> : null}
+			</HTML>
 		</Custom.Provider>
 		)
 }
