@@ -231,6 +231,7 @@ export function ServerSong(appState){
 		catId = params.catId,
 		songName = params.songName,
 		payload,data,
+		payload2,data2,
 		newState,
 		store;
 
@@ -239,22 +240,35 @@ export function ServerSong(appState){
 			data = payload.data[0];
 
 			if(data){
-				newState = {...appState};
-				newState.currentCat = { name:"Youth", id:catId }
-				newState.currentSong = { name:data.name, verses:data.verses, index:0 }
-				store = createStore(Reducer,newState);
+				payload2 = await db.getCategorie(catId).catch((error)=> error);
 
-				res.app.render("index.jsx",{ store, db: { isBogus:true } },(err,html)=>{
-					if(err){
-						console.error('err',err);
-					}
-					else{
-						res.status(200).set("Content-Type","text/html").end(html);
-					}
-				});
+				if(!payload2.error){
+					data2 = payload2.data[0];
+
+					newState = {...appState};
+					newState.currentCat = { name:data2.name, id:data2.id }
+					newState.currentSong = { name:data.name, verses:data.verses, index:0 }
+					store = createStore(Reducer,newState);
+
+					res.app.render("index.jsx",{ store },(err,html)=>{
+						if(err){
+							console.error('err',err);
+						}
+						else{
+							res.status(200).set("Content-Type","text/html").end(html);
+						}
+					});
+				}
+				else{
+					res.status(500).json(payload2);
+				}
 			}
 			else{
-				res.status(200).json({message:"Nothing"});
+				newState = {...appState};
+				newState.currentSong = { name:"Chanson Inexistant", verses:[], index:0 }
+				store = createStore(Reducer,newState);
+
+				res.render('index.jsx',{ store })
 			}
 		}
 		catch(e){

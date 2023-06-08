@@ -381,6 +381,9 @@ function getStoreData(appState){
 		window.storeData.Text = Text;
 		return window.storeData;
 	}
+	else if(window.appState){
+		return window.appState;
+	}
 	return appState;
 }
 
