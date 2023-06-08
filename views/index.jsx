@@ -10,23 +10,17 @@ import { HTML } from './components.jsx'
 import Custom from '../utilis/context.cjs';
 import  store from '../utilis/serverStore.cjs';
 
-const pan = { Text, store },
-started = (props)=>{
-	//let catNames = Object.keys(store.Categories);
+
+export default function Index(props){
+	const pan = { Text, store };
+
+	if(props.store){
+		pan.store = props.store;
+
+	}
 	return (
 		<Custom.Provider value={pan}>
 			<HTML {...documentTree} {...props} data={store.getState()} />
 		</Custom.Provider>
 		)
-	/*
-	return (
-		<div id='react-container' className="wrapper">
-			<First { ...store1(store)}/>
-			<Second { ...store2(store)}/>
-		</div> 
-		)
-
-	*/
 }
-
-export default started;
