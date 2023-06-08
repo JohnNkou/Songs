@@ -82,7 +82,7 @@ function changeStreamCreationImage(img) {
 function startStream(name, createdInServer) {
   var img = createdInServer ? startStream.img : _stopStream.img;
   S.setName(name, function () {
-    return changeStreamCreationImage("img/".concat(img));
+    return changeStreamCreationImage("/img/".concat(img));
   });
   if (createdInServer) {
     startStream.f();
@@ -90,7 +90,7 @@ function startStream(name, createdInServer) {
 }
 function _stopStream(name) {
   S.setName("", function () {
-    return changeStreamCreationImage("img/".concat(_stopStream.img));
+    return changeStreamCreationImage("/img/".concat(_stopStream.img));
   });
   _stopStream.f();
 }
@@ -528,7 +528,7 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
           catId: catId
         },
         sendData = {
-          url: '/Song?action=getAll&catId=' + catId,
+          url: '/api/Song?action=getAll&catId=' + catId,
           type: 'application/json',
           s: function s(_ref) {
             var xml = _ref.xml,
@@ -739,7 +739,7 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
         onClick: this.manageShowing
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("span", null, "Online"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
         className: loadingClass,
-        src: "img/loading.gif"
+        src: "/img/loading.gif"
       })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Counter, {
         i: songs.length
       }), show && songs.length ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Download, _defineProperty({
@@ -2082,7 +2082,7 @@ var CreateStream = /*#__PURE__*/function (_React$Component7) {
       startStream(streamName.toLowerCase());
       data = (_data = {}, _defineProperty(_data, stF.name, streamName), _defineProperty(_data, stF.catName, catName), _defineProperty(_data, stF.song, (_stF$song = {}, _defineProperty(_stF$song, stF.songName, songName), _defineProperty(_stF$song, stF.verses, verses), _defineProperty(_stF$song, stF.index, index || 0), _stF$song)), _data);
       (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)({
-        url: "/stream?action=add",
+        url: "/api/stream?action=add",
         method: 'POST',
         data: JSON.stringify(data),
         type: 'application/json',
@@ -2252,7 +2252,7 @@ var CatToggler = /*#__PURE__*/function (_React$Component8) {
         href: "#",
         onClick: this.clickHandler
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
-        src: "img/".concat(image)
+        src: "/img/".concat(image)
       })));
     }
   }]);
@@ -2423,7 +2423,7 @@ var Toggler = /*#__PURE__*/function (_React$Component10) {
         onClick: this.clickHandler,
         href: "#"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
-        src: "img/Toggle" + direction + ".png"
+        src: "/img/Toggle" + direction + ".png"
       })));
     }
   }]);
@@ -2505,7 +2505,7 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
         setCurrentCat = _this$props11.setCurrentCat,
         last = this.state.last;
       var sendData = {
-        url: '/Categorie?action=getAll',
+        url: '/api/Categorie?action=getAll',
         type: 'application/json',
         s: function s(_ref5) {
           var xml = _ref5.xml,
@@ -2589,7 +2589,7 @@ var CatNames = /*#__PURE__*/function (_React$Component11) {
         href: "#"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
         className: "imgCliquer",
-        src: "img/Adder.png"
+        src: "/img/Adder.png"
       }))));
     }
   }, {
@@ -2869,7 +2869,7 @@ var OnlineResult = /*#__PURE__*/function (_React$Component13) {
         self;
       if (!catSongs) {
         (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)({
-          url: "/Categorie?action=get&id=".concat(catId),
+          url: "/api/Categorie?action=get&id=".concat(catId),
           s: function s(_ref11) {
             var xml = _ref11.xml,
               body = _ref11.body,
@@ -2942,7 +2942,7 @@ var OnlineResult = /*#__PURE__*/function (_React$Component13) {
         fetching: true
       });
       this.xml = (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)({
-        url: "/Song?action=search&term=".concat(term),
+        url: "/api/Song?action=search&term=".concat(term),
         s: function s(_ref13) {
           var xml = _ref13.xml,
             body = _ref13.body,
@@ -2989,7 +2989,7 @@ var OnlineResult = /*#__PURE__*/function (_React$Component13) {
         className: "first"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("span", null, "Online"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
         className: imgShow,
-        src: "img/loading.gif"
+        src: "/img/loading.gif"
       }));
     }
   }, {
@@ -3260,7 +3260,7 @@ var Controls = function Controls(props) {
     },
     href: "#"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
-    src: "img/edit.png"
+    src: "/img/edit.png"
   })) : '', /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("a", {
     className: "wipe",
     onClick: function onClick(event) {
@@ -3269,7 +3269,7 @@ var Controls = function Controls(props) {
     },
     href: "#"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
-    src: "img/remove.png"
+    src: "/img/remove.png"
   })));
 };
 var Download = /*#__PURE__*/function (_React$Component15) {
@@ -3398,7 +3398,7 @@ var Download = /*#__PURE__*/function (_React$Component15) {
         href: "#",
         ref: "dad"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
-        src: 'img/' + this.props.src
+        src: '/img/' + this.props.src
       })) : '';
     }
   }]);
@@ -3799,7 +3799,7 @@ var SongList = /*#__PURE__*/function (_React$Component16) {
         text = this.text;
       if (!report) {
         songProps = {
-          song: db.isBogus ? false : true,
+          song: db && db.isBogus ? false : true,
           updateMyCat: this.updateMyCat,
           download: __webpack_require__.g.alert ? this.download : null,
           args: {
@@ -3969,7 +3969,7 @@ var Favorite = /*#__PURE__*/function (_React$Component17) {
         href: "#"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
         className: "vmid",
-        src: "img/".concat(image)
+        src: "/img/".concat(image)
       }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Liner, {
         additionalClass: "vmid"
       }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("span", {
@@ -3998,7 +3998,7 @@ var StreamCreation = /*#__PURE__*/function (_React$Component18) {
     _this54.text = context.Text;
     _this54.images = state.images.streamCreate;
     _this54.state = {
-      img: "img/".concat(_this54.images.start),
+      img: "/img/".concat(_this54.images.start),
       isStreaming: state.isStreaming,
       songName: state.currentSong.name,
       appReachable: state.appReachable
@@ -4012,7 +4012,7 @@ var StreamCreation = /*#__PURE__*/function (_React$Component18) {
       if (prevState.isStreaming == false && this.state.isStreaming == true) {
         var streamName = S.getName();
         this.setState({
-          img: "img/".concat(this.images.stop)
+          img: "/img/".concat(this.images.stop)
         });
       }
     }
@@ -4039,7 +4039,7 @@ var StreamCreation = /*#__PURE__*/function (_React$Component18) {
       });
       directAccess["streamCreation"] = this;
       if (S.getName()) this.setState({
-        img: "img/".concat(this.images.stop)
+        img: "/img/".concat(this.images.stop)
       });
     }
   }, {
@@ -4089,7 +4089,7 @@ var StreamCreation = /*#__PURE__*/function (_React$Component18) {
             clearInterval(_this57.counter);
             notifier2.addSpeed(_this57.text.Stream.stopped(lang, streamName));
             _this57.setState({
-              img: "img/".concat(_this57.images.start)
+              img: "/img/".concat(_this57.images.start)
             });
           } else {
             clearInterval(_this57.counter);
@@ -4111,7 +4111,7 @@ var StreamCreation = /*#__PURE__*/function (_React$Component18) {
           console.log("Error while trying to stop the stream ".concat(streamName), e);
           _stopStream(streamName);
           _this57.setState({
-            img: "img/".concat(_this57.images.start)
+            img: "/img/".concat(_this57.images.start)
           });
         })
       });
@@ -4314,7 +4314,7 @@ var StreamList = /*#__PURE__*/function (_React$Component19) {
         store = this.store,
         lastTime = t || 0;
       (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)({
-        url: "/stream/?action=getAll&".concat(filters.lastTime, "=").concat(lastTime),
+        url: "/api/stream/?action=getAll&".concat(filters.lastTime, "=").concat(lastTime),
         s: function s(_ref22) {
           var body = _ref22.body,
             status = _ref22.status,
@@ -4510,7 +4510,7 @@ var StreamList = /*#__PURE__*/function (_React$Component19) {
         setCurrentSong = _this$props32.setCurrentSong,
         setCurrentCat = _this$props32.setCurrentCat,
         lang = _this$props32.lang,
-        url = "stream/subscribe?".concat(stF.name, "=").concat(streamName).concat(update ? "&".concat(stq.updating, "=true") : ""),
+        url = "/api/stream/subscribe?".concat(stF.name, "=").concat(streamName).concat(update ? "&".concat(stq.updating, "=true") : ""),
         store = this.store;
       (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)({
         url: url,
@@ -4657,7 +4657,7 @@ var StreamList = /*#__PURE__*/function (_React$Component19) {
         href: "#"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
         className: "vmid",
-        src: "img/".concat(banner)
+        src: "/img/".concat(banner)
       }), " ", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Liner, {
         additionalClass: "vmid"
       }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("span", {
@@ -4680,7 +4680,7 @@ var StreamList = /*#__PURE__*/function (_React$Component19) {
             return _this64.registerToStream(streamName);
           }
         }, streamName)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
-          src: "img/".concat(open)
+          src: "/img/".concat(open)
         })));
       }))) : '');
     }
@@ -4888,7 +4888,7 @@ var Content = /*#__PURE__*/function (_React$Component20) {
         onClick: songName ? this.clickHandler : this.voidHandler,
         href: "#"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
-        src: isFavorite ? "img/".concat(favImg.unlove) : "img/".concat(favImg.love)
+        src: isFavorite ? "/img/".concat(favImg.unlove) : "/img/".concat(favImg.love)
       }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("p", null, currentVerse))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(ArrowNav, {
         index: index,
         catName: currentCatName,
@@ -4983,13 +4983,13 @@ var ArrowNav = /*#__PURE__*/function (_React$Component21) {
         onClick: this.backArrowHandler,
         href: "#"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
-        src: "img/".concat(images.prev)
+        src: "/img/".concat(images.prev)
       })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("a", {
         className: "nextSong ".concat(nextView),
         onClick: this.nextArrowHandler,
         href: "#"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
-        src: "img/".concat(images.next)
+        src: "/img/".concat(images.next)
       })));
     }
   }]);
@@ -5250,7 +5250,7 @@ var Settings = /*#__PURE__*/function (_React$PureComponent4) {
         href: "#"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", {
         className: "vmid",
-        src: "img/settings.png"
+        src: "/img/settings.png"
       }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Liner, {
         additionalClass: "vmid"
       }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
@@ -37256,7 +37256,7 @@ function errorLogger() {
     }
     error.apply(oldConsole, arguments);
     var xml = new XMLHttpRequest(),
-      url = '/reportError';
+      url = '/api/reportError';
     xml.open('POST', url, true);
     xml.setRequestHeader('content-type', 'application/json');
     xml.send(JSON.stringify(p));
@@ -37797,7 +37797,7 @@ exports.startStreamFromLocal = function (name, fetcher) {
   return function () {
     return new Promise(function (resolve, reject) {
       fetcher({
-        url: "/stream?name=".concat(name, "&action=checkExist"),
+        url: "/api/stream?name=".concat(name, "&action=checkExist"),
         s: function s(response) {
           resolve(true);
         },

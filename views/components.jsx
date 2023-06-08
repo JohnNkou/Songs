@@ -40,14 +40,14 @@ function changeStreamCreationImage(img){
 
 function startStream(name,createdInServer){
 	let img = (createdInServer)? startStream.img: stopStream.img
-	S.setName(name,()=> changeStreamCreationImage(`img/${img}`));
+	S.setName(name,()=> changeStreamCreationImage(`/img/${img}`));
 	if(createdInServer){
 		startStream.f();
 	}
 }
 
 function stopStream(name){
-	S.setName("",()=> changeStreamCreationImage(`img/${stopStream.img}`));
+	S.setName("",()=> changeStreamCreationImage(`/img/${stopStream.img}`));
 	stopStream.f();
 }
 
@@ -423,7 +423,7 @@ class OnlineSongs extends React.Component{
 		store = this.store,
 		data = { catId },
 		sendData = {
-			url:'/Song?action=getAll&catId='+catId,
+			url:'/api/Song?action=getAll&catId='+catId,
 			type:'application/json',
 			s:({xml,body, status})=>{
 				songFetch.fetching = false;
@@ -618,7 +618,7 @@ class OnlineSongs extends React.Component{
 		return (
 			<div id="online" className={onlineClass}>
 				<div className="onlineHead il blueBack">
-					<a className="vmid tagName" id="onLink" href="#" onClick={this.manageShowing}><span>Online</span><img className={loadingClass} src='img/loading.gif' /></a>
+					<a className="vmid tagName" id="onLink" href="#" onClick={this.manageShowing}><span>Online</span><img className={loadingClass} src='/img/loading.gif' /></a>
 					<Counter i={songs.length} />{(show && songs.length)? <Download additionalClass="vmid" src={downloadImage} download={()=> Promise.resolve((db.isBogus)? [null]:[])} action={[()=> { return new Promise((resolve)=> { resolve(false); this.throwReport();})}]} additionalClass="vmid" />:''}
 					<Liner additionalClass="vmid" />
 				</div>
@@ -1603,7 +1603,7 @@ class CreateStream extends React.Component{
 			}
 		};
 		fetcher({
-			url:"/stream?action=add",
+			url:"/api/stream?action=add",
 			method:'POST',
 			data:JSON.stringify(data),
 			type:'application/json',
@@ -1728,7 +1728,7 @@ class CatToggler extends React.Component{
 		let { image } = this;
 
 		return <div className="il c1">
-				<a href="#" onClick={this.clickHandler}><img src={`img/${image}`}/></a>
+				<a href="#" onClick={this.clickHandler}><img src={`/img/${image}`}/></a>
 		</div>
 	}
 
@@ -1884,7 +1884,7 @@ class Toggler extends React.Component{
 
 		return (
 			<div className="il c3 Toggler">
-				<a onClick={this.clickHandler} href="#" ><img src={"img/Toggle"+direction+".png"} /></a>
+				<a onClick={this.clickHandler} href="#" ><img src={"/img/Toggle"+direction+".png"} /></a>
 			</div>
 			)	
 
@@ -1956,7 +1956,7 @@ class CatNames extends React.Component{
 		{ last } = this.state;
 
 		let sendData = {
-			url:'/Categorie?action=getAll',
+			url:'/api/Categorie?action=getAll',
 			type:'application/json',
 			s:({xml,body,headers})=>{
 				if(xml.ok){
@@ -2024,7 +2024,7 @@ class CatNames extends React.Component{
 		return (
 			<div className={this.topClass}>
 				<div id="addCatButton" className="il f1">
-					<a className="addCatCliquer" onClick={this.clickHandler} href="#"><img className="imgCliquer" src="img/Adder.png" /></a>
+					<a className="addCatCliquer" onClick={this.clickHandler} href="#"><img className="imgCliquer" src="/img/Adder.png" /></a>
 				</div>
 			</div>
 			)
@@ -2258,7 +2258,7 @@ class OnlineResult extends React.Component{
 
 		if(!catSongs){
 			fetcher({
-				url:`/Categorie?action=get&id=${catId}`,
+				url:`/api/Categorie?action=get&id=${catId}`,
 				s:({xml,body,status})=>{
 					if(xml.ok){
 						let cat = body.data[0];
@@ -2328,7 +2328,7 @@ class OnlineResult extends React.Component{
 		this.setState({fetching:true});
 
 		this.xml = fetcher({
-			url:`/Song?action=search&term=${term}`,
+			url:`/api/Song?action=search&term=${term}`,
 			s:({xml,body,status})=>{
 				let songs = ["Auncun resultat"],
 				newState = {fetching:false, songs};
@@ -2359,7 +2359,7 @@ class OnlineResult extends React.Component{
 		let { fetching } = this.state,
 		imgShow = (fetching)? '':'whoosh';
 
-		return <div className='first'><span>Online</span><img className={imgShow} src='img/loading.gif' /></div>
+		return <div className='first'><span>Online</span><img className={imgShow} src='/img/loading.gif' /></div>
 	}
 
 	render(){
@@ -2530,8 +2530,8 @@ const Controls = (props)=>{
 	
 	return (
 			<div>
-				{(props.modif)? <a className='modif' onClick={(event)=> {event.preventDefault(); props.modif()}} href="#"><img src='img/edit.png' /></a>:''}
-				<a className='wipe' onClick={(event)=>{ event.preventDefault(); props.wipe(event)}} href="#"><img src='img/remove.png' /></a>
+				{(props.modif)? <a className='modif' onClick={(event)=> {event.preventDefault(); props.modif()}} href="#"><img src='/img/edit.png' /></a>:''}
+				<a className='wipe' onClick={(event)=>{ event.preventDefault(); props.wipe(event)}} href="#"><img src='/img/remove.png' /></a>
 			</div>
 		)
 }
@@ -2636,7 +2636,7 @@ class Download extends React.Component{
 			Songs[this.name] = {img:show, setState:this.setState.bind(this)};
 
 		return (
-					(show)? <a className='sdownloader' onClick={this.save} href="#" ref='dad'><img src={'img/'+this.props.src} /></a>:''
+					(show)? <a className='sdownloader' onClick={this.save} href="#" ref='dad'><img src={'/img/'+this.props.src} /></a>:''
 			
 			)
 	}
@@ -2972,7 +2972,7 @@ class SongList extends React.Component{
 
 		if(!report){
 			songProps = {
-				song:(db.isBogus)? false:true,
+				song:(db && db.isBogus)? false:true,
 				updateMyCat:this.updateMyCat,
 				download:(global.alert)? this.download:null,
 				args:{cat:props.currentCat.name},
@@ -3100,7 +3100,7 @@ class Favorite extends React.Component{
 		return (
 			<div className="fav il c1 tip">
 				<div>
-					<a id="favLink" onClick={this.clickHandler} href="#"><img className="vmid" src={`img/${image}`}/><Liner additionalClass="vmid" /><span className="counter">{favList.length}</span></a>
+					<a id="favLink" onClick={this.clickHandler} href="#"><img className="vmid" src={`/img/${image}`}/><Liner additionalClass="vmid" /><span className="counter">{favList.length}</span></a>
 				</div>
 				<List action={this.action}  abs={style} list={favList} />
 			</div>
@@ -3119,7 +3119,7 @@ class StreamCreation extends React.Component{
 		this.stopStream = this.stopStream.bind(this);
 		this.text = context.Text;
 		this.images = state.images.streamCreate;
-		this.state = {img:`img/${this.images.start}`, isStreaming: state.isStreaming, songName: state.currentSong.name, appReachable: state.appReachable};
+		this.state = {img:`/img/${this.images.start}`, isStreaming: state.isStreaming, songName: state.currentSong.name, appReachable: state.appReachable};
 	}
 
 	componentDidUpdate(prevProps,prevState){
@@ -3127,7 +3127,7 @@ class StreamCreation extends React.Component{
 
 		if(prevState.isStreaming == false && this.state.isStreaming == true){
 			let streamName = S.getName();
-			this.setState({img:`img/${this.images.stop}`});
+			this.setState({img:`/img/${this.images.stop}`});
 		}
 	}
 
@@ -3155,7 +3155,7 @@ class StreamCreation extends React.Component{
 
 		directAccess["streamCreation"] = this;
 		if(S.getName())
-			this.setState({img:`img/${this.images.stop}`});
+			this.setState({img:`/img/${this.images.stop}`});
 	}
 
 	componentWillUmount(){
@@ -3201,7 +3201,7 @@ class StreamCreation extends React.Component{
 				if(xml.ok){
 					clearInterval(this.counter);
 					notifier2.addSpeed(this.text.Stream.stopped(lang,streamName));
-					this.setState({img:`img/${this.images.start}`});
+					this.setState({img:`/img/${this.images.start}`});
 				}
 				else{
 					clearInterval(this.counter);
@@ -3215,7 +3215,7 @@ class StreamCreation extends React.Component{
 				console.log(`Error while trying to stop the stream ${streamName}`,e);
 				stopStream(streamName);
 				
-				this.setState({img:`img/${this.images.start}`});
+				this.setState({img:`/img/${this.images.start}`});
 			}
 		})
 	}
@@ -3381,7 +3381,7 @@ class StreamList extends React.Component{
 		lastTime = t || 0;
 
 		fetcher({
-			url:`/stream/?action=getAll&${filters.lastTime}=${lastTime}`,
+			url:`/api/stream/?action=getAll&${filters.lastTime}=${lastTime}`,
 			s:({ body, status,xml })=>{
 				if(xml.ok){
 					let {action, streams,timestamp,name} = body,
@@ -3535,7 +3535,7 @@ class StreamList extends React.Component{
 
 	subscribe(streamName,update, past={}){
 		let { subscribeToStream, setCurrentSong, setCurrentCat, lang } = this.props,
-		url = `stream/subscribe?${stF.name}=${streamName}${(update)? `&${stq.updating}=true`:""}`,
+		url = `/api/stream/subscribe?${stF.name}=${streamName}${(update)? `&${stq.updating}=true`:""}`,
 		store = this.store;
 
 		fetcher({
@@ -3694,7 +3694,7 @@ class StreamList extends React.Component{
 				<div>
 					{ 
 						(appReachable)? 
-							<a className="streamListLink" onClick={this.changeView} href="#"><img className="vmid" src={`img/${banner}`} /> <Liner additionalClass="vmid"/><span className="counter">{list.length}</span></a> : ""
+							<a className="streamListLink" onClick={this.changeView} href="#"><img className="vmid" src={`/img/${banner}`} /> <Liner additionalClass="vmid"/><span className="counter">{list.length}</span></a> : ""
 					}
 				</div>
 				{ (appReachable)?
@@ -3707,7 +3707,7 @@ class StreamList extends React.Component{
 											<div className="il">
 												<span>
 													<a onClick={()=> this.registerToStream(streamName)}>{streamName}</a>
-												</span><img src={`img/${open}`} />
+												</span><img src={`/img/${open}`} />
 											</div>
 										</div>
 								)
@@ -3915,7 +3915,7 @@ class Content extends React.Component{
 			<>
 				<div id="content">
 					<div className="papa">
-						<h3><span>{songName}</span><a className="imFavorite" onClick={(songName)? this.clickHandler : this.voidHandler } href="#"><img src={(isFavorite)? `img/${favImg.unlove}`:`img/${favImg.love}`} /></a></h3>
+						<h3><span>{songName}</span><a className="imFavorite" onClick={(songName)? this.clickHandler : this.voidHandler } href="#"><img src={(isFavorite)? `/img/${favImg.unlove}`:`/img/${favImg.love}`} /></a></h3>
 						<p>{currentVerse}</p>
 					</div>
 				</div><br/>
@@ -3975,8 +3975,8 @@ class ArrowNav extends React.Component{
 
 		return (
 			<div className="lr il">
-				<a className={`prevSong ${prevView}`} onClick={this.backArrowHandler} href="#"><img src={`img/${images.prev}`} /></a>
-				<a className={`nextSong ${nextView}`} onClick={this.nextArrowHandler} href="#"><img src={`img/${images.next}`} /></a>
+				<a className={`prevSong ${prevView}`} onClick={this.backArrowHandler} href="#"><img src={`/img/${images.prev}`} /></a>
+				<a className={`nextSong ${nextView}`} onClick={this.nextArrowHandler} href="#"><img src={`/img/${images.next}`} /></a>
 			</div>
 		)
 	}
@@ -4198,7 +4198,7 @@ class Settings extends React.PureComponent{
 		return (
 			<div className="settings il c0 tip" id="settings">
 				<div>
-					<a className="settingsToggler" onClick={this.changeView} href="#"><img className="vmid" src="img/settings.png" /><Liner additionalClass="vmid"/>
+					<a className="settingsToggler" onClick={this.changeView} href="#"><img className="vmid" src="/img/settings.png" /><Liner additionalClass="vmid"/>
 					</a>
 				</div>
 				<div className={`abs abBottom list shadowR BRRad BLRad silverBack ${hide}`}>
