@@ -307,14 +307,24 @@ function d({getClient,getClientD}){
 		response = await clientD.send(new PutCommand(params));
 		return addResponse();
 	}
-	this.getAl = async ()=>{
+	this.getAl = async (filters)=>{
 		await this.initialized;
 		let params = {
 			TableName:sTableName,
-			ReturnConsumedCapacity:'TOTAL'
+			ReturnConsumedCapacity:'TOTAL',
 		},
 		response,
 		data = [];
+
+		if(filters){
+			params.FilterExpression = "";
+			params.ExpressionAttributeValues = {};
+			let fil = Object.keys(filters).map((key)=>{
+				params.ExpressionAttributeValues[`:${key}`] = filters[key];
+				return `${key}=:${key}`
+			});
+			params.FilterExpression = fil.join(',');
+		}
 
 		while(response = await clientD.send(new ScanCommand(params))){
 			data.push(...response.Items);

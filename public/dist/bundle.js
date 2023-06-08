@@ -5769,9 +5769,9 @@ var HTML = function HTML(_ref33) {
   }) : ''), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("body", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
     id: "react-container",
     className: "wrapper"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(App, null)), scripts.tail && scripts.tail.length ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Scripts, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(App, null)), children ? children : null, scripts.tail && scripts.tail.length ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Scripts, {
     lists: scripts.tail
-  }) : ''), children ? children : null);
+  }) : ''));
 };
 var App = /*#__PURE__*/function (_React$Component25) {
   _inherits(App, _React$Component25);
