@@ -4627,13 +4627,7 @@ const Scripts = ({lists})=>{
 		)
 }
 
-export const HTML = ({data, styles,metas,links, scripts,title,store,nodeJs, manifest})=>{
-	function ap(t){
-		let a = document.body;
-		let c = document.createElement("p");
-		c.textContent = t;
-		a.appendChild(c);
-	}
+export const HTML = ({data, styles,metas,links, scripts,title,store,nodeJs, manifest,children})=>{
 	let manifestFile = (manifest)? 'song.appcache':'';
 
 	return (
@@ -4657,6 +4651,7 @@ export const HTML = ({data, styles,metas,links, scripts,title,store,nodeJs, mani
 					<div id="react-container" className="wrapper">
 						<App />
 					</div>
+					{(children)? children:null}
 					{
 						(scripts.tail && scripts.tail.length)? <Scripts lists={scripts.tail} /> : ''
 					}
