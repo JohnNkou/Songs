@@ -13,7 +13,12 @@ import  store from '../utilis/serverStore.cjs';
 
 export default function Index(props){
 	let pan = { Text, store },
-	state;
+	state,
+	title = documentTree.title;
+
+	if(props.title){
+		title = `Mictam ${props.title}`;
+	}
 
 	if(props.store){
 		pan.store = props.store;
@@ -22,7 +27,7 @@ export default function Index(props){
 	}
 	return (
 		<Custom.Provider value={pan}>
-			<HTML {...documentTree} {...props} data={store.getState()}>
+			<HTML {...documentTree} {...props} data={store.getState()} title={title} >
 				{(state && state.currentSong.name)? <script type='text/javascript' dangerouslySetInnerHTML={{__html:`
 					window.appState = ${JSON.stringify(state)}
 				`}}></script> : null}

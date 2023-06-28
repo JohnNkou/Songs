@@ -422,53 +422,57 @@ class OnlineSongs extends React.Component{
 		{ addSongs } = this.props,
 		store = this.store,
 		data = { catId },
-		sendData = {
-			url:'/api/Song?action=getAll&catId='+catId,
-			type:'application/json',
-			s:({xml,body, status})=>{
-				songFetch.fetching = false;
-				if(xml.ok){
-					if(body.last){
-						songFetch.last = body.last;
+		sendData;
+
+		if(catId){
+			sendData = {
+				url:'/api/Song?action=getAll&catId='+catId,
+				type:'application/json',
+				s:({xml,body, status})=>{
+					songFetch.fetching = false;
+					if(xml.ok){
+						if(body.last){
+							songFetch.last = body.last;
+						}
+						else{
+							songFetch.complete = true;
+						}
+
+						store.dispatch(addSongs(body.data,catId));
+						
+						if(!body.data.length){
+							this.fetchStatus[catId].complete = true;
+							this.forceUpdate();
+						}
 					}
 					else{
-						songFetch.complete = true;
+						console.error("Received an not ok response",status, body)
 					}
+				},
+				e:({error,xml,body})=>{
+					songFetch.fetching = false;
 
-					store.dispatch(addSongs(body.data,catId));
-					
-					if(!body.data.length){
-						this.fetchStatus[catId].complete = true;
-						this.forceUpdate();
-					}
+					console.error("An Error happened while fetching for songs",error.name,error.message, error.stack);
+				}
+			};
+
+			if(songFetch){
+				if(songFetch.complete || songFetch.fetching){
+					return;
 				}
 				else{
-					console.error("Received an not ok response",status, body)
+					songFetch.fetching = true;
 				}
-			},
-			e:({error,xml,body})=>{
-				songFetch.fetching = false;
-
-				console.error("An Error happened while fetching for songs",error.name,error.message, error.stack);
-			}
-		};
-
-		if(songFetch){
-			if(songFetch.complete || songFetch.fetching){
-				return;
+				if(songFetch.last){
+					sendData.url += '&last='+ JSON.stringify(songFetch.last);
+				}
 			}
 			else{
-				songFetch.fetching = true;
+				fetchStatus[catId] = songFetch = {fetching:true, complete:false};
 			}
-			if(songFetch.last){
-				sendData.url += '&last='+ JSON.stringify(songFetch.last);
-			}
+			this.forceUpdate();
+			fetcher(sendData);
 		}
-		else{
-			fetchStatus[catId] = songFetch = {fetching:true, complete:false};
-		}
-		this.forceUpdate();
-		fetcher(sendData);
 	}
 
 	componentWillUnmount(){
