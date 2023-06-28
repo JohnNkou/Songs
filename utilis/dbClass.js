@@ -620,6 +620,10 @@ function d({getClient,getClientD}){
 					message:"No data given"
 				})
 			}
+			upd.push(`#${stF.cTime}=:${stF.cTime}`);
+			params.ExpressionAttributeNames[`#${stF.cTime}`] = stF.cTime;
+			params.ExpressionAttributeValues[`:${stF.cTime}`] = Date.now()
+
 			params.UpdateExpression += upd.join(',');
 
 			response = await clientD.send(new UpdateCommand(params));
@@ -647,6 +651,27 @@ function d({getClient,getClientD}){
 		Item = (response.Item)? [response.Item]:[];
 
 		return getResponse(Item);
+	}
+	this.getUnusedStreams = async ()=>{
+		await this.initialized;
+		let params = {
+			TableName: stTableName,
+			FilterExpression:'creationTime <= :now',
+			ExpressionAttributeValues:{
+				':now':Date.now() - 600000
+			}
+		},
+		response,
+		r;
+
+		response = await clientD.send(new ScanCommand(params));
+
+		r = getResponse(response.Items);
+
+		if(response.LastEvaluatedKey){
+			r.last = response.LastEvaluatedKey;
+		}
+		return r;
 	}
 	this.getAllStreams = async (filters={})=>{
 		await this.initialized;

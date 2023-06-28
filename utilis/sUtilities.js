@@ -1,61 +1,25 @@
-export function killUnusedStream({fs,filename,subscribers,waiters,up,lineTermination}){
-	fs.access(filename,(err)=>{
-		if(err){
-			
-		}
-		else{
-			fs.readFile(filename,(err,data)=>{
-				if(err){
-					console.log("killUnusedStream error",err);
-				}
-				else{
-					data = data.toString();
-					fs.unlink(filename,(err)=>{
-						if(err){
-							console.log("Couldn't delete the file",filename);
-						}
-						console.log("file",filename,"is deleted");
-					});
-					//try{
-						console.log("data is",data.split(lineTermination));
+import db from './dbClass.js';
 
-						let streamNames = data.split(lineTermination).map((x)=> x.toLowerCase()), _SUB = SUB, streamName="";
+async function killUnusedStream(){
+	let payload = await db.getUnusedStreams().catch((error)=> error),
+	data = payload.data;
 
-						console.log("streamNames to be deleted",streamNames);
-						if(streamNames.length){
-							up.lastupdate = new Date().getTime().toString().slice(0,10); 
-							while(streamName = streamNames.pop()){
-								let subscribeds = subscribers[streamName];
+	if(data.length){
+		data.forEach(async (stream)=>{
+			let r = await db.deleteStream(stream.name).catch((error)=> error);
 
-								if(subscribeds){
-									for(let subscribed in subscribeds){
-										let res = subscribeds[subscribed];
-										res.json({action:_SUB.UNSUBSCRIBE, message:`The stream has finished`});
-										delete subscribeds[subscribed];
-									}
-								}
-							}
+			if(r.error){
+				console.error("killUnusedStream eerror",r.error);
+			}
+			else{
+				console.log("stream",stream.name,"purged");
+			}
+		})
+	}
+}
 
-							if(waiters.length){
-								console.log("There is",waiters.length,"waiter");
-								for(let id in waiters){
-									if(id != "length"){
-										let socket = waiters[id];
-										socket.json({action:_SUB.DELETE, name: streamNames, timestamp:up.lastupdate});
-									}
-								}
-							}
-							else{
-								console.log("There is no Waiter");
-							}
-						}
-					//}	
-					/*catch(e){
-						console.log(e);
-					}*/
-
-				}
-			})
-		}
-	})
+export default function purgeStream(){
+	setInterval(()=>{
+		killUnusedStream();
+	},10000)
 }
