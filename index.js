@@ -8,7 +8,7 @@ import https from 'https'
 import logger from 'morgan'
 import path from 'path'
 import { indexRouter, Stream, Waiters, Subscription, PopulateCategoriesAndSongs,  streamCreator, streamCollector, streamUpdater, streamSubscription, streamDeleter, noStore, songDownloader, downloadToSubscriber, streamPicker, addDefaultsCategorieAndSongs, ErrorLogger, Categorie, Song, CommitHandler, CloseServer, ForkProcess, ServerSong }  from './router/index.js';
-import { killUnusedStream } from './utilis/sUtilities.js'
+import purgeStream from './utilis/sUtilities.js'
 import { appState } from './utilis/constant.cjs';
 import { streamFileName, lineTermination } from './db/data.js'
 import db from './utilis/dbClass.js'
@@ -29,6 +29,7 @@ const textParser = bodyParser.text();
 
 export const StreamJest = Stream();
 export const SubscriptionJest = Subscription(streamSubscribers);
+purgeStream();
 
 
 app.set('views',`${root}/views`)
