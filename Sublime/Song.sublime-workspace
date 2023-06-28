@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"Exp",
+				"ExpressionAttributeValues"
+			],
+			[
+				"Ex",
+				"ExpressionAttributeValues"
+			],
+			[
 				"curre",
 				"currentSong"
 			],
@@ -98,10 +106,6 @@
 			[
 				"Ite",
 				"Items"
-			],
-			[
-				"Ex",
-				"ExclusiveStartKey"
 			],
 			[
 				"De",
@@ -510,10 +514,6 @@
 			[
 				"deleteStr",
 				"deleteStream"
-			],
-			[
-				"deleteStre",
-				"deleteStreamCall"
 			]
 		]
 	},
@@ -532,7 +532,7 @@
 			"file": "/Users/flashbell/Node/Songs/index.js",
 			"settings":
 			{
-				"buffer_size": 2593,
+				"buffer_size": 2599,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -559,7 +559,7 @@
 			"file": "/Users/flashbell/Node/Songs/utilis/dbClass.js",
 			"settings":
 			{
-				"buffer_size": 17126,
+				"buffer_size": 17974,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -592,30 +592,10 @@
 			}
 		},
 		{
-			"contents": "self.oninstall = (event)=>{\n\tconsole.log(\"Hey,I'm installing\");\n\tevent.waitUntil(\n\t\tcaches.open(\"shell-v1\").then(cache=>{\n\t\t\tconsole.log(\"Caching\");\n\t\t\treturn cache.addAll([\n\t\t\t\t\"/\",\n\t\t\t\t\"/dist/bundle.js\",\n\t\t\t\t\"/store\",\n\t\t\t\t\"css/font.css\",\n\t\t\t\t\"css/app.css\",\n\t\t\t\t\"polyfill/Symbol.js\",\n\t\t\t\t\"js/bluebird_mod.min.js\",\n\t\t\t\t\"img/Adder.png\",\n\t\t\t\t\"img/settings.png\",\n\t\t\t\t\"img/ToggleRight.png\",\n\t\t\t\t\"img/streamStart.png\",\n\t\t\t\t\"img/stream.png\",\n\t\t\t\t\"img/love.png\",\n\t\t\t\t\"img/favorite.png\",\n\t\t\t\t\"img/download.png\",\n\t\t\t\t\"img/cat.png\",\n\t\t\t\t\"img/next.png\",\n\t\t\t\t\"img/prev.png\"\n\t\t\t\t]).catch((e)=>{\n\t\t\t\t\tconsole.log(\"Something went wrong\",e);\n\t\t\t\t})\n\t\t})\n\t)\n}\n\nself.onactive = (event)=>{\n\tconsole.log(\"I'm now active\");\n}\n\nself.onfetch = (e)=>{\n\te.respondWith(\n\t\tcaches.match(e.request).then((response)=>{\n\t\t\treturn response || fetch(e.request);\n\t\t})\n\t)\n}",
-			"file": "/Users/flashbell/Node/Songs/worker.js",
-			"file_size": 838,
-			"file_write_time": 133231954522814694,
-			"settings":
-			{
-				"buffer_size": 838,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/Users/flashbell/Node/Songs/utilis/songAdderController.js",
-			"settings":
-			{
-				"buffer_size": 541,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
 			"file": "/Users/flashbell/Node/Songs/views/components.jsx",
 			"settings":
 			{
-				"buffer_size": 127527,
+				"buffer_size": 127601,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -657,33 +637,11 @@
 			}
 		},
 		{
-			"contents": "CACHE MANIFEST\n\n#Version 1\n\nCACHE:\n/\n\n#js files\ndist/bundle.js\ndist/bundle.js.map\ndist/guider.js\ndist/guider.js.map\ndist/indexDb.js\ndist/indexDb.js.map\npolyfill/Symbol.js\njs/bluebird_mod.min.js\n\n#css file\ncss/app.css\n\n#img file\n\nimg/ToggleLeft.png\nimg/ToggleRight.png\nimg/bottom.png\nimg/cat.png\nimg/download.png\nimg/downloads.png\nimg/favorite.png\nimg/love.png\nimg/next.png\nimg/ok.png\nimg/openStream.png\nimg/prev.png\nimg/stream.png\nimg/streamStart.png\nimg/streamStop.png\nimg/top.png\nimg/unlove.png\nimg/Adder.png\nimg/settings.png\n\nNETWORK:\n/connect\n/store\n/stream/list\n/songAdder.js",
-			"file": "/Users/flashbell/Node/Songs/song.appcache",
-			"file_size": 580,
-			"file_write_time": 133235111322832860,
-			"settings":
-			{
-				"buffer_size": 580,
-				"line_ending": "Unix"
-			}
-		},
-		{
 			"file": "/Users/flashbell/Node/Songs/utilis/newReducer.cjs",
 			"settings":
 			{
 				"buffer_size": 10750,
 				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "/* HTML element stylling */\n\nhtml *{\n\tmargin:0;\n\tpadding:0;\n\tfont-family: Georgia;\n\t-webkit-box-sizing: border-box;\n\tbox-sizing: border-box;\n\tfont-weight:normal;\n}\na,p,span{\n\tfont-size:1.1em;\n}\nhtml,body{\n\theight:100%;\n\twidth:100%;\t\n\toverflow: hidden;\t\n}\n\na{\n\ttext-decoration: none;\n\tdisplay:inline-block;\n}\na:active{\n\tborder:none;\n}\nimg{\n\tborder:none;\n}\ninput{\n\tborder:1px solid silver;\n\tfont-size:1.2em;\n\tpadding:5px;\n\tborder-radius: 10px 10px 10px 10px;\n\ttext-align: center;\n}\n\n/* Custom generic Class */\n.il{\n\tdisplay: inline-block\n}\n.tight{\n\theight:100%;\n\tdisplay: inline-block;\n}\n.TR{\n\tleft:28%;\n}\n.TL{\n\tleft:0%\n}\n.TRR{\n\twidth: 350px;\n\tz-index: 100000000;\n\tposition: absolute;\n}\n.TLL{\n\twidth:0%;\n\tleft: -100%;\n\tmargin-right:-1px;\n\toverflow:scroll;\n}\n.TRRR{\n\twidth: 100%;\n\tpadding-left: 350px;\n}\n.Full{\n\twidth:100%;\n\tpadding-left: 0;\n}\n.blur{\n\tbackground-color: rgba(0,0,0,.7);\n}\n\n.vtop{\n\tvertical-align: top;\n}\n.vmid{\n\tvertical-align: middle;\n}\n.vbot{\n\tvertical-align: bottom;\n}\n.AlL{\n\ttext-align: left;\n}\n.AlR{\n\ttext-align: right;\n}\n.AlC{\n\ttext-align: center;\n}\n.abs{\n\tposition: absolute;\n\tz-index: 1000000;\n}\n.success{\n\tcolor:rgb(57,181,74);\n}\n.error{\n\tcolor:rgb(255,29,37);\n}\n.mSuccess{\n\tbackground-color:rgb(57,181,74);\n\tcolor:white;\n}\n.mError{\n\tbackground-color:rgb(193,39,45);\n\tcolor:white;\n}\n.mSystem{\n\tbackground-color: rgb(41,171,226);\n\tcolor:white;\n}\n.TLRad{\n\tborder-top-left-radius: 10px;\n}\n.TRRad{\n\tborder-top-right-radius: 10px;\n}\n.BLRad{\n\tborder-bottom-left-radius: 10px;\n}\n.BRRad{\n\tborder-bottom-right-radius: 10px;\n}\n.AllRound{\n\tborder-radius: 10px 10px 10px 10px;\n}\n.currentSection,.currentStep{\n\tcolor:black;\n\t/*font-weight: bold;*/\n}\n.shadowL{\n\tright:0%;\n\tbox-shadow: -4px 2px 2px rgba(0,0,0,.3);\n\t-webkit-box-shadow: -4px 2px 2px rgba(0,0,0,.3)\n}\n.shadowR{\n\tbox-shadow: 4px 2px 2px rgba(0,0,0,.3);\n\t-webkit-box-shadow: 4px 2px 2px rgba(0,0,0,.3);\n\tleft:0%;\n}\n.shadowC{\n\tleft:0%;\n\tbox-shadow:0px 6px 5px rgba(0,0,0,.3);\n\t-webkit-box-shadow:0px 6px 5px rgba(0,0,0,.3);\n}\n.abBottom{\n\ttop:100%;\n}\n.bHighlight{\n\tbackground-color:rgb(79,209,217);\n}\n.silverBack{\n\tbackground-color:rgb(189,204,212);\n}\n.blueBack{\n\tbackground-color: rgb(5,191,202);\n\tcolor:white;\n}\n.whoosh{\n\theight:0px;\n\toverflow: hidden;\n\tdisplay:none;\n}\n.hightlight{\n\tbackground-color:blue;\n}\n\n\n.wrapper{\n\twidth:100%;\n\theight:100%;\n\tposition: relative;\n}\n.wrapper > div{\n\tvertical-align: middle;\n}\n\n/*Common Things*/\n\n#first .head,#second .head{\n\theight:7%;\n\tposition: relative;\n}\n#first .head .catNames .f1, #second .head .listStream .f1{\n\twidth:85%;\n}\n#first .head .c2, #first .head .c3, #second .head .tip{\n\ttext-align: center;\n}\n#first .head .list > div, #first .songList > div, #second .head .list > div{\n\tline-height: 20px; \n}\n\n\n\n\n#first{\n\theight:100%;\n\tposition: absolute;\n\tborder-right:1px solid silver;\n\t:;\n:;\n}\n#first #download{\n\tposition:absolute;\n\ttop:0%;\n\tleft:0%;\n\tz-index: 100;\n\twidth:100%;\n\theight:1.5%;\n}\n#first #download .progress{\n\twidth:80%;\n\theight:100%;\n\tbox-shadow: 0px 7px 3px rgba(0,0,0,.5);\n\t-webkit-box-shadow: 0px 7px 3px rgba(0,0,0,.5);\n}\n#first .Notification{\n\twidth:80%;\n\tleft:10%;\n}\n#first .head{\n\tposition: relative;\n\tpadding:0% 0%;\n}\n#first .head .catNames > div:first-child{\n\ttext-align: center;\n}\n#first .head > div{\n\tvertical-align: middle;\n}\n#first .head .c3{\n\ttext-align: right;\n\twidth:15%;\n\theight:100%;\n}\n#first .head .c2{\n\twidth:70%;\n}\n#first .head .c1{\n\twidth:15%;\n\tpadding-left:3%;\n}\n#first .head .catNames{\n\tposition: relative;\n\tz-index: 1000000000;\n\ttop:0;\n\tpadding:3% 0%;\n\tbackground-color:white;\n}\n.catNames > div > div{\n\tvertical-align: middle;\n}\n.catNames a{\n\tcolor:black;\n\tfont-family: \"Tekton Pro\";\n\tfont-style: italic;\n}\n#first input{\n\tfont-family: \"Myriad Pro\";\n\tfont-weight: normal;\n\twidth: 100%;\n}\n\n.result{\n\ttext-align:center;\n\twidth:80%;\n\tmax-height:1328%;\n\toverflow: scroll;\n\tleft:10%;\n\tz-index: 100000000;\n\tbackground-color: white;\n}\n.result div{\n\tborder-bottom:1px dotted rgba(0,0,0,.1);\n\tline-height: 30px;\n}\n.result a{\n\tcolor: inherit;\n}\n\n.songList{\n\ttext-align:center;\n\tpadding-top: 1%;\n\theight:93%;\n}\n.songList .list{\n\ttext-align: center;\n\tz-index: 100;\n\tposition: relative;\n\tbox-shadow: 0px 2px 5px rgba(0,0,0,.7);\n\t-webkit-box-shadow: 0px 2px 5px rgba(0,0,0,.7);\n\tbackground-color: white;\n}\n\n.songList .wrapper{\n\tborder-bottom:1px solid rgb(83,71,65);\n\tpadding-left:3%;\n}\n.songList .wrapper div:first-child{\n\tpadding:2% 0%;\n\t/*border:1px solid black;*/\n\ttext-align: center;\n}\n.songList .wrapper:last-child{\n\tborder-bottom:none;\n}\n.songList .f1{\n\twidth:80%;\n\ttext-align:left;\n}\n.songList .f2{\n\tline-height: 0px;\n}\n.songList #online .onlineHead{\n\tborder-radius: 20px 20px 0px 0px;\n\tbox-shadow: 0px 3px 5px rgba(0,0,0,.4);\n\t-webkit-box-shadow: 0px 3px 5px rgba(0,0,0,.4);\n}\n.songList #online .onlineHead, .songList #offline .offlineHead{\n\tposition: relative;\n\tcolor:white;\n\tz-index: 10000000;\n\ttext-align: left;\n\tpadding-left: 10px;\n}\n.songList #online .onlineHead *{\n\tvertical-align:middle;\n}\n#onLink img{\n\tmargin-left:10px;\n}\n#onLink span, #offLink span{\n\tfont-family:\"courier\";\n\tfont-size:1em;\n}\n.songList #online .tagName, .songList #offline .tagName{\n\twidth: 70%;\n}\n.songList #online .counter, .songList #offline .counter{\n\tdisplay: inline-block;\n\twidth:20%;\n\ttext-align: right;\n}\n#first .songList .heightHelper .onlineHead, #first .songList .heightHelper .offlineHead{\n\theight: 40px;\n}\n\n.songList .online .onlineHead,.songList .offline .offlineHead{\n\theight:95%;\n}\n\n.songList .onlineHead a, .songList .offlineHead a{\n\tfont-size: 1.3em;\n\tcolor:white;\n\tletter-spacing: 2px;\n\tfont-family: \"courier\";\n}\n#first .songList .heightHelper{\n\theight: 93%;\n}\n.songList .heightHelper .papa{\n\theight:95%;\n\toverflow: scroll;\n}\n.songList #offline .open{\n\tbox-shadow: 0px 2px 3px rgba(0,0,0,.4);\n\t-webkit-box-shadow: 0px 2px 3px rgba(0,0,0,.4);\n}\n.songList #offline .closed{\n\tbox-shadow: 0px -3px 3px rgba(0,0,0,.4);\n\t-webkit-box-shadow: 0px -3px 3px rgba(0,0,0,.4);\n}\n.songList .list > div a{\n\tfont-family: Marion;\n\tfont-style: italic;\n\tcolor:rgb(83,71,65);\n\tfont-size: 1.4em;\n\tletter-spacing: 0.5px;\n\ttext-transform:lowercase;\n}\n.songList .online,.songList .offline{\n\theight:6%;\n}\n.songList #online, .songList #offline{\n\ttext-align: center;\n\twidth:100%;\n}\n.songList #online .onlineHead, .songList #online .list, .songList #offline .offlineHead, .songList #offline .list{\n\twidth: 80%;\n}\n\n\n#second{\n\tposition: relative;\n\tz-index: 100000;\n\theight:100%;\n\t/* padding-left: 350px; */\n}\n#second .Notification{\n\twidth:50%;\n\tleft:25%;\n}\n.Guider{\n\tposition: absolute;\n\twidth:48%;\n\tleft:26%;\n\theight:60%;\n\ttop:20%;\n\tz-index: 1000000000;\n\ttext-align: center;\n\toverflow: scroll;\n}\n.Guider .wrap{\n\tposition: relative;\n\twidth:100%;\n\theight:100%;\n\ttext-align: center;\n}\n#Guider{\n\tbackground-color: white;\n\ttext-align: center;\n\tpadding:4% 10%;\n\twidth:100%;\n}\n.Guider #Guider{\n\t-webkit-box-shadow:none;\n\tbox-shadow: none;\n}\n#Guider .section a, #Guider .step a{\n\tpadding:0% 6%;\n\tfont-family: \"Myriad Pro\";\n\ttext-align: center;\n}\n#Guider p, #Guider li{\n\tfont-family: \"Avenir\";\n\tword-spacing: 10px;\n}\n#Guider p{\n\ttext-align: justify;\n}\n#Guider li{\n\ttext-align: left;\n\tmargin-left:0%;\n}\n#Guider .section{\n\tmargin-bottom: 5%;\n}\n#Guider .textAction{\n\tmargin:5% 0%;\n}\n\n#Guider .section div, #Guider .step div{\n\twidth: 33.3%;\n}\n#second .head .c1 .list, #second .head .c3 .list{\n\ttext-align: left;\n\tmax-height: 2000%;\n\toverflow: scroll;\n}\n\n\n #second .head .shadowL, #second .head .shadowR, #second .head .shadowC{\n\twidth: 200px;\n\tmargin-top:3.5%;\n}\n#second .Toggler{\n\tposition:absolute;\n\tleft:0px;\n\ttop:0;\n}\n.TRRR .Toggler{\n\tdisplay:none;\n}\n.FULL .Toggler{\n\tdisplay:inline-block;\n}\n#second .head .c3{\n\tposition: relative;\n}\n#second .head{\n\t/* box-shadow: 0px 2px 3px rgba(0,0,0,.5); */\n\t/* -webkit-box-shadow: 0px 2px 3px rgba(0,0,0,.5); */\n\tpadding:0% 0%;\n\tborder-bottom: 1px solid rgb(208,203,204);\n}\n#second .head a{\n\tfont-family: \"Tekton Pro\";\n}\n#second .head img{\n\t\t/*width:2em;*/\n}\n#second .head > div{\n\tvertical-align: middle;\n}\n#second .head .fav .abs a{\n\tcolor:rgb(204,153,0);\n}\n#second .head .streamList .list .search{\n\tposition: fixed;\n\twidth:17.5%;\n\theight:5%;\n\ttext-align: center;\n\tz-index: 100000000000000;\n}\n#second .head .streamList .list .items{\n\tmargin-top:17%;\n}\n#second .head .streamList .abs a{\n\tcolor:rgb(79,209,217);\n}\n#second .head .listStream img{\n\twidth: auto;\n}\n#second > div > div > div a{\n\tposition:relative;\n}\n#second .head .settings .f1, #second .head .fav .f1, #second .head .streamList .f1{\n\tborder-bottom:1px solid black;\n\tpadding:2%;\n\twidth:100%;\n}\n#second .head .settings .list, #second .head .fav .list, #second .head .streamList .list{\n\ttext-align: left;\n\tpadding-bottom: 3%;\n\tmargin-left:1%;\n}\n#second .head .settings .list  div, #second .head .fav .list div, #second .head .streamList .list div{\n\tbackground-color: white\n}\n#second .head .settings .list > div > div:last-child, #second .head .fav .list > div > div:last-child, #second .head .streamList .list > div > div:last-child{\n\tborder:none;\n}\n\n#second .head .settings .list .list{\n\tpadding:0;\n\tmargin:0;\n}\n#second .head .settings .list span, #second .head .streamList .list span{\n\twidth:80%;\n\tdisplay: inline-block;\n}\n#second .head .settings .list .list a, #second .head .fav .list a, #second .head .streamList .list a{\n\tdisplay: block;\n\tcolor:inherit;\n}\n#second .head .settings .list a, #second .head .settings .list span, #second .head .fav .list a{\n\tline-height: 25px;\n\tfont-family: \"Tekton Pro\";\n}\n\n#second .head .streamList .list .f1 .il{\n\twidth:100%;\n}\n#second .head .counter{\n\tposition:absolute;\n\tfont-size:0.7em;\n\tborder-radius: 100%;\n\twidth:16px;\n\theight:16px;\n\tright:0%;\n\tbottom:-10%;\n\tbackground-color:red;\n\tcolor:white\n}\n#second .streamList .abs .f1 + div{\n\tvertical-align: middle;\n}\n\n#second .head .tip{\n\twidth:25%;\n\tposition: relative;\n}\n\n#second .body{\n\ttext-align: center;\n\tposition: relative;\n\theight:93%;\n}\n#content{\n\tposition: relative;\n\twidth:80%;\n\tpadding-top: 5%;\n\tdisplay: inline-block;\n\theight:85%;\n\ttext-align: center;\n\toverflow: scroll;\n}\n#content h3{\n\tmargin-bottom: 30px;\n\tfont-family: \"Chalkboard SE\";\n\tfont-size:1.8em;\n\ttext-transform: uppercase;;\n}\n#content p{\n\tfont-size: 1.7em;\n\tline-height: 35px;\n\tfont-family: \"Georgia\";\n\tfont-style: italic;\n\tfont-weight: normal;\n\tcolor: rgba(0,0,0,.8);\n\tletter-spacing: 1px;\n\tword-spacing: 10px;\n\tmargin-bottom:4%;\n\theight:75%;\n}\n.lr{\n\twidth:10%;\n\tbottom: 0;\n}\n.lr a:first-child{\n\ttext-align: left\n}\n.lr a:last-child{\n\ttext-align: right;\n}\n.lr a{\n\twidth:50%;\n\tvertical-align: bottom;\n}\n#navHelper{\n\twidth:20px;\n\ttop:45%;\n\tright:0%;\n\tborder:1px solid silver;\n}\n#navHelper a:visited, #navHelper a:link{\n\tcolor:black;\n\tfont-size:1em;\n}\n#navHelper div{\n\tborder-bottom: 1px solid silver;\n\tbackground-color:inherit;\n}\n#navHelper div.bHighlight{\n\tbackground-color:rgb(79,209,217);\n}\n\n\n.f1 a{\n\tpadding-left:10px;\n}\n\n\n.popUp{\n\tposition: absolute;\n\tz-index: 100000000000;\n\twidth:40%;\n\tleft:30%;\n\theight: 40%;\n\ttop:30%;\n}\n.popWrapper{\n\tposition: relative;\n\tz-index: 10000000;\n\ttop:0%;\n\twidth:100%;\n\theight:100%;\n\ttext-align:center;\n}\n.popWrapper span, .popWrapper p{\n\tfont-family: \"Myriad Pro\";\n}\n.popUp .wrap{\n\tposition: relative;\n\twidth:100%;\n\theight:100%;\n\toverflow: scroll;\n}\n.popUp .wrap .il{\n\twidth:100%;\n\tpadding:4%;\n}\n\n.popUp .wrap > div{\n\tvertical-align: middle;\n}\n.littleBox{\n\tbox-shadow: 0px 0px 10px rgba(0,0,0,.3);\n\t-webkit-box-shadow: 0px 0px 10px rgba(0,0,0,.3);\n}\n.Box{\n\tbox-shadow: 0px 0px 20px rgba(0,0,0,.3);\n\t-webkit-box-shadow: 0px 0px 20px rgba(0,0,0,.3);\n\tborder:1px solid rgba(0,0,0,.3);\n}\n.popWrapper .status{\n\tfont-size:1em;\n\tletter-spacing: 1px;\n}\n.popWrapper .signal{\n\tfont-size:0.8em;\n\tletter-spacing: 1px;\n}\n\n.popWrapper input, .popWrapper textarea{\n\tfont-family: \"Cochin\";\n\tborder:none;\n}\n.popWrapper textarea{\n\twidth:90%;\n\theight:100px;\n\tfont-size: 1em;\n\tpadding:1%;\n}\n.popWrapper .actions{\n\twidth:55%;\n\tpadding:0% 0%;\n}\n.popWrapper .actions input{\n\twidth:40%;\n\tborder-radius: 0px 0px 0px 0px;\n}\n.popWrapper .actions input:first-child{\n\tmargin-right:20%;\n}\n#addSong .songName input{\n\twidth: 85%;\n}\n#addSong .verseChanger input{\n\twidth: 45%;\n}\n#addSong div, #addCat div{\n\tmargin-top:3%;\n}\n#addSong .changeSubmit{\n\tborder-radius: 0px 0px 0px 0px;\n}\n#addSong .changeSubmit, .popWrapper .actions input{\n\tcolor:white;\n\tpadding:2% 5%;\n}\n.addCat{\n\tbackground-color:white;\n\tborder:1px solid black;\n\twidth:50%;\n\ttext-align:center;\n\theight:40%;\n\ttop:30%;\n\tleft:25%;\n}\n.addCat > *{\n\theight:25%;\n}\n\n#devTool{\n\tposition: absolute;\n\twidth:100%;\n\theight:40%;\n\tbottom:0;\n\tbackground-color:black;\n\tz-index: 100000000000;\n\tdisplay: none;\n\toverflow: scroll;\n}\n#devTool p{\n\tfont-size:0.8em;\n\tmargin-bottom: 10px;\n}\n\n.night #first, .night .popUp .silverBack, .night #first .head .catNames{\n\tbackground-color:rgb(1,79,75);\n}\n.night #first, .night .popUp .silverBack{\n\tbox-shadow:none;;\n\t-webkit-box-shadow:none;\n\tborder:none;\n}\n.night #second{\n\tbackground-color:rgb(0,45,46)\n\t-webkit-box-shadow:none;\n\tborder:none;\n}\n.night #second{\n\tbackground-color:rgb(0,45,46);\n}\n\n.night .blueBack{\n\tbackground-color: rgb(96,56,19);\n}\n\n\n.night #first .head .catNames{\n\tborder:1px solid green;\n}\n.night #first .head .catNames a{\n\tcolor:white;\n}\n.night .songList .list, .night #navHelper {\n\tbackground-color:rgb(96,56,19);\n\tborder:none;\n}\n.night .songList .list > div a{\n\tcolor:rgb(248,238,235);\n}\n.night .songList .wrapper{\n\tborder:none;\n}\n.night .songList .onlineHead, .night .songList .offlineHead, .night #second .bHighlight, .night .Guider #Guider, .night .Guider .blueBack, .night #second .silverBack{\n\tbackground-color:rgb(66,33,11);\n}\n\n.night #second .head .settings .list div, .night #second .head .fav .list div, .night #second .head .streamList .list div, .night .result div {\n\tbackground-color:rgb(35,31,32);\n\tcolor: white;\n}\n.night #second .head a{\n\tcolor:inherit;\n}\n.night #second #content *{\n\tcolor: white;\n\tborder:none;\n}\n\n.night #second #navHelper{\n\tbox-shadow: -3px 0px 3px black;;\n}\n.night #second #navHelper *{\n\tcolor:white;\n}\n.night #navHelper div{\n\tborder:none;\n}\n\n.night .Guider .section .blueBack{\n\tbox-shadow: 0px 0px 2px rgb(96,56,19);\n\t-webkit-box-shadow: -3px 0px 3px black;\n}\n.night #second #navHelper *{\n\tcolor:white;\n}\n.night #navHelper div{\n\tborder:none;\n}\n\n.night .Guider .section .blueBack{\n\tbox-shadow: 0px 0px 2px rgb(96,56,19);;\n}\n\n.night .Guider .blueBack{\n\tborder: 1px solid rgb(96,56,19);\n}\n.night .Guider .currentSection, .night .Guider .currentStep, .night .Guider{\n\tcolor:white;\n}\n.night .shadowL{\n\tbox-shadow: -4px 2px 2px rgba(0,0,0,.8);\n\t-webkit-box-shadow: -4px 2px 2px rgba(0,0,0,.8)\n}\n.night .shadowR{\n\tbox-shadow: 4px 2px 2px rgba(0,0,0,.8);\n\t-webkit-box-shadow: 4px 2px 2px rgba(0,0,0,.8);\n}\n.night .shadowC{\n\tbox-shadow:0px 6px 5px rgba(0,0,0,.8);\n\t-webkit-box-shadow:0px 6px 5px rgba(0,0,0,.8);\n}\n.night .result > div{\n\tborder-bottom:1px solid white;\n}\n.night .result > div:last-child{\n\tborder-bottom: none;\n}\n\n.Notification{\n\tposition: absolute;\n\ttop:0%;\n\tz-index: 10;\n\ttext-align: center;\n\tz-index: 100000000;\n}\n.Toggler{\n\tright:0%;\n\tbottom:0%;\n\tz-index:100000000;\n\ttop:0%;\n\twidth:5%;\n\theight:100%\n}\n#second .head .Toggler{\n\tposition: absolute;\n}\n.TRR .Togger{\n\tdisplay:inline-block;\n}\n.TLL .Toggler{\n\tdisplay:none;\n}\n.Toggler img{\n\ttransition: visibility ease-in 0.5s\n\t-webkit-transition: visibility ease-in 0.5s;\n}\n.highlight *{\n\tcolor:white\n}\n\n.result .first{\n\tline-height:20px;\n}\n.result .first span{\n\tfont-weight:bold;\n\tletter-spacing:3px;\n\tfont-size:0.9em;\n}\n.result .first *{\n\tvertical-align:middle;\n}\n\n@media(max-width: 942px){\n\t#first, #second{\n\t\tposition:absolute;\n\t}\n\t#first{\n\t\tz-index: 1000000;\n\t\twidth: 350px;\n\t}\n\t#second{\n\t\t/* width:100%; */\n\t\tleft:0%;\n\t\tpadding-left: 0;\n\t}\n\t.TRR{\n\t\tleft:0%;\n\t}\n\t.popUp{\n\t\twidth:\t52%;\n\t\tleft: \t25%;\n\t}\n\t.popUp .wrap .il{\n\t\twidth:100%;\n\t}\n\t.Guider{\n\t\tdisplay: none;\n\t}\n}\n\n@media(max-width:710px){\n\t#first{\n\t}\n\t#second .head .list{\n\t\t/* width:140%; */\n\t}\n\t.TRRR .Toggler{\n\t\tdisplay: inline-block;\n\t}\n\t#content {\n\t\twidth: 90%;\n\t\toverflow: scroll;\n\t}\n\t#content p{\n\t\tfont-size: 1.4em;\n\t}\t\n\n\t.popUp{\n\t\twidth:\t70%;\n\t\tleft:\t15%;\n\t}\n\n\t.lr{\n\t\twidth:20%;\n\t\tleft:40%;\n\t}\n}\n\n@media(max-width: 540px){\n\t#first{\n\t}\n\t#second .Notification{\n\t\twidth:70%;\n\t\tleft:15%;\n\t}\n\n\t#content p{\n\t\tfont-size: 1.1em;\n\t\tword-spacing: 5px;\n\t}\n\t#content h3{\n\t\tfont-size:1.3em;\n\t\tfont-weight: bold;\n\t\tmargin-bottom: 10px;\n\t}\n\t#addSong .verseChanger input{\n\t\twidth:60%;\n\t}\n}\n\n@media(max-width: 425px){\n\t#first{\n\t\twidth:100%;\n\t}\n\t.TLL{\n\t\tleft:-100%;\n\t}\n\t#second .head .list{\n\t\t/* width:200%; */\n\t\tfont-size:0.9em;\n\t}\n\n\t.popUp{\n\t\twidth: \t85%;\n\t\tleft:\t7.5%;\n\t}\n\t#addSong .verseChanger input{\n\t\twidth: 65%;\n\t}\n\n\t.lr{\n\t\twidth:30%;\n\t\tleft:35%;\n\t}\n\n\t#devTool{\n\t\tdisplay: block;\n\t}\n\t#devTool.whoosh{\n\t\tdisplay: none;\n\t}\n}\n\n@media(max-height: 536px){\n\t#first .head, #second .head{\n\t\theight: 10%;\n\t}\n\t#first .songList .heightHelper .onlineHead, #first .songList .heightHelper .offlineHead{\n\t\t/* height:7%; */\n\t}\n\t.songList{\n\t\tpadding:0;\n\t\theight:88%;\n\t}\n\t.songList .online, .songList .offline{\n\t\theight:10%;\n\t}\n\t.songList .heightHelper{\n\t\tmargin-bottom:-1%;\n\t}\n\t.songList .heightHelper .papa{\n\t\theight: 93%;\n\t}\n\t.songList .list > div  a{\n\t\tfont-size:1.2em;\n\t\twidth: 100%;\n\t}\n\t#second .body{\n\t\theight:90%;\n\t}\n\t.lr{\n\t\tposition: absolute;\n\t\tbottom:1%;\n\t}\n}\n@media(max-height: 414px){\n\t#first .head, #second .head{\n\t\theight: 12%;\n\t}\n\t#second .body{\n\t\theight:86%;\n\t}\n\t.songList{\n\t\theight:86%;\n\t}\n\t#first .songList .heightHelper .onlineHead, #first .songList .heightHelper .offlineHead{\n\t\theight:10%;\n\t}\n\t.songList .heightHelper .papa{\n\t\theight: 90%;\n\t}\n\t#first .head .list > div, #first .songList > div, #second .head .list > div{\n\t\tline-height: 15px;\n\t}\n}\n\n#first, #second{\n\ttransition: width ease-in 0.5s;\n\t-webkit-transition : width ease-in 0.5s;\n\t-webkit-transition: padding-left, width ease-in 0.5s;\n}",
-			"file": "/Users/flashbell/Node/Songs/css/app.css",
-			"file_size": 17721,
-			"file_write_time": 133245811238427581,
-			"settings":
-			{
-				"buffer_size": 17721,
 				"line_ending": "Unix"
 			}
 		},
@@ -925,15 +883,8 @@
 			"file": "/Users/flashbell/Node/Songs/utilis/sUtilities.js",
 			"settings":
 			{
-				"buffer_size": 1618,
+				"buffer_size": 518,
 				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"settings":
-			{
-				"buffer_size": 0,
 				"line_ending": "Unix"
 			}
 		},
@@ -1084,6 +1035,10 @@
 	},
 	"file_history":
 	[
+		"/Users/flashbell/Node/Songs/css/app.css",
+		"/Users/flashbell/Node/Songs/song.appcache",
+		"/Users/flashbell/Node/Songs/utilis/songAdderController.js",
+		"/Users/flashbell/Node/Songs/worker.js",
 		"/Users/flashbell/Node/Songs/utilis/db.copy.js",
 		"/Users/flashbell/Node/Songs/utilis/reducers.js",
 		"/Users/flashbell/Node/Songs/utilis/openDb.cjs",
@@ -1097,7 +1052,6 @@
 		"/Users/flashbell/Node/Songs/utilis/db.config.js",
 		"/Users/flashbell/Node/Songs/utilis/db.config.mjs",
 		"/Users/flashbell/Node/Songs/utilis/db.config.cjs",
-		"/Users/flashbell/Node/Songs/worker.js",
 		"/Users/flashbell/Node/Songs/client/index.jsx",
 		"/Users/flashbell/Node/Songs/utilis/constant.cjs",
 		"/Users/flashbell/Node/Songs/utilis/aCreator.cjs",
@@ -1208,10 +1162,7 @@
 		"/Volumes/TOSHIB/Users/flashbell/Downloads/DoYourDataRecoveryForMac6.6/file/function.php",
 		"/Applications/MAMP/htdocs/amado/shop.php",
 		"/Applications/MAMP/htdocs/amado/shop.html",
-		"/Applications/MAMP/htdocs/amado/product-details.html",
-		"/Applications/MAMP/htdocs/amado/checkout.html",
-		"/Applications/MAMP/htdocs/amado/cart.html",
-		"/Applications/MAMP/htdocs/amado/index.html"
+		"/Applications/MAMP/htdocs/amado/product-details.html"
 	],
 	"find":
 	{
@@ -1244,6 +1195,9 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"killUnusedStream",
+			"fetchSongs",
+			"FilterEx",
 			"ap",
 			"[^/]img/",
 			"\\.(png|gif)",
@@ -1368,13 +1322,10 @@
 			"\\Wn\\(",
 			"[^.\\w]Categorie",
 			"utilities.js",
-			"changeStreamCreationImage",
-			"Action",
-			"Texts",
-			"checkDbSupport"
+			"changeStreamCreationImage"
 		],
 		"highlight": true,
-		"in_selection": true,
+		"in_selection": false,
 		"preserve_case": false,
 		"regex": true,
 		"replace_history":
@@ -1517,7 +1468,7 @@
 	"groups":
 	[
 		{
-			"selected": 6,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -1546,7 +1497,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 25,
+					"stack_index": 30,
 					"type": "text"
 				},
 				{
@@ -1555,15 +1506,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2593,
+						"buffer_size": 2599,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1698,
-								1698
+								1308,
+								1308
 							]
 						],
 						"settings":
@@ -1573,10 +1524,10 @@
 							"word_wrap": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 90.0,
+						"translation.y": 219.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -1601,11 +1552,11 @@
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 68.0,
-						"translation.y": 4303.0,
+						"translation.x": 274.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
@@ -1635,7 +1586,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 26,
+					"stack_index": 31,
 					"type": "text"
 				},
 				{
@@ -1644,7 +1595,7 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 17126,
+						"buffer_size": 17974,
 						"regions":
 						{
 						},
@@ -1665,7 +1616,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 40,
+					"stack_index": 43,
 					"type": "text"
 				},
 				{
@@ -1694,7 +1645,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 66,
+					"stack_index": 61,
 					"type": "text"
 				},
 				{
@@ -1723,7 +1674,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
@@ -1752,82 +1703,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 62,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
 					"buffer": 8,
-					"file": "/Users/flashbell/Node/Songs/worker.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 838,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								560,
-								560
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 65,
-					"type": "text"
-				},
-				{
-					"buffer": 9,
-					"file": "/Users/flashbell/Node/Songs/utilis/songAdderController.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 541,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								403,
-								403
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 12,
-					"type": "text"
-				},
-				{
-					"buffer": 10,
 					"file": "/Users/flashbell/Node/Songs/views/components.jsx",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 127527,
+						"buffer_size": 127601,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								126180,
-								126180
+								126254,
+								126254
 							]
 						],
 						"settings":
@@ -1840,11 +1733,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 22,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
-					"buffer": 11,
+					"buffer": 9,
 					"file": "/Users/flashbell/Node/Songs/utilis/BrowserDb.cjs",
 					"semi_transient": false,
 					"settings":
@@ -1869,11 +1762,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 44,
+					"stack_index": 47,
 					"type": "text"
 				},
 				{
-					"buffer": 12,
+					"buffer": 10,
 					"file": "/Users/flashbell/Node/Songs/utilis/store.js",
 					"semi_transient": false,
 					"settings":
@@ -1898,11 +1791,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
-					"buffer": 13,
+					"buffer": 11,
 					"file": "/Users/flashbell/Node/Songs/utilis/serverStore.cjs",
 					"semi_transient": false,
 					"settings":
@@ -1926,11 +1819,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 16,
+					"stack_index": 22,
 					"type": "text"
 				},
 				{
-					"buffer": 14,
+					"buffer": 12,
 					"file": "/Users/flashbell/Node/Songs/utilis/startSql.js",
 					"semi_transient": false,
 					"settings":
@@ -1954,39 +1847,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 68,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
-					"buffer": 15,
-					"file": "/Users/flashbell/Node/Songs/song.appcache",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 580,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								346,
-								346
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 55,
-					"type": "text"
-				},
-				{
-					"buffer": 16,
+					"buffer": 13,
 					"file": "/Users/flashbell/Node/Songs/utilis/newReducer.cjs",
 					"semi_transient": false,
 					"settings":
@@ -2012,36 +1877,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 30,
-					"type": "text"
-				},
-				{
-					"buffer": 17,
-					"file": "/Users/flashbell/Node/Songs/css/app.css",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 17721,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1,
-								1
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/CSS/CSS.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 36,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
@@ -2070,11 +1906,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 53,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
-					"buffer": 18,
+					"buffer": 14,
 					"file": "/Users/flashbell/Node/Songs/utilis/guider.js",
 					"semi_transient": false,
 					"settings":
@@ -2342,7 +2178,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 19,
+					"buffer": 15,
 					"file": "/Users/flashbell/Node/Songs/utilis/guiderLazy.cjs",
 					"semi_transient": false,
 					"settings":
@@ -2367,11 +2203,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 54,
+					"stack_index": 55,
 					"type": "text"
 				},
 				{
-					"buffer": 20,
+					"buffer": 16,
 					"file": "/Users/flashbell/Node/Songs/utilis/devHelper.js",
 					"semi_transient": false,
 					"settings":
@@ -2396,11 +2232,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 69,
+					"stack_index": 63,
 					"type": "text"
 				},
 				{
-					"buffer": 21,
+					"buffer": 17,
 					"file": "/Users/flashbell/Node/Songs/utilis/constant.cjs",
 					"semi_transient": false,
 					"settings":
@@ -2425,11 +2261,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 35,
+					"stack_index": 39,
 					"type": "text"
 				},
 				{
-					"buffer": 22,
+					"buffer": 18,
 					"file": "/Users/flashbell/Node/Songs/utilis/aCreator.cjs",
 					"semi_transient": false,
 					"settings":
@@ -2454,11 +2290,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 21,
+					"stack_index": 27,
 					"type": "text"
 				},
 				{
-					"buffer": 23,
+					"buffer": 19,
 					"file": "/Users/flashbell/Node/Songs/utilis/context.cjs",
 					"semi_transient": false,
 					"settings":
@@ -2482,11 +2318,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 17,
 					"type": "text"
 				},
 				{
-					"buffer": 24,
+					"buffer": 20,
 					"file": "/Users/flashbell/Node/Songs/utilis/Text.cjs",
 					"semi_transient": false,
 					"settings":
@@ -2511,11 +2347,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 49,
+					"stack_index": 52,
 					"type": "text"
 				},
 				{
-					"buffer": 25,
+					"buffer": 21,
 					"file": "/Users/flashbell/Node/Songs/utilis/songLoader.js",
 					"semi_transient": false,
 					"settings":
@@ -2540,11 +2376,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 43,
+					"stack_index": 46,
 					"type": "text"
 				},
 				{
-					"buffer": 26,
+					"buffer": 22,
 					"file": "/Users/flashbell/Node/Songs/Plugins/failedCompile.cjs",
 					"semi_transient": false,
 					"settings":
@@ -2569,11 +2405,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 20,
+					"stack_index": 26,
 					"type": "text"
 				},
 				{
-					"buffer": 27,
+					"buffer": 23,
 					"file": "/Users/flashbell/Node/Songs/utilis/db.js",
 					"semi_transient": false,
 					"settings":
@@ -2598,11 +2434,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 45,
+					"stack_index": 48,
 					"type": "text"
 				},
 				{
-					"buffer": 28,
+					"buffer": 24,
 					"file": "/Users/flashbell/Node/Songs/bash/devHelp.sh",
 					"semi_transient": false,
 					"settings":
@@ -2630,7 +2466,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 29,
+					"buffer": 25,
 					"file": "/Users/flashbell/Node/Songs/__test__/server/db.test.js",
 					"semi_transient": false,
 					"settings":
@@ -2656,11 +2492,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 31,
+					"stack_index": 35,
 					"type": "text"
 				},
 				{
-					"buffer": 30,
+					"buffer": 26,
 					"file": "/Users/flashbell/Node/Songs/__test__/server/router.test.js",
 					"semi_transient": false,
 					"settings":
@@ -2686,11 +2522,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 32,
+					"stack_index": 36,
 					"type": "text"
 				},
 				{
-					"buffer": 31,
+					"buffer": 27,
 					"file": "/Users/flashbell/Node/Songs/__test__/server/server.test.js",
 					"semi_transient": false,
 					"settings":
@@ -2716,11 +2552,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 14,
+					"stack_index": 20,
 					"type": "text"
 				},
 				{
-					"buffer": 32,
+					"buffer": 28,
 					"file": "/Users/flashbell/Node/Songs/utilis/db.config.cjs",
 					"semi_transient": false,
 					"settings":
@@ -2745,11 +2581,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 18,
 					"type": "text"
 				},
 				{
-					"buffer": 33,
+					"buffer": 29,
 					"file": "/Users/flashbell/Node/Songs/utilis/dev_utilis.js",
 					"semi_transient": false,
 					"settings":
@@ -2775,11 +2611,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 41,
+					"stack_index": 44,
 					"type": "text"
 				},
 				{
-					"buffer": 34,
+					"buffer": 30,
 					"file": "/Users/flashbell/Node/Songs/utilis/indexDb.cjs",
 					"semi_transient": false,
 					"settings":
@@ -2804,11 +2640,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 51,
+					"stack_index": 54,
 					"type": "text"
 				},
 				{
-					"buffer": 35,
+					"buffer": 31,
 					"file": "/Users/flashbell/Node/Songs/utilis/openDb.cjs",
 					"semi_transient": false,
 					"settings":
@@ -2833,11 +2669,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 39,
+					"stack_index": 42,
 					"type": "text"
 				},
 				{
-					"buffer": 36,
+					"buffer": 32,
 					"file": "/Users/flashbell/Node/Songs/utilis/pattern.js",
 					"semi_transient": false,
 					"settings":
@@ -2861,17 +2697,17 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 38,
+					"stack_index": 41,
 					"type": "text"
 				}
 			]
 		},
 		{
-			"selected": 7,
+			"selected": 23,
 			"sheets":
 			[
 				{
-					"buffer": 37,
+					"buffer": 33,
 					"file": "/Users/flashbell/Node/Songs/client/index.jsx",
 					"semi_transient": false,
 					"settings":
@@ -2897,11 +2733,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
-					"buffer": 25,
+					"buffer": 21,
 					"file": "/Users/flashbell/Node/Songs/utilis/songLoader.js",
 					"semi_transient": false,
 					"settings":
@@ -2926,11 +2762,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 19,
+					"stack_index": 25,
 					"type": "text"
 				},
 				{
-					"buffer": 38,
+					"buffer": 34,
 					"file": "/Users/flashbell/Node/Songs/utilis/bData.cjs",
 					"semi_transient": false,
 					"settings":
@@ -2952,10 +2788,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 16.0,
-						"translation.y": 819.0,
+						"translation.y": 1022.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
@@ -2984,7 +2820,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 18,
+					"stack_index": 24,
 					"type": "text"
 				},
 				{
@@ -3014,7 +2850,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 13,
+					"stack_index": 19,
 					"type": "text"
 				},
 				{
@@ -3023,15 +2859,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2593,
+						"buffer_size": 2599,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								955,
-								955
+								946,
+								946
 							]
 						],
 						"settings":
@@ -3043,11 +2879,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 24,
+					"stack_index": 29,
 					"type": "text"
 				},
 				{
-					"buffer": 27,
+					"buffer": 23,
 					"file": "/Users/flashbell/Node/Songs/utilis/db.js",
 					"semi_transient": false,
 					"settings":
@@ -3073,7 +2909,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 29,
+					"stack_index": 34,
 					"type": "text"
 				},
 				{
@@ -3082,15 +2918,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 17126,
+						"buffer_size": 17974,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								7403,
-								7403
+								17955,
+								17955
 							]
 						],
 						"settings":
@@ -3100,14 +2936,14 @@
 							"word_wrap": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 5573.0,
+						"translation.y": 13484.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 32,
+					"buffer": 28,
 					"file": "/Users/flashbell/Node/Songs/utilis/db.config.cjs",
 					"semi_transient": false,
 					"settings":
@@ -3132,11 +2968,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 64,
+					"stack_index": 60,
 					"type": "text"
 				},
 				{
-					"buffer": 39,
+					"buffer": 35,
 					"file": "/Users/flashbell/Node/Songs/cantique.js",
 					"semi_transient": false,
 					"settings":
@@ -3160,11 +2996,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 46,
+					"stack_index": 49,
 					"type": "text"
 				},
 				{
-					"buffer": 33,
+					"buffer": 29,
 					"file": "/Users/flashbell/Node/Songs/utilis/dev_utilis.js",
 					"semi_transient": false,
 					"settings":
@@ -3190,11 +3026,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 37,
+					"stack_index": 40,
 					"type": "text"
 				},
 				{
-					"buffer": 40,
+					"buffer": 36,
 					"file": "/Users/flashbell/Node/Songs/utilis/utilities.cjs",
 					"semi_transient": false,
 					"settings":
@@ -3216,14 +3052,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 4745.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 52,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
-					"buffer": 24,
+					"buffer": 20,
 					"file": "/Users/flashbell/Node/Songs/utilis/Text.cjs",
 					"semi_transient": false,
 					"settings":
@@ -3248,11 +3084,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 27,
+					"stack_index": 32,
 					"type": "text"
 				},
 				{
-					"buffer": 41,
+					"buffer": 37,
 					"file": "/Users/flashbell/Node/Songs/utilis/message.cjs",
 					"semi_transient": false,
 					"settings":
@@ -3277,24 +3113,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 28,
+					"stack_index": 33,
 					"type": "text"
 				},
 				{
-					"buffer": 10,
+					"buffer": 8,
 					"file": "/Users/flashbell/Node/Songs/views/components.jsx",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 127527,
+						"buffer_size": 127601,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								125205,
-								125205
+								13056,
+								13056
 							]
 						],
 						"settings":
@@ -3304,14 +3140,14 @@
 							"word_wrap": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 76038.0,
+						"translation.y": 7018.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 11,
 					"type": "text"
 				},
 				{
-					"buffer": 11,
+					"buffer": 9,
 					"file": "/Users/flashbell/Node/Songs/utilis/BrowserDb.cjs",
 					"semi_transient": false,
 					"settings":
@@ -3333,14 +3169,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 6163.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 13,
 					"type": "text"
 				},
 				{
-					"buffer": 42,
+					"buffer": 38,
 					"file": "/Users/flashbell/Node/Songs/utilis/openDb.cjs",
 					"semi_transient": false,
 					"settings":
@@ -3366,11 +3202,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 34,
+					"stack_index": 38,
 					"type": "text"
 				},
 				{
-					"buffer": 43,
+					"buffer": 39,
 					"file": "/Users/flashbell/Node/Songs/webpack.config.cjs",
 					"semi_transient": false,
 					"settings":
@@ -3395,11 +3231,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 23,
+					"stack_index": 28,
 					"type": "text"
 				},
 				{
-					"buffer": 16,
+					"buffer": 13,
 					"file": "/Users/flashbell/Node/Songs/utilis/newReducer.cjs",
 					"semi_transient": false,
 					"settings":
@@ -3425,11 +3261,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 33,
+					"stack_index": 37,
 					"type": "text"
 				},
 				{
-					"buffer": 22,
+					"buffer": 18,
 					"file": "/Users/flashbell/Node/Songs/utilis/aCreator.cjs",
 					"semi_transient": false,
 					"settings":
@@ -3454,11 +3290,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 15,
+					"stack_index": 21,
 					"type": "text"
 				},
 				{
-					"buffer": 21,
+					"buffer": 17,
 					"file": "/Users/flashbell/Node/Songs/utilis/constant.cjs",
 					"semi_transient": false,
 					"settings":
@@ -3483,11 +3319,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 16,
 					"type": "text"
 				},
 				{
-					"buffer": 35,
+					"buffer": 31,
 					"file": "/Users/flashbell/Node/Songs/utilis/openDb.cjs",
 					"semi_transient": false,
 					"settings":
@@ -3513,11 +3349,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 48,
+					"stack_index": 51,
 					"type": "text"
 				},
 				{
-					"buffer": 34,
+					"buffer": 30,
 					"file": "/Users/flashbell/Node/Songs/utilis/indexDb.cjs",
 					"semi_transient": false,
 					"settings":
@@ -3542,24 +3378,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 47,
+					"stack_index": 50,
 					"type": "text"
 				},
 				{
-					"buffer": 44,
+					"buffer": 40,
 					"file": "/Users/flashbell/Node/Songs/utilis/sUtilities.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1618,
+						"buffer_size": 518,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								247,
-								247
+								38,
+								38
 							]
 						],
 						"settings":
@@ -3571,67 +3407,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 60,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 45,
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 0,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 61,
-					"type": "text"
-				},
-				{
-					"buffer": 17,
-					"file": "/Users/flashbell/Node/Songs/css/app.css",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 17721,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1,
-								1
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/CSS/CSS.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 59,
-					"type": "text"
-				},
-				{
-					"buffer": 18,
+					"buffer": 14,
 					"file": "/Users/flashbell/Node/Songs/utilis/guider.js",
 					"semi_transient": false,
 					"settings":
@@ -3660,7 +3440,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 46,
+					"buffer": 41,
 					"file": "/Users/flashbell/Node/Songs/init.js",
 					"semi_transient": false,
 					"settings":
@@ -3684,11 +3464,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 67,
+					"stack_index": 62,
 					"type": "text"
 				},
 				{
-					"buffer": 47,
+					"buffer": 42,
 					"file": "/Users/flashbell/Node/Songs/db/setup.js",
 					"semi_transient": false,
 					"settings":
@@ -3714,11 +3494,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 50,
+					"stack_index": 53,
 					"type": "text"
 				},
 				{
-					"buffer": 48,
+					"buffer": 43,
 					"file": "/Users/flashbell/Node/Songs/db/data.js",
 					"semi_transient": false,
 					"settings":
@@ -3742,11 +3522,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 17,
+					"stack_index": 23,
 					"type": "text"
 				},
 				{
-					"buffer": 49,
+					"buffer": 44,
 					"file": "/Users/flashbell/Node/Songs/update.js",
 					"semi_transient": false,
 					"settings":
@@ -3770,11 +3550,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 42,
+					"stack_index": 45,
 					"type": "text"
 				},
 				{
-					"buffer": 23,
+					"buffer": 19,
 					"file": "/Users/flashbell/Node/Songs/utilis/context.cjs",
 					"semi_transient": false,
 					"settings":
@@ -3798,7 +3578,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 63,
+					"stack_index": 59,
 					"type": "text"
 				}
 			]

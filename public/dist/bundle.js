@@ -527,6 +527,8 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
         data = {
           catId: catId
         },
+        sendData;
+      if (catId) {
         sendData = {
           url: '/api/Song?action=getAll&catId=' + catId,
           type: 'application/json',
@@ -558,23 +560,24 @@ var OnlineSongs = /*#__PURE__*/function (_React$Component3) {
             console.error("An Error happened while fetching for songs", error.name, error.message, error.stack);
           }
         };
-      if (songFetch) {
-        if (songFetch.complete || songFetch.fetching) {
-          return;
+        if (songFetch) {
+          if (songFetch.complete || songFetch.fetching) {
+            return;
+          } else {
+            songFetch.fetching = true;
+          }
+          if (songFetch.last) {
+            sendData.url += '&last=' + JSON.stringify(songFetch.last);
+          }
         } else {
-          songFetch.fetching = true;
+          fetchStatus[catId] = songFetch = {
+            fetching: true,
+            complete: false
+          };
         }
-        if (songFetch.last) {
-          sendData.url += '&last=' + JSON.stringify(songFetch.last);
-        }
-      } else {
-        fetchStatus[catId] = songFetch = {
-          fetching: true,
-          complete: false
-        };
+        this.forceUpdate();
+        (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)(sendData);
       }
-      this.forceUpdate();
-      (0,_utilis_BrowserDb_cjs__WEBPACK_IMPORTED_MODULE_3__.fetcher)(sendData);
     }
   }, {
     key: "componentWillUnmount",
