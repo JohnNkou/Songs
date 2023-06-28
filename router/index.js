@@ -250,7 +250,7 @@ export function ServerSong(appState){
 					newState.currentSong = { name:data.name, verses:data.verses, index:0 }
 					store = createStore(Reducer,newState);
 
-					res.app.render("index.jsx",{ store },(err,html)=>{
+					res.app.render("index.jsx",{ store, title:songName },(err,html)=>{
 						if(err){
 							console.error('err',err);
 						}
@@ -527,7 +527,7 @@ export function Categorie(){
 			if(action){
 				switch(action){
 					case 'get':
-						if(query.id){ console.log('id is',query.id);
+						if(query.id){
 							db.getCategorie(query.id).then((r)=>{
 								res.status(200).json(r).end();
 							}).catch((e)=>{
@@ -612,7 +612,6 @@ export function Song(){
 						})
 					}
 					else{
-						console.log("No reqBody given",reqBody);
 						res.status(400).json({
 							error:{
 								message:errorMessage.missData()
@@ -661,7 +660,6 @@ export function Song(){
 }
 export function streamUpdater(subscribers,up, downloadWaiters,stream){
 	return (req,res,next)=>{
-		console.log("req.body",req.body,typeof req.body);
 		let {c,s,p,n,v} = req.query, 
 		lastTime = String(Date.now()).slice(0,10),
 		sql = ["UPDATE Stream SET"], holder = [],
@@ -678,11 +676,8 @@ export function streamUpdater(subscribers,up, downloadWaiters,stream){
 			return res.json(BadInput())
 
 		if(is.Number(p) && !s && !c && songName && catName){
-			console.log("updating just position");
-			console.log(sql);
 		}
 		else if(c && s && is.Number(p) && n){
-			console.log("updating Everything");
 			s = s.toUpperCase();
 			c = c.toLowerCase();
 			n = n.toLowerCase();
@@ -693,11 +688,8 @@ export function streamUpdater(subscribers,up, downloadWaiters,stream){
 
 			sql.push(',catName=?,songName=?,lastTime=? WHERE name=?');
 			holder.push(c,s,lastTime,n);
-			console.log(sql);
 		}
 		else{
-			console.log("Bad input");
-			console.log(p,s,c,n);
 			return res.json(BadInput());
 		}
 
@@ -719,16 +711,13 @@ export function streamUpdater(subscribers,up, downloadWaiters,stream){
 
 					if(p && !s && !c){
 						payload.position = p;
-						console.log("Just position updated");
 					}
 					else{
 						payload.songName = s;
 						payload.catName = c;
 						payload.Verses = Verses;
-						console.log("All updated");
 					}
 
-					console.log("downloadWaiters",downloadWaiters);
 					if(downloadWaiters[n]){
 						let categories = {};
 						for(let catName in downloadWaiters[n]){
@@ -778,12 +767,9 @@ export function streamCreator(waiters,up,stream){
 			}
 			
 			try{
-				console.log("Here is what we have",c,s,v,i,req.body);
 				stream[n] = {payload:{catName:c, songName:s, position:i, Verses:v}};
 
 				res.json(`Got your stream ${n}`).end();
-
-				console.log("new lastTime",)
 
 				if(waiters.length){
 					for(let id in waiters){
