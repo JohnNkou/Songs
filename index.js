@@ -7,11 +7,12 @@ import fs from 'fs';
 import https from 'https'
 import logger from 'morgan'
 import path from 'path'
-import { indexRouter, Stream, Waiters, Subscription, PopulateCategoriesAndSongs,  streamCreator, streamCollector, streamUpdater, streamSubscription, streamDeleter, noStore, songDownloader, downloadToSubscriber, streamPicker, addDefaultsCategorieAndSongs, ErrorLogger, Categorie, Song, CommitHandler, CloseServer, ForkProcess, ServerSong }  from './router/index.js';
+import { indexRouter, Stream, Waiters, Subscription, PopulateCategoriesAndSongs,  streamCreator, streamCollector, streamUpdater, streamSubscription, streamDeleter, noStore, songDownloader, downloadToSubscriber, streamPicker, addDefaultsCategorieAndSongs, ErrorLogger, Categorie, Song, CommitHandler, CloseServer, ForkProcess, ServerSong, ServeCat }  from './router/index.js';
 import purgeStream from './utilis/sUtilities.js'
 import { appState } from './utilis/constant.cjs';
 import { streamFileName, lineTermination } from './db/data.js'
 import db from './utilis/dbClass.js'
+import cookieParser from 'cookie-parser'
 
 global.alert = ()=>{};
 global.localStorage = { getItem:()=>{}, setItem:()=>{}}
@@ -37,6 +38,7 @@ app.set("view engine","jsx")
 app.engine("jsx",express_react.createEngine());
 app.use(compression());
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static(`${root}/public`,{setHeaders:(res,filepath)=> {
 	if(path.basename(filepath) == "worker.js"){
 		res.set('Service-Worker-Allowed','/');
@@ -44,6 +46,7 @@ app.use(express.static(`${root}/public`,{setHeaders:(res,filepath)=> {
 }}));
 app.get('/', indexRouter(appState));
 app.get('/song/:catId/:songName',ServerSong(appState));
+app.get('/book/:catId', ServeCat(appState));
 app.get('/connect',noStore(),(req,res)=>{
 	res.status(200).end();
 })

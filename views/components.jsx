@@ -605,10 +605,21 @@ class OnlineSongs extends React.Component{
 		{ show, report, songs, downloadImage, currentCat } = this.state,
 		{ lang } = this.props,
 		mustReport = report,
-		onlineClass = `il ${(!currentCat.name || !this.store.getState().onlineSongs[currentCat.id])? 'whoosh':''} ${(show)? 'heightHelper':'online'}`,
+		onlineClass = 'il',
 		pop =  { ...this.props, ...this.state },
 		showLoading = (fetchStatus[currentCat.id] && fetchStatus[currentCat.id].fetching)? true:false,
 		loadingClass = (showLoading)? '':'whoosh';
+
+		if((!currentCat.name || !this.store.getState().onlineSongs[currentCat.id])){
+			onlineClass += " whoosh";
+		}
+
+		if(show){
+			onlineClass += " heightHelper"
+		}
+		else{
+			onlineClass += " online':"
+		}
 
 		// Report expect to have status, name, parameter
 		if(mustReport){
@@ -2028,7 +2039,7 @@ class CatNames extends React.Component{
 		return (
 			<div className={this.topClass}>
 				<div id="addCatButton" className="il f1">
-					<a className="addCatCliquer" onClick={this.clickHandler} href="#"><img className="imgCliquer" src="/img/Adder.png" /></a>
+					<a className="addCatCliquer" onClick={this.clickHandler} href="#s"><img className="imgCliquer" src="/img/Adder.png" /></a>
 				</div>
 			</div>
 			)
@@ -2126,6 +2137,7 @@ class CatNames extends React.Component{
 						catName={true}
 						itemClass='categorieContextMenu'
 						showControl={this.showControl}
+						buildLink={({id})=> `/book/${id}`}
 					/>
 				</div>
 			)
@@ -2488,7 +2500,7 @@ class OfflineResult extends React.Component{
 	}
 }
 
-const List = ({catName,putInLastAccess,hide,updateMyCat,args,song,abs,src,list = [],action,action2,first=()=>{},controls,wipe,modif,download,downloadAll,topClass, itemClass,showControl})=>{
+const List = ({catName,putInLastAccess,hide,updateMyCat,args,song,abs,src,list = [],action,action2,first=()=>{},controls,wipe,modif,download,downloadAll,topClass, itemClass,showControl, buildLink=()=> "#", children})=>{
 
 	return (
 		<div className={(abs)? abs.style: ""}>
@@ -2496,16 +2508,17 @@ const List = ({catName,putInLastAccess,hide,updateMyCat,args,song,abs,src,list =
 			{list.map((item,i)=>{
 				if(item.name) item = {id:i,...item};
 						return	(<div className={`${(topClass)? topClass: ''}`+((song)? ` p${i}`:'')} key={i}>
-									<Item itemClass={itemClass || ''} hide={hide} i={i} args={{...args}} item={item} action={action} action2={action2} controls={controls} src={src} wipe={wipe} modif={modif} updateMyCat={updateMyCat} song={song} downloadAll={downloadAll} download={download} showControl={showControl} />
+									<Item link={buildLink(item)} itemClass={itemClass || ''} hide={hide} i={i} args={{...args}} item={item} action={action} action2={action2} controls={controls} src={src} wipe={wipe} modif={modif} updateMyCat={updateMyCat} song={song} downloadAll={downloadAll} download={download} showControl={showControl} />
 								</div>)
 							}
-				)}
+			)}
+			{children}
 		</div>
 		)
 }
 
 
-const Item = ({i,hide,item,action,action2,src,wipe,modif,updateMyCat,song,downloadAll, download,args, itemClass, showControl})=>{
+const Item = ({i,hide,item,action,action2,src,wipe,modif,updateMyCat,song,downloadAll, download,args, itemClass, showControl,link})=>{
 	let name = item.name || item;
 
 	if(args){
@@ -2519,7 +2532,7 @@ const Item = ({i,hide,item,action,action2,src,wipe,modif,updateMyCat,song,downlo
 	return (
 		<>
 			<div className={`il f1 ${name}`}>
-				<a id={item.id} className={itemClass} inlist="true" onClick={(action)? (event)=>{ event.preventDefault(); action(item,i) }:(event)=>{ event.preventDefault(); event.nativeEvent.stopImmediatePropagation(); } } href="#">{name}</a>
+				<a id={item.id} className={itemClass} inlist="true" onClick={(action)? (event)=>{ event.preventDefault(); action(item,i) }:(event)=>{ event.preventDefault(); event.nativeEvent.stopImmediatePropagation(); } } href={link}>{name}</a>
 			</div>
 			<div className='il'>
 				{(item && showControl && showControl(item))? <Controls wipe={({target})=> wipe(item,target,i)} modif={()=> modif(item,i)} />:null}
@@ -2990,6 +3003,7 @@ class SongList extends React.Component{
 				downloadAll:(report)? true:false,
 				list:(report)? songs : songs.slice(0,to),
 				abs:{style:'list il'},
+				buildLink:({name,catId })=> `/song/${catId}/${name}`,
 				hide:(index)=>{
 					/*let className = `.p${index}`
 					let parent = document.querySelector(className);
@@ -3004,7 +3018,7 @@ class SongList extends React.Component{
 			};
 		}
 
-		return <List {...songProps} />;
+		return <List {...songProps} />
 	}
 }
 
@@ -4202,10 +4216,10 @@ class Settings extends React.PureComponent{
 		return (
 			<div className="settings il c0 tip" id="settings">
 				<div>
-					<a className="settingsToggler" onClick={this.changeView} href="#"><img className="vmid" src="/img/settings.png" /><Liner additionalClass="vmid"/>
+					<a className="settingsToggler" onClick={this.changeView} href="#showSettings"><img className="vmid" src="/img/settings.png" /><Liner additionalClass="vmid"/>
 					</a>
 				</div>
-				<div className={`abs abBottom list shadowR BRRad BLRad silverBack ${hide}`}>
+				<div id="showSettings" className={`abs abBottom list shadowR BRRad BLRad silverBack ${hide}`}>
 					<div>
 						<DayMode {...props} />
 						<Language {...props} />
@@ -4320,7 +4334,7 @@ class Language extends React.Component{
 				<div className={`list ${hide}`}>
 					{
 						list.map((lang2,i)=>
-							<a className={(lang == lang2)? signal.success:''} key={i} href="#" onClick={()=> this.store.dispatch(changeLanguage(lang2))}>{lang2}</a>
+							<a className={(lang == lang2)? signal.success:''} key={i} href={`?lang=${lang2}`} onClick={()=> this.store.dispatch(changeLanguage(lang2))}>{lang2}</a>
 							)
 					}
 				</div>

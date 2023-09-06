@@ -10,6 +10,8 @@ import config from '../utilis/db.config.cjs';
 import { songPattern } from '../utilis/pattern.js';
 import { createStore } from 'redux';
 import { Reducer} from '../utilis/newReducer.cjs';
+import  store from '../utilis/serverStore.cjs';
+import { addCategorie, setCurrentCat, addSongs, setCurrentSong, changeLanguage } from '../utilis/aCreator.cjs'
 
 const resTimeToWait = 30000,
 errorMessage = messages.error,
@@ -205,10 +207,28 @@ export function streamPicker(){
 		}
 	}
 }
-export const indexRouter =  (store)=>{
-	return (req,res)=>{
+export const indexRouter =  ()=>{
+	return async (req,res)=>{
 		let query = req.query,
-		manifest = /*query.manifest || */false;
+		cookies = req.cookies,
+		manifest = /*query.manifest || */false,
+		cats = (await db.getAllCategorie()).data,
+		songs = (await db.getAllSongs({ catId:cats[0].id })).data,
+		currentLang = store.getState().language;
+
+		if(query.lang){
+			if(query.lang == 'Fr' || query.lang == 'En'){
+				store.dispatch(changeLanguage(query.lang));
+			}
+		}
+
+		cats.forEach((cat)=>{
+			store.dispatch(addCategorie(cat.name, cat.id,'online'));
+		})
+
+		store.dispatch(setCurrentCat(cats[0].name, cats[0].id));
+		store.dispatch(addSongs(songs,cats[0].id));
+		store.dispatch(setCurrentSong(0,cats[0].id))
 
 		res.app.render('index.jsx',{ manifest},(err,html)=>{
 			if(err){
@@ -248,7 +268,17 @@ export function ServerSong(appState){
 					newState = {...appState};
 					newState.currentCat = { name:data2.name, id:data2.id }
 					newState.currentSong = { name:data.name, verses:data.verses, index:0 }
+					let songs = (await db.getAllSongs({ catId, all:true })).data,
+					cats = (await db.getAllCategorie()).data;
+
+					newState.ui.navigation.to = songs.length;
+
 					store = createStore(Reducer,newState);
+
+					cats.forEach((cat)=>{
+						store.dispatch(addCategorie(cat.name, cat.id,'online'));
+					})
+					store.dispatch(addSongs(songs, catId));
 
 					res.app.render("index.jsx",{ store, title:songName },(err,html)=>{
 						if(err){
@@ -273,6 +303,47 @@ export function ServerSong(appState){
 		}
 		catch(e){
 			res.status(500).json(e);
+		}
+	}
+}
+
+export function ServeCat(appState){
+	return async (req,res,next)=>{
+		let params = req.params,
+		catId = params.catId,
+		store,
+		cat,
+		cats,
+		songs;
+
+		if(catId){
+			try{
+				cat = (await db.getCategorie(catId)).data;
+
+				store = createStore(Reducer,appState);
+
+				if(cat.length){
+					cats = (await db.getAllCategorie()).data;
+					songs = (await db.getAllSongs({ catId })).data;
+
+					cats.forEach((cat)=>{
+						store.dispatch(addCategorie(cat.name, cat.id,'online'));
+					})
+
+					store.dispatch(setCurrentCat(cat[0].name, cat[0].id));
+					store.dispatch(addSongs(songs, catId));
+					store.dispatch(setCurrentSong(0,catId));
+				}
+
+				res.render('index.jsx',{ store })
+			}
+			catch(e){
+				console.error("Error",e);
+				res.status(500).json({error:"Erreur"});
+			}
+		}
+		else{
+			res.status(400).json({error:"Mauviase requete"});
 		}
 	}
 }
