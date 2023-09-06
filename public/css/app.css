@@ -13,8 +13,8 @@ a,p,span{
 }
 html,body{
 	height:100%;
-	width:100%;	
-	overflow: hidden;	
+	width:100%;
+	overflow: hidden;
 }
 
 a{
@@ -160,8 +160,6 @@ input{
 	color:white;
 }
 .whoosh{
-	height:0px;
-	overflow: hidden;
 	display:none;
 }
 .hightlight{
@@ -326,6 +324,7 @@ input{
 	z-index: 10000000;
 	text-align: left;
 	padding-left: 10px;
+	height: 40px;
 }
 .songList #online .onlineHead *{
 	vertical-align:middle;
@@ -388,6 +387,8 @@ input{
 .songList #online, .songList #offline{
 	text-align: center;
 	width:100%;
+	/* height: 99%; */
+	overflow: scroll;
 }
 .songList #online .onlineHead, .songList #online .list, .songList #offline .offlineHead, .songList #offline .list{
 	width: 80%;
@@ -538,6 +539,9 @@ input{
 #second .head .settings .list .list{
 	padding:0;
 	margin:0;
+}
+#showSettings:target{
+	display:block;
 }
 #second .head .settings .list span, #second .head .streamList .list span{
 	width:80%;

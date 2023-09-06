@@ -74,7 +74,7 @@ exports.appState = {
 		},
 		navigation:{
 			verseIndex:0,
-			to:20
+			to:100
 		},
 		addSongDiv:{
 			verses:0

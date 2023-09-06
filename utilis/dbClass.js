@@ -208,10 +208,8 @@ function d({getClient,getClientD}){
 		response,
 		Item;
 
-		console.log('params',params);
-
 		response = await clientD.send(new GetCommand(params)),
-		Item = (response.Item)? [response.Item]:[]; console.log('GAMA');
+		Item = (response.Item)? [response.Item]:[];
 		return getResponse(Item);
 	}
 	this.updateCategorie = async (id,obj)=>{
