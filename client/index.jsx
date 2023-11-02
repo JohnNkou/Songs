@@ -1,5 +1,6 @@
 import React  from 'react'
 import  Text from '../utilis/Text.cjs'
+import { Provider } from 'react-redux'
 import { render }  from 'react-dom'
 import { Reducer }  from '../utilis/newReducer.cjs';
 import Action from '../utilis/aCreator.cjs'
@@ -131,9 +132,11 @@ Promise.all([localData,MStepLoader]).then((r)=>{
 
 	let pan = { store, Text };
 	render(
-		<Custom.Provider value={pan}>
-			<App  step={Msteps} fAccess={fAccess} streamManager={streamManager} {...Action} validator={validator} note={note} seq={seq} db={db} />
-		</Custom.Provider>,
+		<Provider store={store}>
+			<Custom.Provider value={pan}>
+				<App  step={Msteps} fAccess={fAccess} streamManager={streamManager} {...Action} validator={validator} note={note} seq={seq} db={db} />
+			</Custom.Provider>
+		</Provider>,
 		document.getElementById('react-container')
 	)
 }).catch((e)=>{

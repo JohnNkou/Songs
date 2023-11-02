@@ -23,15 +23,17 @@ export default function Index(props){
 	if(props.store){
 		pan.store = props.store;
 		state = props.store.getState();
-
 	}
+
 	return (
-		<Custom.Provider value={pan}>
-			<HTML {...documentTree} {...props} data={store.getState()} title={title} >
-				{(state && state.currentSong.name)? <script type='text/javascript' dangerouslySetInnerHTML={{__html:`
-					window.appState = ${JSON.stringify(state)}
-				`}}></script> : null}
-			</HTML>
-		</Custom.Provider>
+		<Provider store={store}>
+			<Custom.Provider value={pan}>
+				<HTML {...documentTree} {...props} data={store.getState()} title={title} >
+					{(state && state.currentSong.name)? <script type='text/javascript' dangerouslySetInnerHTML={{__html:`
+						window.appState = ${JSON.stringify(state)}
+					`}}></script> : null}
+				</HTML>
+			</Custom.Provider>
+		</Provider>
 		)
 }

@@ -230,7 +230,7 @@ export const indexRouter =  ()=>{
 		store.dispatch(addSongs(songs,cats[0].id));
 		store.dispatch(setCurrentSong(0,cats[0].id))
 
-		res.app.render('index.jsx',{ manifest},(err,html)=>{
+		res.app.render('index.jsx',{ manifest, store},(err,html)=>{
 			if(err){
 				console.log(err)
 				res.end("Error"+html)

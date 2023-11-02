@@ -1,8 +1,10 @@
-import React  from 'react';
+import React, { useState }  from 'react';
+import { useSelector, useDispatch } from 'react-redux'
 import { storageHandler,compose, relay, getAllReturn, seq, fetcher, abortSubscription,indexChanger, curry, safeOp, registerWorker, is, adjustHeight, scrollHandler, invoqueAfterMount } from '../utilis/BrowserDb.cjs';
 import { SUB, insertStatus, signal, displayTime } from '../utilis/constant.cjs';
 import config from '../utilis/db.config.cjs';
 import Custom from '../utilis/context.cjs';
+import { languageSelector, uiSelector,catListViewSelector, imageSelector, resultListSelector } from '../src/selectors.cjs'
 
 const { table,filters } = config,
 { cat,song,stream } = table,
@@ -60,9 +62,6 @@ class ErrorBoundary extends React.Component{
 	}
 
 	componentDidCatch(error,errorinfo){
-		alert("Oh");
-		alert(error);
-		alert(errorinfo);
 		console.log(error);
 		console.log(errorinfo);
 	}
@@ -162,7 +161,7 @@ class Setup extends React.Component{
 		streamText = this.streamText;
 
 		startStream.f = (startStream)? ()=>{
-			notifier2.addSpeed(streamText.started(lang), undefined, undefined, undefined, signal.success);
+			//notifier2.addSpeed(streamText.started(lang), undefined, undefined, undefined, signal.success);
 			this.store.dispatch(this.props.startStream());
 			setTimeout(()=>{
 				localStorage.setItem("stream",JSON.stringify({name:S.getName(), time:Date.now()}));
@@ -171,7 +170,7 @@ class Setup extends React.Component{
 		}: ()=> console.error("First componentDidMount, startStream not defined in props");
 
 		stopStream.f = (stopStream)? ()=>{
-			notifier2.addSpeed(streamText.stopped(lang));
+			//notifier2.addSpeed(streamText.stopped(lang));
 			this.store.dispatch(this.props.stopStream());
 			setTimeout(()=>{
 				localStorage.removeItem("stream");
@@ -259,6 +258,7 @@ Setup.contextType = Custom;
 
 function First(props){
 	let { direction } = props;
+
 	return (
 		<div id="first" className={((direction && direction == "Right")? "il TRR ":"il TLL ")+"silverBack"}>
 			<DownloaderLine />
@@ -758,10 +758,12 @@ class Notification extends React.PureComponent{
 		this.state = {message:"",node:null, signal:signal.system};
 	}
 	componentDidMount(){
-		if(this.props.parent == "First")
-			notifier.setJsx(this);
-		else
-			notifier2.setJsx(this);
+		if(this.props.parent == "First"){
+			//notifier.setJsx(this);
+		}
+		else{
+			//notifier2.setJsx(this);
+		}
 	}
 	render(){
 		let {message,progress,node, signal, download} = this.state;
@@ -1701,7 +1703,7 @@ function Second(props){
 	)
 }
 
-class CatToggler extends React.Component{
+class CatToggleri extends React.Component{
 	constructor(props,context){
 		super(props);
 		let store = context.store,
@@ -1748,7 +1750,24 @@ class CatToggler extends React.Component{
 	}
 
 }
-CatToggler.contextType = Custom;
+//CatToggler.contextType = Custom;
+
+function CatToggler(props){
+	let view = useSelector(catListViewSelector),
+	images = useSelector(imageSelector),
+	dispatch = useDispatch(),
+	catImage = images.categorie;
+
+	function clickHandler(event){
+		event.preventDefault();
+		event.nativeEvent.stopImmediatePropagation();
+		dispatch(props.changeCatListView(!view));
+	}
+
+	return <div className="il c1">
+				<a href="#" onClick={clickHandler}><img src={`/img/${catImage}`}/></a>
+		</div>
+}
 
 const Head1 = (props)=>{
 	return (
@@ -1761,6 +1780,11 @@ const Head1 = (props)=>{
 			<ResultList {...props} />
 		</div>
 		)
+}
+
+function Input(props){
+	let view = useSelector(resultListSelector);
+	
 }
 
 class Input extends React.Component{
@@ -2205,8 +2229,6 @@ class ResultList extends React.Component{
 			<div ref={this.nodeRef} className={style.style}>
 				<OnlineResult store={this.store} {...this.props} />
 				<OfflineResult store={this.store} {...this.props} />
-				{/*<List action={this.action} list={songs} first={()=> <div class='first'><span>Online</span></div>} />
-								<List action={this.action}  first={()=> <div class='first'><span>Offline</span></div>} list={[]} />*/}
 			</div>
 			)
 
@@ -4678,7 +4700,30 @@ export const HTML = ({data, styles,metas,links, scripts,title,store,nodeJs, mani
 		)
 }
 
-export class App extends React.Component{
+export function App(props){
+	let [showGuide, setShowGuide] = useState((props.step)? true: false),
+	ui = useSelector(uiSelector),
+	[direction,setDirection] = useState(ui.direction),
+	lang = useSelector(languageSelector),
+	Guide = (showGuide)? <Guider end={endGuide} step={step} lang={lang} />:null;
+
+	function endGuide(){
+		setShowGuide(false);
+		localStorage.guider = true;
+	}
+
+	db = props.db;
+
+	return <ErrorBoundary>
+		<Setup streamManager={props.streamManager} fAccess={props.fastAccess} {...props} />
+		<First direction={direction} lang={lang} {...props} />
+		<Second direction={direction} lang={lang} {...props} />
+		{Guide}
+		<PopUp {...props} lang={lang} />
+	</ErrorBoundary>
+}
+
+export class Appi extends React.Component{
 	constructor(props,context){
 		super(props);
 		let guider = localStorage.guider,
@@ -4748,15 +4793,15 @@ export class App extends React.Component{
 		return (
 			<ErrorBoundary>
 				<Setup streamManager={streamManager} fAccess={fAccess} fastAccess={this.props.fastAccess} {...props} />
-								<First direction={direction} lang={lang} {...props} />
+				<First direction={direction} lang={lang} {...props} />
 								
-								<Second direction={direction} lang={lang} {...props}/>
-								{Guide}
-								<PopUp {...props} lang={lang} />
+				<Second direction={direction} lang={lang} {...props}/>
+					{Guide}
+				<PopUp {...props} lang={lang} />
 			</ErrorBoundary>
 			)
 	}
 }
-App.contextType = Custom;
+//App.contextType = Custom;
 
 const Liner = ({additionalClass=''})=> <div className={`tight ${additionalClass}`}> </div>
